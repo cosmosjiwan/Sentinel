@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: sentinel-dlp
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false  # Render 대시보드에서 직접 입력
+      - key: PYTHON_VERSION
+        value: "3.11.9"
