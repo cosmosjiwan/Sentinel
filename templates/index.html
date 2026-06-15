@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sentinal DLP — AI 문서 보안 검열</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
+
+:root {
+  --bg:       #0d1117;
+  --surface:  #161b22;
+  --surface2: #1c2333;
+  --border:   #30363d;
+  --text:     #e6edf3;
+  --muted:    #8b949e;
+  --accent:   #1f6feb;
+  --accent-h: #388bfd;
+  --person:   #f85149;
+  --ip:       #d29922;
+  --auth:     #bc8cff;
+  --secret:   #3fb950;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── 상단 헤더 ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 52px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.brand {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
+.brand span { color: var(--accent); }
+.topbar-right {
+  display: flex; gap: 8px;
+}
+.chip {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 500;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* ── 메인 ── */
+.main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 28px 32px 0;
+}
+.card-header h1 {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.card-header p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.card-body {
+  padding: 24px 32px 32px;
+}
+
+/* 업로드 박스 */
+.upload-box {
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  position: relative;
+}
+.upload-box:hover,
+.upload-box.dragover {
+  border-color: var(--accent);
+  background: rgba(31,111,235,0.05);
+}
+.upload-box.has-file {
+  border-color: var(--secret);
+  background: rgba(63,185,80,0.04);
+}
+
+.upload-icon {
+  width: 44px; height: 44px;
+  margin: 0 auto 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.upload-icon svg { color: var(--muted); }
+
+.upload-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.upload-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.select-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.select-btn:hover {
+  border-color: var(--accent-h);
+  background: rgba(56,139,253,0.08);
+  color: var(--accent-h);
+}
+
+#file-name {
+  margin-top: 14px;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--secret);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+#file-name.show { display: flex; }
+#file-name svg { flex-shrink: 0; }
+
+/* 포맷 안내 */
+.format-chips {
+  display: flex; gap: 6px; justify-content: center;
+  margin-top: 14px;
+}
+.fmt-chip {
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* 검열 버튼 */
+.submit-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px;
+  border-radius: 8px;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: background .15s;
+}
+.submit-btn:hover { background: var(--accent-h); }
+.submit-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+
+/* 기능 안내 */
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.feature-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.feat-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.feat-text { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.feat-text strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 2px; font-size: 12px; }
+
+/* 하단 */
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #444c56;
+  border-top: 1px solid var(--border);
+}
+
+/* 로딩 오버레이 */
+#loading {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(13,17,23,0.92);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+#loading.show { display: flex; }
+
+.spinner-wrap {
+  position: relative;
+  width: 56px; height: 56px;
+}
+.spinner {
+  width: 56px; height: 56px;
+  border: 2px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  text-align: center;
+}
+.loading-text h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.loading-text p {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.loading-steps {
+  display: flex; flex-direction: column; gap: 6px;
+  margin-top: 20px;
+}
+.step {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 280px;
+  opacity: 0.4;
+  transition: opacity .3s, border-color .3s, color .3s;
+}
+.step.active { opacity: 1; border-color: var(--accent); color: var(--accent-h); }
+.step.done   { opacity: 0.8; border-color: var(--secret); color: var(--secret); }
+.step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<div class="topbar">
+  <div class="brand">Sentinal<span>.</span>DLP</div>
+  <div class="topbar-right">
+    <span class="chip">Data Loss Prevention</span>
+    <span class="chip">AI 기반 문서 검열</span>
+  </div>
+</div>
+
+<!-- 메인 -->
+<div class="main">
+  <div class="card">
+    <div class="card-header">
+      <h1>AI 문서 보안 검열</h1>
+      <p>문서를 업로드하면 AI가 민감정보를 자동으로 탐지하고 비식별화합니다.</p>
+    </div>
+    <div class="card-body">
+
+      <form action="/redact" method="post" enctype="multipart/form-data" id="uploadForm">
+
+        <div class="upload-box" id="dropArea">
+          <div class="upload-icon">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
+            </svg>
+          </div>
+          <div class="upload-title">파일을 끌어다 놓거나 선택하세요</div>
+          <div class="upload-sub">PDF, DOCX 파일 지원<br>최대 50MB</div>
+
+          <input type="file" id="fileInput" name="file" accept=".pdf,.docx" required hidden>
+
+          <button type="button" class="select-btn" onclick="document.getElementById('fileInput').click()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/></svg>
+            파일 선택
+          </button>
+
+          <div class="format-chips">
+            <span class="fmt-chip">.pdf</span>
+            <span class="fmt-chip">.docx</span>
+          </div>
+
+          <div id="file-name">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
+            <span id="file-name-text"></span>
+          </div>
+        </div>
+
+        <button class="submit-btn" type="submit" id="submitBtn" disabled>
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M9.504.43a1.516 1.516 0 0 1 2.437 1.713L10.415 5.5h2.123c1.57 0 2.346 1.909 1.22 3.004l-7.34 7.142a1.249 1.249 0 0 1-.871.354h-.302a1.25 1.25 0 0 1-1.157-1.723L5.633 10.5H3.462c-1.57 0-2.346-1.909-1.22-3.004L9.503.43Z"/></svg>
+          검열 시작
+        </button>
+
+      </form>
+
+      <!-- 기능 안내 -->
+      <div class="features">
+        <div class="feature-item">
+          <div class="feat-dot" style="background:var(--person)"></div>
+          <div class="feat-text"><strong>개인정보 탐지</strong>이름, 연락처, 이메일, 주민번호</div>
+        </div>
+        <div class="feature-item">
+          <div class="feat-dot" style="background:var(--ip)"></div>
+          <div class="feat-text"><strong>지적재산 보호</strong>신약, 수치, 프로젝트 코드명</div>
+        </div>
+        <div class="feature-item">
+          <div class="feat-dot" style="background:var(--auth)"></div>
+          <div class="feat-text"><strong>인증정보 마스킹</strong>API Key, Password, Token</div>
+        </div>
+        <div class="feature-item">
+          <div class="feat-dot" style="background:var(--muted)"></div>
+          <div class="feat-text"><strong>기업/기관 비식별화</strong>회사명, 연구소, 대학교</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="footer">(주) Sentinal · DLP Engine v1.0</div>
+  </div>
+</div>
+
+<!-- 로딩 오버레이 -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">
+    <h3>문서 검열 중...</h3>
+    <p>AI가 민감정보를 분석하고 있습니다</p>
+  </div>
+  <div class="loading-steps">
+    <div class="step active" id="step1"><div class="step-dot"></div>문서 업로드 및 파싱</div>
+    <div class="step" id="step2"><div class="step-dot"></div>민감정보 탐지 중</div>
+    <div class="step" id="step3"><div class="step-dot"></div>비식별화 처리 중</div>
+    <div class="step" id="step4"><div class="step-dot"></div>결과 문서 생성 중</div>
+  </div>
+</div>
+
+<script>
+const dropArea  = document.getElementById('dropArea');
+const fileInput = document.getElementById('fileInput');
+const fileNameEl = document.getElementById('file-name');
+const fileNameText = document.getElementById('file-name-text');
+const submitBtn = document.getElementById('submitBtn');
+
+function setFile(file) {
+  fileNameText.textContent = file.name;
+  fileNameEl.classList.add('show');
+  dropArea.classList.add('has-file');
+  submitBtn.disabled = false;
+}
+
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length > 0) setFile(fileInput.files[0]);
+});
+
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
+dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+dropArea.addEventListener('drop', e => {
+  e.preventDefault();
+  dropArea.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) { fileInput.files = e.dataTransfer.files; setFile(f); }
+});
+
+// 로딩 스텝 애니메이션
+let stepIdx = 1;
+let stepTimer;
+function advanceStep() {
+  if (stepIdx > 1) {
+    document.getElementById('step' + (stepIdx - 1)).classList.remove('active');
+    document.getElementById('step' + (stepIdx - 1)).classList.add('done');
+  }
+  if (stepIdx <= 4) {
+    document.getElementById('step' + stepIdx).classList.add('active');
+    stepIdx++;
+    stepTimer = setTimeout(advanceStep, 3500);
+  }
+}
+
+document.getElementById('uploadForm').addEventListener('submit', () => {
+  document.getElementById('loading').classList.add('show');
+  stepIdx = 1;
+  advanceStep();
+});
+</script>
+</body>
+</html>
