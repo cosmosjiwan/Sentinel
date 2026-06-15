@@ -166,7 +166,7 @@ def clean_markers(text):
 
 @app.route("/")
 def home():
-    return render_template("index.html")
+    return render_template("input.html")
 
 @app.route("/redact", methods=["POST"])
 def redact():
@@ -212,7 +212,7 @@ def redact():
         f.write(clean_text)
 
     return render_template(
-        "success.html",
+        "output.html",
         filename=os.path.basename(output_file),
         result=result_text
     )
