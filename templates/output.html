@@ -4,442 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>검열 완료 — Sentinal DLP</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
-
-:root {
-  --bg:       #0d1117;
-  --surface:  #161b22;
-  --surface2: #1c2333;
-  --border:   #30363d;
-  --text:     #e6edf3;
-  --muted:    #8b949e;
-  --accent:   #1f6feb;
-  --accent-h: #388bfd;
-  --person:   #f85149; --person-bg: rgba(248,81,73,.12);
-  --org:      #388bfd; --org-bg:    rgba(56,139,253,.12);
-  --ip:       #d29922; --ip-bg:     rgba(210,153,34,.12);
-  --auth:     #bc8cff; --auth-bg:   rgba(188,140,255,.12);
-  --secret:   #3fb950; --secret-bg: rgba(63,185,80,.12);
-}
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 14px;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* ── topbar ── */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  height: 52px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  z-index: 100;
-}
-.brand {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: .04em;
-  color: var(--text);
-}
-.brand span { color: var(--accent); }
-.topbar-right { display: flex; gap: 8px; align-items: center; }
-.chip {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: 500;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--muted);
-}
-.chip.danger { background: rgba(248,81,73,.15); border-color: var(--person); color: var(--person); }
-.btn-dl {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 14px;
-  border-radius: 6px;
-  background: var(--accent);
-  border: none;
-  color: #fff;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-  font-family: 'Noto Sans KR', sans-serif;
-  transition: background .15s;
-}
-.btn-dl:hover { background: var(--accent-h); }
-.btn-home {
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 14px;
-  border-radius: 6px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 12px;
-  cursor: pointer;
-  text-decoration: none;
-  font-family: 'Noto Sans KR', sans-serif;
-  transition: border-color .15s, color .15s;
-}
-.btn-home:hover { border-color: var(--text); color: var(--text); }
-.topbar-user {
-  display: flex; align-items: center; gap: 8px;
-  padding: 4px 12px 4px 6px;
-  border-radius: 6px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  cursor: default;
-}
-.topbar-avatar {
-  width: 26px; height: 26px;
-  border-radius: 50%;
-  background: var(--accent);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; font-weight: 500;
-  color: #fff;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.topbar-username { font-size: 12px; color: var(--text); }
-
-/* ── app shell ── */
-.app-shell {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  min-height: 0;
-}
-
-/* ── sidebar ── */
-.sidebar {
-  width: 220px;
-  flex-shrink: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-.nav-section-label {
-  font-size: 10px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--muted);
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  padding: 20px 16px 8px;
-  opacity: .6;
-}
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 16px;
-  font-size: 13px;
-  color: var(--muted);
-  text-decoration: none;
-  border-left: 2px solid transparent;
-  transition: background .12s, color .12s, border-color .12s;
-  user-select: none;
-}
-.nav-item:hover { background: var(--surface2); color: var(--text); }
-.nav-item.active { background: rgba(31,111,235,.1); color: var(--accent-h); border-left-color: var(--accent); }
-.nav-item svg { flex-shrink: 0; opacity: .7; }
-.nav-item.active svg, .nav-item:hover svg { opacity: 1; }
-.nav-divider { height: 1px; background: var(--border); margin: 8px 16px; }
-.sidebar-footer {
-  margin-top: auto;
-  padding: 16px;
-  border-top: 1px solid var(--border);
-}
-.status-indicator {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 11px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: var(--muted);
-}
-.status-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--secret);
-  box-shadow: 0 0 6px var(--secret);
-  flex-shrink: 0;
-}
-.sidebar-version {
-  margin-top: 6px;
-  font-size: 10px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: #444c56;
-}
-
-/* ── content shell ── */
-.content-shell {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-width: 0;
-}
-
-/* ── 상단 통계 바 ── */
-.summary-bar {
-  display: flex;
-  align-items: stretch;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.summary-stat {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 24px;
-  flex: 1;
-  border-right: 1px solid var(--border);
-}
-.summary-stat:last-child { border-right: none; }
-.summary-icon {
-  width: 30px; height: 30px;
-  border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.summary-num {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 22px;
-  font-weight: 500;
-  line-height: 1;
-}
-.summary-lbl {
-  font-size: 10px;
-  color: var(--muted);
-  margin-top: 3px;
-}
-
-/* ── main (두 패널) ── */
-.main {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  min-height: 0;
-}
-
-/* ── left panel ── */
-.left-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid var(--border);
-  min-width: 0;
-}
-.panel-header {
-  padding: 10px 20px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-}
-.panel-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.restore-all-btn {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 4px;
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  cursor: pointer;
-  font-family: 'IBM Plex Mono', monospace;
-  transition: border-color .15s, color .15s, background .15s;
-}
-.restore-all-btn:hover { border-color: var(--ip); color: var(--ip); }
-.restore-all-btn.on { border-color: var(--ip); color: var(--ip); background: var(--ip-bg); }
-
-.doc-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 28px 32px;
-  line-height: 2.2;
-  font-size: 14px;
-  color: #c9d1d9;
-}
-.doc-scroll::-webkit-scrollbar { width: 4px; }
-.doc-scroll::-webkit-scrollbar-track { background: transparent; }
-.doc-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* highlight spans */
-.hl {
-  padding: 2px 5px;
-  border-radius: 3px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: filter .1s;
-  display: inline;
-}
-.hl:hover { filter: brightness(1.3); }
-.hl.active { outline: 2px solid rgba(255,255,255,.7); outline-offset: 1px; }
-.hl.restored { text-decoration: line-through; opacity: .55; }
-.orig-badge {
-  display: inline-block;
-  margin-left: 5px;
-  padding: 1px 6px;
-  border-radius: 3px;
-  font-size: .88em;
-  font-weight: 500;
-  background: rgba(255,255,255,.08);
-  color: var(--text);
-  text-decoration: none;
-  opacity: 1;
-  vertical-align: middle;
-}
-.hl-person { background: var(--person-bg); color: var(--person); border-bottom: 1.5px solid var(--person); }
-.hl-org    { background: var(--org-bg);    color: var(--org);    border-bottom: 1.5px solid var(--org); }
-.hl-ip     { background: var(--ip-bg);     color: var(--ip);     border-bottom: 1.5px solid var(--ip); }
-.hl-auth   { background: var(--auth-bg);   color: var(--auth);   border-bottom: 1.5px solid var(--auth); }
-.hl-secret { background: var(--secret-bg); color: var(--secret); border-bottom: 1.5px solid var(--secret); }
-
-/* legend */
-.legend-bar {
-  padding: 10px 20px;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  flex-shrink: 0;
-}
-.leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
-.leg-dot { width: 7px; height: 7px; border-radius: 50%; }
-
-/* ── right panel ── */
-.right-panel {
-  width: 340px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-}
-.right-header {
-  padding: 10px 20px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.right-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.count-badge {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--person);
-}
-
-.cards-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-}
-.cards-scroll::-webkit-scrollbar { width: 4px; }
-.cards-scroll::-webkit-scrollbar-track { background: transparent; }
-.cards-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-.item-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  margin-bottom: 8px;
-  overflow: hidden;
-  transition: border-color .15s, background .15s;
-}
-.item-card:hover { border-color: #444c56; background: var(--surface2); }
-.item-card.active { border-color: var(--accent); background: var(--surface2); }
-.item-card.restored-card { border-color: var(--ip); }
-
-.card-head { padding: 9px 14px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.type-pip { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.orig-text {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text);
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.type-tag { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 500; flex-shrink: 0; }
-
-.card-body { border-top: 1px solid var(--border); padding: 8px 14px 10px; }
-.card-row { display: flex; align-items: flex-start; gap: 8px; padding: 3px 0; font-size: 12px; }
-.card-lbl { color: var(--muted); width: 44px; flex-shrink: 0; font-size: 11px; }
-.card-val { color: #c9d1d9; flex: 1; }
-.card-replaced { color: var(--secret); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
-.card-reason { color: var(--muted); font-size: 11px; line-height: 1.5; }
-
-.restore-btn {
-  display: flex; align-items: center; gap: 5px;
-  margin-top: 8px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
-  font-size: 11px;
-  font-family: 'IBM Plex Mono', monospace;
-  cursor: pointer;
-  width: 100%;
-  transition: all .15s;
-}
-.restore-btn:hover { border-color: var(--ip); color: var(--ip); background: var(--ip-bg); }
-.restore-btn.on { border-color: var(--ip); color: var(--ip); background: var(--ip-bg); }
-
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 200px;
-  color: var(--muted);
-  font-size: 13px;
-  gap: 8px;
-}
-
-.fallback-banner {
-  background: rgba(210,153,34,.12);
-  border: 1px solid var(--ip);
-  color: var(--ip);
-  font-size: 11px;
-  padding: 6px 14px;
-  border-radius: 6px;
-  margin: 8px 12px 0;
-  font-family: 'IBM Plex Mono', monospace;
-}
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
 </head>
 <body>
 
@@ -563,30 +129,34 @@ body {
       </div>
     </div>
 
-    <!-- 두 패널 -->
+    <!-- GPT 폴백 형식 안내 (필요시 노출) -->
+    <div class="fallback-banner" id="fallbackBanner" style="display:none"></div>
+
+    <!-- 검열전 / 검열후 비교 패널 -->
     <div class="main">
-      <div class="left-panel">
+      <div class="doc-panel">
         <div class="panel-header">
-          <span class="panel-title">검열 문서</span>
-          <button class="restore-all-btn" id="restoreAllBtn" onclick="toggleRestoreAll()">전체 원문 보기</button>
+          <span class="panel-title">검열 전<span class="panel-tag before">원본</span></span>
         </div>
-        <div class="doc-scroll" id="docArea"><div class="empty-state">파싱 중...</div></div>
-        <div class="legend-bar">
-          <div class="leg"><div class="leg-dot" style="background:var(--person)"></div>개인정보</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--org)"></div>기업/기관</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--ip)"></div>지적재산</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--auth)"></div>인증정보</div>
-          <div class="leg"><div class="leg-dot" style="background:var(--secret)"></div>금융/기타</div>
-        </div>
+        <div class="doc-scroll" id="beforeArea"><div class="empty-state">파싱 중...</div></div>
       </div>
 
-      <div class="right-panel">
-        <div class="right-header">
-          <span class="right-title">탐지된 민감정보</span>
+      <div class="doc-panel">
+        <div class="panel-header">
+          <span class="panel-title">검열 후<span class="panel-tag after">결과</span></span>
           <span class="count-badge" id="countBadge">—</span>
         </div>
-        <div class="cards-scroll" id="cardsArea"><div class="empty-state">파싱 중...</div></div>
+        <div class="doc-scroll" id="afterArea"><div class="empty-state">파싱 중...</div></div>
       </div>
+    </div>
+
+    <!-- 범례 -->
+    <div class="legend-bar">
+      <div class="leg"><div class="leg-dot" style="background:var(--person)"></div>개인정보</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--org)"></div>기업/기관</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--ip)"></div>지적재산</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--auth)"></div>인증정보</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--secret)"></div>금융/기타</div>
     </div>
 
   </div><!-- /content-shell -->
@@ -625,7 +195,8 @@ function parseMarkersFromText(docText) {
   return items;
 }
 
-function renderDocMarker(docText, items) {
+/* 검열 후(치환값) 렌더링 */
+function renderDocAfter(docText, items) {
   const keyToIdx = {};
   items.forEach((item,idx) => { keyToIdx[item.type+'|'+item.orig] = idx; });
   MARKER_RE.lastIndex = 0;
@@ -634,7 +205,21 @@ function renderDocMarker(docText, items) {
     const replaced = unescapePipe(rawRep.trim());
     const t = type.trim();
     const idx = keyToIdx[t+'|'+orig];
-    return `<span class="hl hl-${esc(t)}" data-idx="${idx}" data-orig="${esc(orig)}" data-replaced="${esc(replaced)}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
+    return `<span class="hl hl-${esc(t)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
+  });
+  return toParas(html);
+}
+
+/* 검열 전(원문) 렌더링 — 검열후와 동일한 data-idx를 부여해 두 패널의 강조 표시를 동기화 */
+function renderDocBefore(docText, items) {
+  const keyToIdx = {};
+  items.forEach((item,idx) => { keyToIdx[item.type+'|'+item.orig] = idx; });
+  MARKER_RE.lastIndex = 0;
+  let html = docText.replace(MARKER_RE, (match, type, rawOrig) => {
+    const orig = unescapePipe(rawOrig.trim());
+    const t = type.trim();
+    const idx = keyToIdx[t+'|'+orig];
+    return `<span class="hl hl-${esc(t)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(orig)}</span>`;
   });
   return toParas(html);
 }
@@ -670,23 +255,35 @@ function parseMarkersFromXml(docText, sec2) {
   return items;
 }
 
-function renderDocXml(docText, items) {
-  const tagToIdx = {};
-  // 먼저 tagMap 재구성
+function _xmlTagToIdx(docText) {
   let m; XML_TAG_RE.lastIndex = 0; let counter = 0;
   const tagMap = {};
   while ((m = XML_TAG_RE.exec(docText)) !== null) {
     if (tagMap[m[1]] === undefined) { tagMap[m[1]] = counter++; }
   }
-  // items 인덱스와 tagMap 동기화 (순서 기반)
-  const tagNums = Object.keys(tagMap).sort((a,b) => +a - +b);
-  tagNums.forEach((num, i) => { tagToIdx[num] = i; });
+  const tagToIdx = {};
+  Object.keys(tagMap).sort((a,b) => +a - +b).forEach((num, i) => { tagToIdx[num] = i; });
+  return tagToIdx;
+}
 
+function renderDocXmlAfter(docText, items) {
+  const tagToIdx = _xmlTagToIdx(docText);
+  XML_TAG_RE.lastIndex = 0;
+  let html = docText.replace(XML_TAG_RE, (match, num, replaced) => {
+    const idx = tagToIdx[num] !== undefined ? tagToIdx[num] : 0;
+    const item = items[idx] || { type:'secret' };
+    return `<span class="hl hl-${esc(item.type)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
+  });
+  return toParas(html);
+}
+
+function renderDocXmlBefore(docText, items) {
+  const tagToIdx = _xmlTagToIdx(docText);
   XML_TAG_RE.lastIndex = 0;
   let html = docText.replace(XML_TAG_RE, (match, num, replaced) => {
     const idx = tagToIdx[num] !== undefined ? tagToIdx[num] : 0;
     const item = items[idx] || { type:'secret', orig: replaced };
-    return `<span class="hl hl-${esc(item.type)}" data-idx="${idx}" data-orig="${esc(item.orig)}" data-replaced="${esc(replaced)}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
+    return `<span class="hl hl-${esc(item.type)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(item.orig)}</span>`;
   });
   return toParas(html);
 }
@@ -754,8 +351,6 @@ function guessTypeFromReplaced(r) {
 function typeToLabel(t) {
   return {person:'개인정보',org:'기업/기관',ip:'지적재산',auth:'인증정보',secret:'금융/기타'}[t]||'기타';
 }
-const TYPE_COLOR={person:'var(--person)',org:'var(--org)',ip:'var(--ip)',auth:'var(--auth)',secret:'var(--secret)'};
-const TYPE_BG={person:'var(--person-bg)',org:'var(--org-bg)',ip:'var(--ip-bg)',auth:'var(--auth-bg)',secret:'var(--secret-bg)'};
 
 function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -766,105 +361,15 @@ function toParas(html) {
   return html.split('\n').map(l=>l.trim()).filter(l=>l.length>0).map(l=>`<p>${l}</p>`).join('');
 }
 
-/* ── 카드 렌더링 ── */
-function renderCards(items, reasonMap) {
-  if (!items.length) return '<div class="empty-state">민감정보가 탐지되지 않았습니다.</div>';
-  return items.map((item,idx) => {
-    const color  = TYPE_COLOR[item.type]||TYPE_COLOR.secret;
-    const bg     = TYPE_BG[item.type]||TYPE_BG.secret;
-    const reason = item.reason || reasonMap[item.orig] || '';
-    const cnt    = item.count>1?` <span style="font-size:10px;color:var(--muted)">×${item.count}</span>`:'';
-    return `
-    <div class="item-card" id="card-${idx}">
-      <div class="card-head" onclick="selectItem(${idx})">
-        <div class="type-pip" style="background:${color}"></div>
-        <div class="orig-text">${esc(item.orig)}${cnt}</div>
-        <span class="type-tag" style="background:${bg};color:${color}">${esc(item.typeLabel)}</span>
-      </div>
-      <div class="card-body">
-        <div class="card-row">
-          <span class="card-lbl">원문</span>
-          <span class="card-val" style="font-family:'IBM Plex Mono',monospace;font-size:11px">${esc(item.orig)}</span>
-        </div>
-        <div class="card-row">
-          <span class="card-lbl">치환</span>
-          <span class="card-replaced">${esc(item.replaced)}</span>
-        </div>
-        ${reason?`<div class="card-row"><span class="card-lbl">근거</span><span class="card-reason">${esc(reason)}</span></div>`:''}
-        <button class="restore-btn" id="rbtn-${idx}" onclick="toggleRestore(${idx},event)">
-          <span id="rbtn-icon-${idx}">↪</span>
-          <span id="rbtn-label-${idx}">원문으로 복원</span>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-/* ── 인터랙션 ── */
-let selected=-1, allRestored=false;
-const restoredSet=new Set();
-
+/* ── 인터랙션: 한쪽 패널의 강조 항목을 클릭하면 양쪽 패널에서 동기화 강조 ── */
+let selected = -1;
 function selectItem(idx){
   if(selected>=0){
     document.querySelectorAll(`.hl[data-idx="${selected}"]`).forEach(e=>e.classList.remove('active'));
-    document.getElementById(`card-${selected}`)?.classList.remove('active');
   }
   if(selected===idx){selected=-1;return;}
   selected=idx;
   document.querySelectorAll(`.hl[data-idx="${idx}"]`).forEach(e=>e.classList.add('active'));
-  const card=document.getElementById(`card-${idx}`);
-  if(card){card.classList.add('active');card.scrollIntoView({behavior:'smooth',block:'nearest'});}
-}
-
-function _setRestore(idx,on){
-  const spans=document.querySelectorAll(`.hl[data-idx="${idx}"]`);
-  const btn=document.getElementById(`rbtn-${idx}`);
-  const lbl=document.getElementById(`rbtn-label-${idx}`);
-  const icon=document.getElementById(`rbtn-icon-${idx}`);
-  const card=document.getElementById(`card-${idx}`);
-  if(on){
-    restoredSet.add(idx);
-    spans.forEach(s=>{
-      s.classList.add('restored');
-      if(!s.querySelector('.orig-badge')){
-        const b=document.createElement('span');
-        b.className='orig-badge';
-        b.textContent=s.getAttribute('data-orig');
-        s.appendChild(b);
-      }
-    });
-    btn?.classList.add('on'); card?.classList.add('restored-card');
-    if(lbl) lbl.textContent='검열값으로 되돌리기';
-    if(icon) icon.textContent='↩';
-  } else {
-    restoredSet.delete(idx);
-    spans.forEach(s=>{ s.classList.remove('restored'); s.querySelector('.orig-badge')?.remove(); });
-    btn?.classList.remove('on'); card?.classList.remove('restored-card');
-    if(lbl) lbl.textContent='원문으로 복원';
-    if(icon) icon.textContent='↪';
-  }
-}
-
-function toggleRestore(idx,e){
-  e.stopPropagation();
-  _setRestore(idx,!restoredSet.has(idx));
-  _syncAllBtn();
-}
-
-function toggleRestoreAll(){
-  const idxs=[...new Set([...document.querySelectorAll('.hl')].map(s=>+s.getAttribute('data-idx')))];
-  if(!allRestored){ idxs.forEach(i=>_setRestore(i,true)); allRestored=true; }
-  else            { idxs.forEach(i=>_setRestore(i,false)); allRestored=false; }
-  _syncAllBtn();
-}
-
-function _syncAllBtn(){
-  const idxs=[...new Set([...document.querySelectorAll('.hl')].map(s=>+s.getAttribute('data-idx')))];
-  const everyOn=idxs.length>0&&idxs.every(i=>restoredSet.has(i));
-  allRestored=everyOn;
-  const btn=document.getElementById('restoreAllBtn');
-  if(everyOn){ btn.classList.add('on'); btn.textContent='검열값으로 되돌리기'; }
-  else       { btn.classList.remove('on'); btn.textContent='전체 원문 보기'; }
 }
 
 /* ══════════════════════════════════════════════
@@ -874,36 +379,37 @@ function _syncAllBtn(){
   const sec1 = getSection(raw,1).replace(/^###\s*1[.\s][^\n]*\n/,'').trim();
   const sec2 = getSection(raw,2);
   const sec4 = getSection(raw,4);
-  const reasonMap = parseReasonMap(sec2);
   const summary   = parseSummary(sec4);
 
   // 파서 선택: @@REDACT 마커가 있으면 A, <Rn> 태그가 있으면 B
   const hasMarker = MARKER_RE.test(sec1); MARKER_RE.lastIndex=0;
   const hasXmlTag = XML_TAG_RE.test(sec1); XML_TAG_RE.lastIndex=0;
 
-  let items, docHtml;
+  let items, beforeHtml, afterHtml;
 
   if (hasMarker) {
-    items   = parseMarkersFromText(sec1);
-    docHtml = renderDocMarker(sec1, items);
+    items      = parseMarkersFromText(sec1);
+    beforeHtml = renderDocBefore(sec1, items);
+    afterHtml  = renderDocAfter(sec1, items);
   } else if (hasXmlTag) {
     // 폴백: XML 태그 형식
-    items   = parseMarkersFromXml(sec1, sec2);
-    docHtml = renderDocXml(sec1, items);
-    // 폴백 사용 안내 배너
-    document.getElementById('cardsArea').insertAdjacentHTML('beforebegin',
-      '<div class="fallback-banner">⚠ GPT가 대체 형식으로 응답했습니다. 원문 복원 기능이 제한될 수 있습니다.</div>');
+    items      = parseMarkersFromXml(sec1, sec2);
+    beforeHtml = renderDocXmlBefore(sec1, items);
+    afterHtml  = renderDocXmlAfter(sec1, items);
+    const banner = document.getElementById('fallbackBanner');
+    banner.textContent = '⚠ GPT가 대체 형식으로 응답했습니다. 일부 항목이 부정확할 수 있습니다.';
+    banner.style.display = 'block';
   } else {
     // 아무 마커도 없으면 원문 그대로 표시
-    items   = [];
-    docHtml = toParas(sec1 || raw.substring(0,3000));
+    items      = [];
+    beforeHtml = afterHtml = toParas(sec1 || raw.substring(0,3000));
   }
 
-  document.getElementById('docArea').innerHTML   = docHtml || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
-  document.getElementById('cardsArea').innerHTML = renderCards(items, reasonMap);
+  document.getElementById('beforeArea').innerHTML = beforeHtml || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
+  document.getElementById('afterArea').innerHTML  = afterHtml  || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
 
   const total = summary.total || items.length;
-  document.getElementById('countBadge').textContent = total+'건';
+  document.getElementById('countBadge').textContent = total+'건 마스킹';
   document.getElementById('totalChip').textContent  = '민감정보 '+total+'건 탐지';
   if(total>0) document.getElementById('totalChip').classList.add('danger');
 

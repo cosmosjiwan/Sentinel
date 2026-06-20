@@ -1,0 +1,323 @@
+body {
+  min-height: 100vh;
+}
+
+/* ── 콘텐츠 영역 ── */
+.content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── 페이지 헤더 ── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+.page-header-left h2 {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+.breadcrumb {
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.breadcrumb-sep { color: #444c56; }
+.breadcrumb-current { color: var(--accent-h); }
+.page-header-right {
+  font-size: 11px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--muted);
+  text-align: right;
+  line-height: 1.7;
+}
+.page-header-right .date-main {
+  color: var(--text);
+  font-size: 12px;
+}
+
+/* ── 통계 카드 ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.stat-value {
+  font-size: 30px;
+  font-weight: 500;
+  font-family: 'IBM Plex Mono', monospace;
+  line-height: 1;
+  margin-bottom: 5px;
+}
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.stat-sub {
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: #444c56;
+}
+
+/* ── 섹션 카드 ── */
+.section-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.section-header {
+  padding: 22px 28px 0;
+}
+.section-header h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.section-header p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin-top: 18px;
+}
+.section-body {
+  padding: 24px 28px 28px;
+}
+
+/* ── 업로드 박스 ── */
+.upload-box {
+  border: 1.5px dashed var(--border);
+  border-radius: 10px;
+  padding: 40px 24px;
+  text-align: center;
+  background: var(--bg);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  position: relative;
+}
+.upload-box:hover,
+.upload-box.dragover {
+  border-color: var(--accent);
+  background: rgba(31,111,235,0.05);
+}
+.upload-box.has-file {
+  border-color: var(--secret);
+  background: rgba(63,185,80,0.04);
+}
+
+.upload-icon {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.upload-icon svg { color: var(--muted); }
+
+.upload-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.upload-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.select-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.select-btn:hover {
+  border-color: var(--accent-h);
+  background: rgba(56,139,253,0.08);
+  color: var(--accent-h);
+}
+
+#file-name {
+  margin-top: 14px;
+  font-size: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--secret);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+#file-name.show { display: flex; }
+#file-name svg { flex-shrink: 0; }
+
+.format-chips {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin-top: 14px;
+}
+.fmt-chip {
+  font-size: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* ── 검열 버튼 ── */
+.submit-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px;
+  border-radius: 8px;
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background .15s;
+}
+.submit-btn:hover { background: var(--accent-h); }
+.submit-btn:disabled { background: var(--surface2); color: var(--muted); cursor: not-allowed; }
+
+/* ── 기능 안내 ── */
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.feat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.feat-text { font-size: 11px; color: var(--muted); line-height: 1.5; }
+.feat-text strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 2px; font-size: 12px; }
+
+/* ── 로딩 오버레이 ── */
+#loading {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(13,17,23,0.92);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+#loading.show { display: flex; }
+
+.spinner {
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text { text-align: center; }
+.loading-text h3 {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.loading-text p {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.loading-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 20px;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 280px;
+  opacity: 0.4;
+  transition: opacity .3s, border-color .3s, color .3s;
+}
+.step.active { opacity: 1; border-color: var(--accent); color: var(--accent-h); }
+.step.done   { opacity: 0.8; border-color: var(--secret); color: var(--secret); }
+.step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
