@@ -14,11 +14,15 @@
   <div class="brand">Sentinal<span>.</span>DLP</div>
   <div class="topbar-right">
     <span class="chip">문서 분석 완료</span>
-    <span class="chip danger" id="totalChip">탐지 중...</span>
-    <a class="btn-dl" href="/download/{{ filename }}">
+    <span class="grade-chip grade-{{ risk.grade }}">{{ risk.grade_label }}</span>
+    <span class="chip">민감성 점수 {{ risk.score }}/100</span>
+    <span class="chip danger" id="totalChip">{% if blocked %}열람 차단됨{% else %}탐지 중...{% endif %}</span>
+    {% if not blocked %}
+    <a class="btn-dl" href="/download/{{ filename }}_redacted.txt">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.97a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.97Z"/></svg>
       결과 다운로드
     </a>
+    {% endif %}
     <a class="btn-home" href="/">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Z"/></svg>
       새 문서 검열
@@ -129,8 +133,27 @@
       </div>
     </div>
 
+    {% if blocked %}
+    <!-- 특급 등급: 공개 금지 차단 화면 -->
+    <div class="blocked-state">
+      <div class="blocked-icon">⛔</div>
+      <h3>이 문서는 공개가 금지된 등급입니다</h3>
+      <p>위험성 평가 결과 <strong>{{ risk.grade_label }}</strong>(민감성 점수 {{ risk.score }}/100)으로 분류되어,
+      문서 내용 및 다운로드가 제공되지 않습니다. 보안 담당자에게 별도 승인을 요청하세요.</p>
+    </div>
+    {% else %}
+
     <!-- GPT 폴백 형식 안내 (필요시 노출) -->
     <div class="fallback-banner" id="fallbackBanner" style="display:none"></div>
+
+    <!-- 검토자 항목별 치환 검토 (Human-in-the-loop) -->
+    <div class="review-panel" id="reviewPanel" style="display:none">
+      <div class="review-header">
+        <h4>검토자 치환 검토 <span class="review-sub">치환 표현을 자유롭게 수정할 수 있습니다</span></h4>
+        <button class="btn-apply-all" onclick="applyReview()">검토 결과 적용 &amp; 저장</button>
+      </div>
+      <div class="review-list" id="reviewList"></div>
+    </div>
 
     <!-- 검열전 / 검열후 비교 패널 -->
     <div class="main">
@@ -158,11 +181,14 @@
       <div class="leg"><div class="leg-dot" style="background:var(--auth)"></div>인증정보</div>
       <div class="leg"><div class="leg-dot" style="background:var(--secret)"></div>금융/기타</div>
     </div>
+    {% endif %}
 
   </div><!-- /content-shell -->
 </div><!-- /app-shell -->
 
+{% if not blocked %}
 <script id="rawResult" type="text/plain">{{ result | e }}</script>
+<script id="reviewMeta" type="application/json">{{ filename | tojson }}</script>
 <script>
 const raw = document.getElementById('rawResult').textContent;
 
@@ -419,7 +445,67 @@ function selectItem(idx){
     const el=document.getElementById('s-'+k);
     if(el) el.textContent=summary[k]!==undefined?summary[k]:cnt[k];
   });
+
+  window.__items = items;
+  buildReviewPanel(items);
 })();
+
+/* ══════════════════════════════════════════════
+   Human-in-the-loop 검토 패널
+   승인/반려뿐 아니라 검토자가 치환 표현을 자유롭게 수정 가능
+══════════════════════════════════════════════ */
+function buildReviewPanel(items) {
+  if (!items.length) return;
+  const panel = document.getElementById('reviewPanel');
+  const list  = document.getElementById('reviewList');
+  panel.style.display = 'block';
+  list.innerHTML = items.map((item, idx) => `
+    <div class="review-row" data-idx="${idx}">
+      <span class="review-type hl-${esc(item.type)}">${esc(item.typeLabel)}</span>
+      <span class="review-orig" title="${esc(item.orig)}">${esc(item.orig)}</span>
+      <input class="review-input" id="review-input-${idx}" value="${esc(item.replaced)}">
+      <button class="btn-mini" onclick="resetReviewRow(${idx}, '${esc(item.orig).replace(/'/g,"&#39;")}')">원문유지</button>
+    </div>
+  `).join('');
+}
+
+function resetReviewRow(idx, orig) {
+  document.getElementById('review-input-'+idx).value = orig;
+}
+
+function applyReview() {
+  const items = window.__items || [];
+  const edits = items.map((item, idx) => {
+    const el = document.getElementById('review-input-'+idx);
+    return { type: item.type, orig: item.orig, replacement: el ? el.value : item.replaced };
+  });
+
+  const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
+
+  fetch(`/apply_review/${encodeURIComponent(filename)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ edits }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) { alert('적용 실패: ' + (data.error||'')); return; }
+      items.forEach((item, idx) => {
+        const el = document.getElementById('review-input-'+idx);
+        if (el) item.replaced = el.value;
+      });
+      document.getElementById('afterArea').innerHTML = renderDocAfterFromItems(items);
+      alert('검토 결과가 적용되어 저장되었습니다.');
+    })
+    .catch(() => alert('서버와 통신 중 오류가 발생했습니다.'));
+}
+
+function renderDocAfterFromItems(items) {
+  return items.map(item =>
+    `<p><span class="hl hl-${esc(item.type)}">${esc(item.replaced)}</span></p>`
+  ).join('') + '<p class="review-note">※ 검토 적용 후 보기는 항목별 치환 결과 목록입니다. 전체 문서 레이아웃은 다운로드 파일을 확인하세요.</p>';
+}
 </script>
+{% endif %}
 </body>
 </html>

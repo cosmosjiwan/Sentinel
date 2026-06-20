@@ -178,7 +178,7 @@ body {
   border: 1px solid var(--border);
   color: var(--text);
   font-size: 12px;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
   cursor: pointer;
   transition: border-color .15s, background .15s;
 }
@@ -228,7 +228,7 @@ body {
   color: #fff;
   font-size: 14px;
   font-weight: 500;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;

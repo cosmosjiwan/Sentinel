@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>일괄 검열 결과 — Sentinal DLP</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">Sentinal<span>.</span>DLP</div>
+  <div class="topbar-right">
+    <span class="chip">일괄 검열 완료</span>
+    <span class="chip">{{ results|length }}개 파일 처리</span>
+    <a class="btn-home" href="/">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Z"/></svg>
+      새 문서 검열
+    </a>
+    <div class="topbar-user">
+      <div class="topbar-avatar">관</div>
+      <span class="topbar-username">관리자</span>
+    </div>
+  </div>
+</div>
+
+<div class="app-shell">
+  <div class="content-shell">
+    <div class="content-area" style="padding:28px 32px;">
+      <h2 style="font-size:18px;font-weight:500;margin-bottom:18px;">일괄 처리 결과</h2>
+      <div class="batch-list">
+        {% for r in results %}
+        <div class="batch-row">
+          <div class="batch-row-main">
+            <span class="grade-chip grade-{{ r.risk.grade }}">{{ r.risk.grade_label }}</span>
+            <span class="batch-filename">{{ r.filename }}</span>
+          </div>
+          <div class="batch-row-meta">
+            <span class="batch-score">민감성 점수 <strong>{{ r.risk.score }}</strong>/100</span>
+            {% if r.blocked %}
+              <span class="batch-blocked">차단됨 (공개 금지)</span>
+            {% else %}
+              <a class="btn-dl" href="/view/{{ r.filename }}">결과 보기</a>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.batch-list { display:flex; flex-direction:column; gap:10px; }
+.batch-row {
+  display:flex; align-items:center; justify-content:space-between;
+  background: var(--surface); border:1px solid var(--border); border-radius:10px;
+  padding:14px 18px;
+}
+.batch-row-main { display:flex; align-items:center; gap:12px; }
+.batch-filename { font-family:'IBM Plex Mono', monospace; font-size:13px; color:var(--text); }
+.batch-row-meta { display:flex; align-items:center; gap:14px; }
+.batch-score { font-size:12px; color:var(--muted); font-family:'IBM Plex Mono', monospace; }
+.batch-blocked { font-size:11px; color:var(--person); font-family:'IBM Plex Mono', monospace; }
+</style>
+
+</body>
+</html>
