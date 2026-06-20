@@ -4,22 +4,22 @@ body {
   font-size: 14px;
 }
 
-.chip.danger { background: rgba(248,81,73,.15); border-color: var(--person); color: var(--person); }
+.chip.danger { background: var(--person-bg); border-color: var(--person); color: var(--person); }
 .btn-dl {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 14px;
   border-radius: 6px;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-h));
   border: none;
   color: #fff;
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  font-family: 'Noto Sans KR', sans-serif;
-  transition: background .15s;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  transition: box-shadow .15s;
 }
-.btn-dl:hover { background: var(--accent-h); }
+.btn-dl:hover { box-shadow: 0 0 16px rgba(54,103,255,.45); }
 .btn-home {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 14px;
@@ -30,7 +30,7 @@ body {
   font-size: 12px;
   cursor: pointer;
   text-decoration: none;
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
   transition: border-color .15s, color .15s;
 }
 .btn-home:hover { border-color: var(--text); color: var(--text); }
@@ -188,3 +188,120 @@ body {
 }
 .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
 .leg-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+/* ── 차단(특급) 상태 화면 ── */
+.blocked-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 60px;
+  text-align: center;
+}
+.blocked-icon { font-size: 40px; }
+.blocked-state h3 { font-size: 17px; font-weight: 500; color: var(--person); }
+.blocked-state p { font-size: 13px; color: var(--muted); max-width: 480px; line-height: 1.7; }
+.blocked-state strong { color: var(--text); }
+
+/* ── 검토자 치환 검토 패널 (Human-in-the-loop) ── */
+.review-panel {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  flex-shrink: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.review-header h4 { font-size: 12px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.review-sub { font-size: 10px; color: var(--muted); font-weight: 400; }
+.btn-apply-all {
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-h));
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Pretendard', sans-serif;
+}
+.review-list { display: flex; flex-direction: column; gap: 6px; }
+.review-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 1fr 70px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+.review-type {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.review-orig {
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.review-input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Pretendard', sans-serif;
+}
+.review-input:focus { outline: none; border-color: var(--accent); }
+.btn-mini {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+}
+.btn-mini:hover { border-color: var(--accent-h); color: var(--accent-h); }
+.review-note { color: var(--muted); font-size: 11px; margin-top: 6px; }
+
+/* ── 모바일 대응 ── */
+@media (max-width: 768px) {
+  body { height: auto; overflow: visible; }
+  .content-shell { overflow: visible; }
+
+  .summary-bar { flex-wrap: wrap; }
+  .summary-stat { flex: 1 1 50%; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+
+  .main { flex-direction: column; overflow-y: auto; }
+  .doc-panel { border-right: none; border-bottom: 1px solid var(--border); min-height: 260px; }
+  .doc-panel:last-child { border-bottom: none; }
+  .doc-scroll { padding: 16px; line-height: 1.9; }
+
+  .panel-header { padding: 8px 14px; }
+
+  .legend-bar { padding: 8px 14px; gap: 12px; }
+
+  .review-panel { max-height: none; padding: 10px 14px; }
+  .review-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .review-orig { white-space: normal; }
+
+  .blocked-state { padding: 32px 16px; }
+}
