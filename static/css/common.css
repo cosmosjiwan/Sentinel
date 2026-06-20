@@ -1,19 +1,21 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
 
 :root {
-  --bg:       #0d1117;
-  --surface:  #161b22;
-  --surface2: #1c2333;
-  --border:   #30363d;
-  --text:     #e6edf3;
-  --muted:    #8b949e;
-  --accent:   #1f6feb;
-  --accent-h: #388bfd;
-  --person:   #f85149; --person-bg: rgba(248,81,73,.12);
-  --org:      #388bfd; --org-bg:    rgba(56,139,253,.12);
-  --ip:       #d29922; --ip-bg:     rgba(210,153,34,.12);
-  --auth:     #bc8cff; --auth-bg:   rgba(188,140,255,.12);
-  --secret:   #3fb950; --secret-bg: rgba(63,185,80,.12);
+  --bg:        #090d1a;
+  --surface:   #10162b;
+  --surface2:  #161e3a;
+  --border:    #232c4d;
+  --text:      #eef1fb;
+  --muted:     #8893b8;
+  --accent:    #3667ff;
+  --accent-h:  #5b86ff;
+  --accent-bg: rgba(54,103,255,.14);
+  --glow:      0 0 0 1px rgba(54,103,255,.25), 0 0 24px rgba(54,103,255,.12);
+  --person:   #ff5a72; --person-bg: rgba(255,90,114,.14);
+  --org:      #3667ff; --org-bg:    rgba(54,103,255,.14);
+  --ip:       #f5a623; --ip-bg:     rgba(245,166,35,.14);
+  --auth:     #9b6dff; --auth-bg:   rgba(155,109,255,.14);
+  --secret:   #1fd17a; --secret-bg: rgba(31,209,122,.14);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -45,7 +47,7 @@ body {
   letter-spacing: 0.04em;
   color: var(--text);
 }
-.brand span { color: var(--accent); }
+.brand span { color: var(--accent-h); text-shadow: 0 0 12px rgba(54,103,255,.5); }
 .topbar-right {
   display: flex;
   align-items: center;
@@ -75,7 +77,7 @@ body {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-h));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,6 +85,7 @@ body {
   font-weight: 500;
   color: #fff;
   font-family: 'IBM Plex Mono', monospace;
+  box-shadow: var(--glow);
 }
 .topbar-username {
   font-size: 12px;
@@ -135,7 +138,7 @@ body {
   color: var(--text);
 }
 .nav-item.active {
-  background: rgba(31, 111, 235, 0.1);
+  background: var(--accent-bg);
   color: var(--accent-h);
   border-left-color: var(--accent);
 }

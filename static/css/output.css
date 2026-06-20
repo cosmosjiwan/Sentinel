@@ -4,12 +4,12 @@ body {
   font-size: 14px;
 }
 
-.chip.danger { background: rgba(248,81,73,.15); border-color: var(--person); color: var(--person); }
+.chip.danger { background: var(--person-bg); border-color: var(--person); color: var(--person); }
 .btn-dl {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 14px;
   border-radius: 6px;
-  background: var(--accent);
+  background: linear-gradient(135deg, var(--accent), var(--accent-h));
   border: none;
   color: #fff;
   font-size: 12px;
@@ -17,9 +17,9 @@ body {
   cursor: pointer;
   text-decoration: none;
   font-family: 'Noto Sans KR', sans-serif;
-  transition: background .15s;
+  transition: box-shadow .15s;
 }
-.btn-dl:hover { background: var(--accent-h); }
+.btn-dl:hover { box-shadow: 0 0 16px rgba(54,103,255,.45); }
 .btn-home {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 14px;
