@@ -12,11 +12,11 @@
   --accent-h:  #5b86ff;
   --accent-bg: rgba(54,103,255,.14);
   --glow:      0 0 0 1px rgba(54,103,255,.25), 0 0 24px rgba(54,103,255,.12);
-  --person:   #ff5a72; --person-bg: rgba(255,90,114,.14);
-  --org:      #3667ff; --org-bg:    rgba(54,103,255,.14);
-  --ip:       #f5a623; --ip-bg:     rgba(245,166,35,.14);
-  --auth:     #9b6dff; --auth-bg:   rgba(155,109,255,.14);
-  --secret:   #1fd17a; --secret-bg: rgba(31,209,122,.14);
+  --person:   #d9818f; --person-bg: rgba(217,129,143,.15);
+  --org:      #7c9bc9; --org-bg:    rgba(124,155,201,.15);
+  --ip:       #cda36b; --ip-bg:     rgba(205,163,107,.15);
+  --auth:     #a594c9; --auth-bg:   rgba(165,148,201,.15);
+  --secret:   #7bae93; --secret-bg: rgba(123,174,147,.15);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
