@@ -276,3 +276,32 @@ body {
 }
 .btn-mini:hover { border-color: var(--accent-h); color: var(--accent-h); }
 .review-note { color: var(--muted); font-size: 11px; margin-top: 6px; }
+
+/* ── 모바일 대응 ── */
+@media (max-width: 768px) {
+  body { height: auto; overflow: visible; }
+  .content-shell { overflow: visible; }
+
+  .summary-bar { flex-wrap: wrap; }
+  .summary-stat { flex: 1 1 50%; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+
+  .main { flex-direction: column; overflow-y: auto; }
+  .doc-panel { border-right: none; border-bottom: 1px solid var(--border); min-height: 260px; }
+  .doc-panel:last-child { border-bottom: none; }
+  .doc-scroll { padding: 16px; line-height: 1.9; }
+
+  .panel-header { padding: 8px 14px; }
+
+  .legend-bar { padding: 8px 14px; gap: 12px; }
+
+  .review-panel { max-height: none; padding: 10px 14px; }
+  .review-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .review-orig { white-space: normal; }
+
+  .blocked-state { padding: 32px 16px; }
+}

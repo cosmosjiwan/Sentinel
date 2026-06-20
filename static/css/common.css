@@ -204,3 +204,18 @@ body {
   font-size: 13px;
   gap: 8px;
 }
+
+/* ── 모바일 대응 (공통) ── */
+@media (max-width: 768px) {
+  body { height: auto; min-height: 100vh; overflow: visible; font-size: 13px; }
+
+  .topbar { flex-wrap: wrap; height: auto; padding: 10px 12px; gap: 8px; row-gap: 8px; }
+  .topbar-right { flex-wrap: wrap; gap: 6px; width: 100%; justify-content: flex-start; }
+  .topbar-username { display: none; }
+  .brand { font-size: 13px; }
+
+  .app-shell { flex-direction: column; overflow: visible; min-height: 0; }
+  .sidebar { display: none; }
+
+  .content-shell, .content-area { overflow: visible; }
+}

@@ -326,3 +326,23 @@ body {
 .step.active { opacity: 1; border-color: var(--accent); color: var(--accent-h); }
 .step.done   { opacity: 0.8; border-color: var(--secret); color: var(--secret); }
 .step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* ── 모바일 대응 ── */
+@media (max-width: 768px) {
+  .content-area { padding: 16px; gap: 16px; }
+  .page-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .page-header-right { text-align: left; }
+
+  .stats-row { grid-template-columns: 1fr; gap: 12px; }
+  .stat-card { padding: 16px; }
+
+  .section-header { padding: 16px 16px 0; }
+  .section-body { padding: 16px; }
+
+  .upload-box { padding: 28px 14px; }
+
+  .features { grid-template-columns: 1fr; }
+
+  .loading-steps { width: 100%; }
+  .step { width: 100%; }
+}
