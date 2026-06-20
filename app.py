@@ -5,7 +5,7 @@ import re
 import json
 
 from patterns import scan_regex, force_mask_residual, MASK_TOKEN
-from risk import compute_score, grade_for_score, action_for_grade, GRADE_LABEL
+from risk import compute_score, grade_for_score, action_for_grade, GRADE_LABEL, GRADE_THRESHOLDS
 
 app = Flask(__name__)
 
@@ -31,7 +31,7 @@ PROMPT = """
 다른 어떤 형식(XML 태그, 대괄호, 볼드, 밑줄 등)도 절대 사용하지 않는다.
 
 ✅ 반드시 사용할 마커 형식:
-@@REDACT|유형코드|원문|치환값@@
+@@REDACT|유형코드|등급|점수|원문|치환값@@
 
 ❌ 절대 사용 금지 (이 형식들을 쓰면 시스템이 작동하지 않는다):
 - <R1>[치환값]</R1>  ← XML 태그 형식 금지
@@ -46,6 +46,12 @@ PROMPT = """
 - auth    → 인증정보 (API Key, Password, Token 등)
 - secret  → 금융정보 및 기타
 
+등급/점수 (항목 단위 ISO 27005 평가 — 문서 전체 점수와는 별개로, 이 항목 하나만 노출됐을 때의 민감도):
+- 점수는 0~100 사이 정수.
+- 등급은 점수에 따라 자동 결정: 90점 이상=특급, 70~89점=1급, 40~69점=2급, 39점 이하=3급.
+- API Key/비밀번호 등 인증정보, 주민번호 등은 특급~1급으로 높게 평가한다.
+- 이름/연락처 등 일반 개인정보는 1급~2급, 일반적인 기업명/프로젝트명은 2급 내외로 평가한다.
+
 ━━━ 올바른 출력 예시 ━━━
 
 입력 문서:
@@ -57,18 +63,18 @@ PROMPT = """
   API 키: sk-abc123xyz
 
 올바른 출력:
-  프로젝트명: @@REDACT|ip|Project Orion-X|연구개발 프로젝트@@
-  담당자: @@REDACT|person|김민수|부장 A@@ 부장
-  연락처: @@REDACT|person|010-4827-1934|[연락처]@@
-  이메일: @@REDACT|person|mskim@orionbiotech.co.kr|[이메일]@@
-  소속: @@REDACT|org|오리온바이오텍 연구소|국내 기업 연구소@@
-  API 키: @@REDACT|auth|sk-abc123xyz|[API_KEY]@@
+  프로젝트명: @@REDACT|ip|2급|55|Project Orion-X|연구개발 프로젝트@@
+  담당자: @@REDACT|person|2급|50|김민수|부장 A@@ 부장
+  연락처: @@REDACT|person|1급|75|010-4827-1934|[연락처]@@
+  이메일: @@REDACT|person|1급|72|mskim@orionbiotech.co.kr|[이메일]@@
+  소속: @@REDACT|org|2급|45|오리온바이오텍 연구소|국내 기업 연구소@@
+  API 키: @@REDACT|auth|특급|95|sk-abc123xyz|[API_KEY]@@
 
 ━━━ 주의사항 ━━━
 - "연락처:", "이메일:", "담당자:" 같은 레이블은 마커 밖에 그대로 둔다.
 - 마커 안 원문에는 민감한 값만 넣는다 (레이블 제외).
-- 동일 엔티티는 문서 전체에서 동일한 마커로 일관되게 치환한다.
-- 파이프(|) 문자가 값에 포함되면 \\| 로 이스케이프한다.
+- 동일 엔티티는 문서 전체에서 동일한 마커로 일관되게 치환한다 (등급/점수도 동일하게 유지).
+- 파이프(|) 문자가 값에 포함되면 \\| 로 이스케이프한다 (원문/치환값 필드에만 적용).
 - 아래 "사전 탐지된 정규식 매칭 항목"이 입력으로 함께 제공되면, 해당 항목들은
   반드시 누락 없이 마커로 포함시키고, 추가로 발견되는 항목도 함께 탐지한다.
 
@@ -154,7 +160,7 @@ RISK_JSON: {"confidentiality": <0-100 정수>, "integrity": <0-100 정수>, "ava
 ## 출력 구조 (반드시 이 순서와 형식으로)
 
 ### 1. 검열된 전체 문서
-(원문 구조를 유지하되 민감정보는 @@REDACT|...|...|..@@ 마커로만 표시)
+(원문 구조를 유지하되 민감정보는 @@REDACT|유형|등급|점수|원문|치환값@@ 마커로만 표시)
 
 ### 2. 탐지된 민감정보 목록
 | 유형 | 원문 | 위치 | 판단 근거 |
@@ -177,20 +183,39 @@ RISK_JSON: {"confidentiality": 0, "integrity": 0, "availability": 0}
 """
 
 RISK_RE = re.compile(r'RISK_JSON:\s*(\{[^\n]*\})')
-MARKER_RE = re.compile(r'@@REDACT\|(\w+)\|(.+?)\|(.+?)@@', re.DOTALL)
+# group 1=유형, 2=등급, 3=점수, 4=원문, 5=치환값
+MARKER_RE = re.compile(r'@@REDACT\|(\w+)\|([^|]+)\|([^|]+)\|(.+?)\|(.+?)@@', re.DOTALL)
+ITEM_GRADES = ("특급", "1급", "2급", "3급")
 
 
 def clean_markers(text):
     """
-    @@REDACT|type|원문|치환값@@ → 치환값
-    <Rn>[치환값]</Rn>           → [치환값]  (폴백 형식도 처리)
+    @@REDACT|type|등급|점수|원문|치환값@@ → 치환값
+    <Rn>[치환값]</Rn>                      → [치환값]  (폴백 형식도 처리)
     """
     text = MARKER_RE.sub(
-        lambda m: m.group(3).replace('\\|', '|'),
+        lambda m: m.group(5).replace('\\|', '|'),
         text
     )
     text = re.sub(r'<R\d+>(.*?)</R\d+>', r'\1', text, flags=re.DOTALL)
     return text
+
+
+def sanitize_item_markers(text):
+    """모델이 등급/점수를 형식에 맞지 않게 출력한 경우, 점수로부터 등급을 다시 산출해 보정한다."""
+    def fix(m):
+        type_, grade, score_str, orig, replaced = m.groups()
+        try:
+            score = max(0, min(100, int(score_str.strip())))
+        except ValueError:
+            score = 50
+        if grade.strip() not in ITEM_GRADES:
+            grade = grade_for_score(score)
+        else:
+            grade = grade.strip()
+        return f"@@REDACT|{type_}|{grade}|{score}|{orig}|{replaced}@@"
+
+    return MARKER_RE.sub(fix, text)
 
 
 def extract_text(path, filename):
@@ -293,11 +318,15 @@ def apply_grade_marker_rewrite(text, grade):
     action = action_for_grade(grade)
 
     if action == "publish":  # 3급: 원문 그대로 노출
-        return MARKER_RE.sub(lambda m: f"@@REDACT|{m.group(1)}|{m.group(2)}|{m.group(2)}@@", text)
+        return MARKER_RE.sub(
+            lambda m: f"@@REDACT|{m.group(1)}|{m.group(2)}|{m.group(3)}|{m.group(4)}|{m.group(4)}@@",
+            text,
+        )
 
     if action == "mask":  # 1급: 완전 마스킹
         return MARKER_RE.sub(
-            lambda m: f"@@REDACT|{m.group(1)}|{m.group(2)}|{MASK_TOKEN.get(m.group(1), '[마스킹]')}@@",
+            lambda m: f"@@REDACT|{m.group(1)}|{m.group(2)}|{m.group(3)}|{m.group(4)}|"
+                      f"{MASK_TOKEN.get(m.group(1), '[마스킹]')}@@",
             text,
         )
 
@@ -310,6 +339,7 @@ def process_file(upload_path, filename):
     결과를 results/ 에 저장한 뒤 요약 dict를 반환한다."""
     raw_text = extract_text(upload_path, filename)
     result_text = run_detection(upload_path, filename, raw_text)
+    result_text = sanitize_item_markers(result_text)
     risk = parse_risk(result_text)
     grade = risk["grade"]
 
@@ -413,11 +443,13 @@ def apply_review(filename):
         escaped_orig = re.escape(orig)
         escaped_type = re.escape(type_)
         pattern = re.compile(
-            r'@@REDACT\|' + escaped_type + r'\|' + escaped_orig + r'\|(.+?)@@',
+            r'@@REDACT\|' + escaped_type + r'\|([^|]+)\|([^|]+)\|' + escaped_orig + r'\|(.+?)@@',
             re.DOTALL,
         )
+        escaped_replacement = replacement.replace('|', chr(92) + '|')
         text = pattern.sub(
-            f"@@REDACT|{type_}|{orig}|{replacement.replace('|', chr(92) + '|')}@@", text
+            lambda m: f"@@REDACT|{type_}|{m.group(1)}|{m.group(2)}|{orig}|{escaped_replacement}@@",
+            text,
         )
 
     clean_text = clean_markers(text)

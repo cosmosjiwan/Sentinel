@@ -146,7 +146,7 @@
     <!-- GPT 폴백 형식 안내 (필요시 노출) -->
     <div class="fallback-banner" id="fallbackBanner" style="display:none"></div>
 
-    <!-- 검토자 항목별 치환 검토 (Human-in-the-loop) -->
+    <!-- 검토자 항목별 치환 검토 (Human-in-the-loop) — 단어 클릭 시에만 표시 -->
     <div class="review-panel" id="reviewPanel" style="display:none">
       <div class="review-header">
         <h4>검토자 치환 검토 <span class="review-sub">치환 표현을 자유롭게 수정할 수 있습니다</span></h4>
@@ -173,13 +173,12 @@
       </div>
     </div>
 
-    <!-- 범례 -->
+    <!-- 범례 (ISO 27005 등급 기준 색상) -->
     <div class="legend-bar">
-      <div class="leg"><div class="leg-dot" style="background:var(--person)"></div>개인정보</div>
-      <div class="leg"><div class="leg-dot" style="background:var(--org)"></div>기업/기관</div>
-      <div class="leg"><div class="leg-dot" style="background:var(--ip)"></div>지적재산</div>
-      <div class="leg"><div class="leg-dot" style="background:var(--auth)"></div>인증정보</div>
-      <div class="leg"><div class="leg-dot" style="background:var(--secret)"></div>금융/기타</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--person)"></div>특급</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--ip)"></div>1급</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--org)"></div>2급</div>
+      <div class="leg"><div class="leg-dot" style="background:var(--secret)"></div>3급</div>
     </div>
     {% endif %}
 
@@ -191,6 +190,15 @@
 <script id="reviewMeta" type="application/json">{{ filename | tojson }}</script>
 <script>
 const raw = document.getElementById('rawResult').textContent;
+const DOC_GRADE = {{ risk.grade | tojson }};
+const DOC_SCORE = {{ risk.score | tojson }};
+const ITEM_GRADES = ["특급","1급","2급","3급"];
+function gradeFromScore(score) {
+  if (score >= 90) return "특급";
+  if (score >= 70) return "1급";
+  if (score >= 40) return "2급";
+  return "3급";
+}
 
 /* ── 섹션 추출 ── */
 function getSection(text, n) {
@@ -200,9 +208,9 @@ function getSection(text, n) {
 }
 
 /* ══════════════════════════════════════════════
-   파서 A: @@REDACT|type|orig|replaced@@ 마커
+   파서 A: @@REDACT|type|grade|score|orig|replaced@@ 마커
 ══════════════════════════════════════════════ */
-const MARKER_RE = /@@REDACT\|([^|@\n]+)\|([^|@\n]*(?:\\\|[^|@\n]*)*)\|([^@\n]*(?:\\\|[^@\n]*)*)@@/g;
+const MARKER_RE = /@@REDACT\|([^|@\n]+)\|([^|@\n]+)\|([^|@\n]+)\|([^|@\n]*(?:\\\|[^|@\n]*)*)\|([^@\n]*(?:\\\|[^@\n]*)*)@@/g;
 function unescapePipe(s){ return s.replace(/\\\|/g,'|'); }
 
 function parseMarkersFromText(docText) {
@@ -210,28 +218,33 @@ function parseMarkersFromText(docText) {
   let m; MARKER_RE.lastIndex = 0;
   while ((m = MARKER_RE.exec(docText)) !== null) {
     const type     = m[1].trim();
-    const orig     = unescapePipe(m[2].trim());
-    const replaced = unescapePipe(m[3].trim());
+    let   grade    = m[2].trim();
+    let   score    = parseInt(m[3].trim(), 10);
+    if (isNaN(score)) score = 50; else score = Math.max(0, Math.min(100, score));
+    if (!ITEM_GRADES.includes(grade)) grade = gradeFromScore(score);
+    const orig     = unescapePipe(m[4].trim());
+    const replaced = unescapePipe(m[5].trim());
     const key = type+'|'+orig;
     if (seen[key] === undefined) {
       seen[key] = items.length;
-      items.push({ type, orig, replaced, typeLabel: typeToLabel(type), count: 1, source:'marker' });
+      items.push({ type, grade, score, orig, replaced, typeLabel: typeToLabel(type), count: 1, source:'marker' });
     } else { items[seen[key]].count++; }
   }
   return items;
 }
 
-/* 검열 후(치환값) 렌더링 */
+/* 검열 후(치환값) 렌더링 — 강조 색상은 등급(grade) 기준 */
 function renderDocAfter(docText, items) {
   const keyToIdx = {};
   items.forEach((item,idx) => { keyToIdx[item.type+'|'+item.orig] = idx; });
   MARKER_RE.lastIndex = 0;
-  let html = docText.replace(MARKER_RE, (match, type, rawOrig, rawRep) => {
+  let html = docText.replace(MARKER_RE, (match, type, grade, score, rawOrig, rawRep) => {
     const orig     = unescapePipe(rawOrig.trim());
     const replaced = unescapePipe(rawRep.trim());
     const t = type.trim();
     const idx = keyToIdx[t+'|'+orig];
-    return `<span class="hl hl-${esc(t)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
+    const g = items[idx] ? items[idx].grade : grade.trim();
+    return `<span class="hl hl-${esc(g)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
   });
   return toParas(html);
 }
@@ -241,11 +254,12 @@ function renderDocBefore(docText, items) {
   const keyToIdx = {};
   items.forEach((item,idx) => { keyToIdx[item.type+'|'+item.orig] = idx; });
   MARKER_RE.lastIndex = 0;
-  let html = docText.replace(MARKER_RE, (match, type, rawOrig) => {
+  let html = docText.replace(MARKER_RE, (match, type, grade, score, rawOrig) => {
     const orig = unescapePipe(rawOrig.trim());
     const t = type.trim();
     const idx = keyToIdx[t+'|'+orig];
-    return `<span class="hl hl-${esc(t)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(orig)}</span>`;
+    const g = items[idx] ? items[idx].grade : grade.trim();
+    return `<span class="hl hl-${esc(g)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(orig)}</span>`;
   });
   return toParas(html);
 }
@@ -276,7 +290,7 @@ function parseMarkersFromXml(docText, sec2) {
     const type     = match ? match.type     : guessTypeFromReplaced(replaced);
     const reason   = match ? match.reason   : '';
     tagMap[tagNum] = items.length;
-    items.push({ type, orig, replaced, typeLabel: typeToLabel(type), count: 1, reason, source:'xml' });
+    items.push({ type, grade: DOC_GRADE, score: DOC_SCORE, orig, replaced, typeLabel: typeToLabel(type), count: 1, reason, source:'xml' });
   }
   return items;
 }
@@ -297,8 +311,8 @@ function renderDocXmlAfter(docText, items) {
   XML_TAG_RE.lastIndex = 0;
   let html = docText.replace(XML_TAG_RE, (match, num, replaced) => {
     const idx = tagToIdx[num] !== undefined ? tagToIdx[num] : 0;
-    const item = items[idx] || { type:'secret' };
-    return `<span class="hl hl-${esc(item.type)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
+    const item = items[idx] || { grade: DOC_GRADE };
+    return `<span class="hl hl-${esc(item.grade)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
   });
   return toParas(html);
 }
@@ -308,8 +322,8 @@ function renderDocXmlBefore(docText, items) {
   XML_TAG_RE.lastIndex = 0;
   let html = docText.replace(XML_TAG_RE, (match, num, replaced) => {
     const idx = tagToIdx[num] !== undefined ? tagToIdx[num] : 0;
-    const item = items[idx] || { type:'secret', orig: replaced };
-    return `<span class="hl hl-${esc(item.type)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(item.orig)}</span>`;
+    const item = items[idx] || { grade: DOC_GRADE, orig: replaced };
+    return `<span class="hl hl-${esc(item.grade)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(item.orig)}</span>`;
   });
   return toParas(html);
 }
@@ -387,15 +401,25 @@ function toParas(html) {
   return html.split('\n').map(l=>l.trim()).filter(l=>l.length>0).map(l=>`<p>${l}</p>`).join('');
 }
 
-/* ── 인터랙션: 한쪽 패널의 강조 항목을 클릭하면 양쪽 패널에서 동기화 강조 ── */
+/* ── 인터랙션: 단어를 클릭하면 양쪽 패널에서 동기화 강조 + 검토 패널 표시
+   같은 단어를 다시 클릭하면 검토 패널이 닫힌다 ── */
 let selected = -1;
 function selectItem(idx){
+  if(selected===idx){ closeReviewPanel(); return; }
   if(selected>=0){
     document.querySelectorAll(`.hl[data-idx="${selected}"]`).forEach(e=>e.classList.remove('active'));
   }
-  if(selected===idx){selected=-1;return;}
   selected=idx;
   document.querySelectorAll(`.hl[data-idx="${idx}"]`).forEach(e=>e.classList.add('active'));
+  showReviewForItem(idx);
+}
+
+function closeReviewPanel(){
+  if(selected>=0){
+    document.querySelectorAll(`.hl[data-idx="${selected}"]`).forEach(e=>e.classList.remove('active'));
+  }
+  selected=-1;
+  document.getElementById('reviewPanel').style.display = 'none';
 }
 
 /* ══════════════════════════════════════════════
@@ -412,6 +436,8 @@ function selectItem(idx){
   const hasXmlTag = XML_TAG_RE.test(sec1); XML_TAG_RE.lastIndex=0;
 
   let items, beforeHtml, afterHtml;
+  window.__sec1 = sec1;
+  window.__hasMarker = hasMarker;
 
   if (hasMarker) {
     items      = parseMarkersFromText(sec1);
@@ -447,26 +473,30 @@ function selectItem(idx){
   });
 
   window.__items = items;
-  buildReviewPanel(items);
 })();
 
 /* ══════════════════════════════════════════════
    Human-in-the-loop 검토 패널
+   단어를 클릭했을 때만 해당 항목 1건을 보여주고, 등급/점수를 함께 표시한다.
    승인/반려뿐 아니라 검토자가 치환 표현을 자유롭게 수정 가능
 ══════════════════════════════════════════════ */
-function buildReviewPanel(items) {
-  if (!items.length) return;
+function showReviewForItem(idx) {
+  const items = window.__items || [];
+  const item = items[idx];
+  if (!item) return;
   const panel = document.getElementById('reviewPanel');
   const list  = document.getElementById('reviewList');
   panel.style.display = 'block';
-  list.innerHTML = items.map((item, idx) => `
+  list.innerHTML = `
     <div class="review-row" data-idx="${idx}">
-      <span class="review-type hl-${esc(item.type)}">${esc(item.typeLabel)}</span>
+      <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
+      <span class="review-score">${esc(item.score)}점</span>
+      <span class="review-type hl-${esc(item.grade)}">${esc(item.typeLabel)}</span>
       <span class="review-orig" title="${esc(item.orig)}">${esc(item.orig)}</span>
       <input class="review-input" id="review-input-${idx}" value="${esc(item.replaced)}">
       <button class="btn-mini" onclick="resetReviewRow(${idx}, '${esc(item.orig).replace(/'/g,"&#39;")}')">원문유지</button>
     </div>
-  `).join('');
+  `;
 }
 
 function resetReviewRow(idx, orig) {
@@ -475,10 +505,11 @@ function resetReviewRow(idx, orig) {
 
 function applyReview() {
   const items = window.__items || [];
-  const edits = items.map((item, idx) => {
-    const el = document.getElementById('review-input-'+idx);
-    return { type: item.type, orig: item.orig, replacement: el ? el.value : item.replaced };
-  });
+  if (selected < 0 || !items[selected]) return;
+  const idx = selected;
+  const item = items[idx];
+  const el = document.getElementById('review-input-'+idx);
+  const edits = [{ type: item.type, orig: item.orig, replacement: el ? el.value : item.replaced }];
 
   const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
 
@@ -490,20 +521,15 @@ function applyReview() {
     .then(r => r.json())
     .then(data => {
       if (!data.ok) { alert('적용 실패: ' + (data.error||'')); return; }
-      items.forEach((item, idx) => {
-        const el = document.getElementById('review-input-'+idx);
-        if (el) item.replaced = el.value;
-      });
-      document.getElementById('afterArea').innerHTML = renderDocAfterFromItems(items);
+      item.replaced = el ? el.value : item.replaced;
+      const afterHtml = window.__hasMarker
+        ? renderDocAfter(window.__sec1, items)
+        : renderDocXmlAfter(window.__sec1, items);
+      document.getElementById('afterArea').innerHTML = afterHtml;
       alert('검토 결과가 적용되어 저장되었습니다.');
+      closeReviewPanel();
     })
     .catch(() => alert('서버와 통신 중 오류가 발생했습니다.'));
-}
-
-function renderDocAfterFromItems(items) {
-  return items.map(item =>
-    `<p><span class="hl hl-${esc(item.type)}">${esc(item.replaced)}</span></p>`
-  ).join('') + '<p class="review-note">※ 검토 적용 후 보기는 항목별 치환 결과 목록입니다. 전체 문서 레이아웃은 다운로드 파일을 확인하세요.</p>';
 }
 </script>
 {% endif %}
