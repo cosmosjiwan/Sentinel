@@ -1,22 +1,47 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
 :root {
-  --bg:        #faf9f8;
-  --surface:   #ffffff;
-  --surface2:  #f3f2f1;
-  --border:    #e1dfdd;
-  --text:      #201f1e;
-  --muted:     #605e5c;
-  --accent:    #0078d4;
-  --accent-h:  #106ebe;
-  --accent-bg: rgba(0,120,212,.08);
-  --glow:      0 0 0 1px rgba(0,120,212,.18), 0 2px 8px rgba(0,120,212,.12);
-  --person:   #c4314b; --person-bg: rgba(196,49,75,.08);
-  --org:      #0078d4; --org-bg:    rgba(0,120,212,.08);
-  --ip:       #986f0b; --ip-bg:     rgba(152,111,11,.08);
-  --auth:     #8764b8; --auth-bg:   rgba(135,100,184,.08);
-  --secret:   #107c10; --secret-bg: rgba(16,124,16,.08);
+  /* ── Fluent 2 · Neutral ramp ── */
+  --bg:        #f5f5f5;   /* canvas (NeutralBackground3) */
+  --surface:   #ffffff;   /* layer  (NeutralBackground1) */
+  --surface2:  #f0f0f0;   /* hover surface */
+  --surface3:  #fafafa;
+  --border:    #d1d1d1;   /* NeutralStroke1 */
+  --divider:   #e0e0e0;   /* NeutralStroke2 */
+  --text:      #242424;   /* NeutralForeground1 */
+  --muted:     #616161;   /* NeutralForeground2 */
+  --subtle:    #707070;   /* NeutralForeground3 */
+  --disabled:  #bdbdbd;   /* NeutralForegroundDisabled */
+
+  /* ── Fluent 2 · Brand ramp ── */
+  --accent:    #0f6cbd;   /* BrandForeground / Primary */
+  --accent-h:  #115ea3;   /* hover  */
+  --accent-p:  #0e4775;   /* pressed */
+  --accent-bg: #ebf3fc;   /* BrandBackground2 (selected tint) */
+  --accent-bg-h:#cfe4fa;
+
+  /* ── Fluent elevation (shadow2 / shadow8 / shadow16) ── */
+  --shadow2:  0 1px 2px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12);
+  --shadow8:  0 4px 8px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12);
+  --shadow16: 0 8px 16px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12);
+
+  /* ── Fluent corner radii ── */
+  --r-control: 4px;   /* buttons, inputs */
+  --r-card:    8px;   /* cards, dropzone */
+
+  /* ── Fluent focus indicator (white gap + accent stroke) ── */
+  --focus: 0 0 0 1px #ffffff, 0 0 0 3px var(--accent);
+
+  /* ── Semantic (위험성 등급 · Fluent status palette) ── */
+  --person:   #c50f1f; --person-bg: #fdf3f4;  /* danger  · 특급 */
+  --org:      #0f6cbd; --org-bg:    #ebf3fc;  /* brand   · 2급 */
+  --ip:       #bc4b09; --ip-bg:     #fdf6f3;  /* severe  · 1급 */
+  --auth:     #8764b8; --auth-bg:   #f5f1fb;  /* accent  */
+  --secret:   #0e700e; --secret-bg: #e7f3e7;  /* success · 3급 */
 }
+
+/* Fluent keyboard focus indicator */
+:focus-visible { outline: none; box-shadow: var(--focus); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -28,7 +53,7 @@ body {
   flex-direction: column;
 }
 
-/* ── 상단 헤더 (공통, Purview 스타일 브레드크럼 바) ── */
+/* ── 상단 헤더 (공통) ── */
 .topbar {
   display: flex;
   align-items: center;
@@ -41,7 +66,7 @@ body {
   z-index: 100;
 }
 .brand {
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -52,12 +77,12 @@ body {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .chip {
   font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: var(--r-control);
   font-weight: 500;
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -102,6 +127,26 @@ body {
   color: var(--text);
 }
 
+/* ── 버튼 (Fluent, 공통) ── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px; font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--r-control);
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-h); }
+.btn-primary:active { background: var(--accent-p); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { background: var(--surface2); border-color: var(--subtle); }
+.btn-secondary:active { background: var(--divider); }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
 /* ── 앱 쉘 (공통) ── */
 .app-shell {
   flex: 1;
@@ -110,88 +155,13 @@ body {
   min-height: 0;
 }
 
-/* ── 사이드바 (공통) ── */
-.sidebar {
-  width: 220px;
-  flex-shrink: 0;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-}
-
-.nav-section-label {
-  font-size: 10px;
-  color: var(--muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 20px 16px 8px;
-  opacity: 0.8;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 16px;
-  font-size: 13px;
-  color: var(--muted);
-  text-decoration: none;
-  border-left: 2px solid transparent;
-  transition: background .12s, color .12s, border-color .12s;
-  user-select: none;
-}
-.nav-item:hover {
-  background: var(--surface2);
-  color: var(--text);
-}
-.nav-item.active {
-  background: var(--accent-bg);
-  color: var(--accent);
-  border-left-color: var(--accent);
-}
-.nav-item svg { flex-shrink: 0; opacity: 0.7; }
-.nav-item.active svg { opacity: 1; }
-.nav-item:hover svg { opacity: 0.9; }
-
-.nav-divider {
-  height: 1px;
-  background: var(--border);
-  margin: 8px 16px;
-}
-
-.sidebar-footer {
-  margin-top: auto;
-  padding: 16px;
-  border-top: 1px solid var(--border);
-}
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--muted);
-}
-.status-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--secret);
-  flex-shrink: 0;
-}
-.sidebar-version {
-  margin-top: 6px;
-  font-size: 10px;
-  color: #a19f9d;
-}
-
 /* ── 위험성 등급 칩 (ISO 27005 기반) ── */
 .grade-chip {
   font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: var(--r-control);
   font-weight: 600;
+  white-space: nowrap;
 }
 .grade-특급 { background: var(--person-bg); color: var(--person); }
 .grade-1급  { background: var(--ip-bg);     color: var(--ip); }
@@ -216,10 +186,18 @@ body {
   .topbar { flex-wrap: wrap; height: auto; padding: 10px 12px; gap: 8px; row-gap: 8px; }
   .topbar-right { flex-wrap: wrap; gap: 6px; width: 100%; justify-content: flex-start; }
   .topbar-username { display: none; }
-  .brand { font-size: 13px; }
+  .brand { font-size: 18px; }
 
   .app-shell { flex-direction: column; overflow: visible; min-height: 0; }
-  .sidebar { display: none; }
 
   .content-shell, .content-area { overflow: visible; }
+}
+
+/* Fluent quality floor — reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
 }

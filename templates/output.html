@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>검열 완료 — Sentinal DLP</title>
+<title>검열 결과 — Sentinel</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
 </head>
@@ -11,185 +11,89 @@
 
 <!-- 헤더 -->
 <div class="topbar">
-  <div class="brand">Sentinal<span>.</span>DLP</div>
+  <div class="brand">Sentinel</div>
   <div class="topbar-right">
-    <span class="chip">문서 분석 완료</span>
-    <span class="grade-chip grade-{{ risk.grade }}">{{ risk.grade_label }}</span>
-    <span class="chip">민감성 점수 {{ risk.score }}/100</span>
-    <span class="chip danger" id="totalChip">{% if blocked %}열람 차단됨{% else %}탐지 중...{% endif %}</span>
+    <div class="file-chip">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Z"/></svg>
+      <span>{{ filename }}</span>
+    </div>
     {% if not blocked %}
-    <a class="btn-dl" href="/download/{{ filename }}_redacted.txt">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.97a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.97Z"/></svg>
-      결과 다운로드
+    <a class="btn btn-secondary btn-sm" href="/download/{{ filename }}_redacted.txt">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
+      검열본 다운로드
     </a>
     {% endif %}
-    <a class="btn-home" href="/">
+    <a class="btn btn-secondary btn-sm" href="/">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Z"/></svg>
-      새 문서 검열
+      새 문서
     </a>
-    <div class="topbar-user">
-      <div class="topbar-avatar">관</div>
-      <span class="topbar-username">관리자</span>
-    </div>
   </div>
 </div>
 
-<!-- 앱 쉘 -->
+<!-- 요약 스트립 -->
+<div class="summary">
+  <span class="summary-title">검열 완료</span>
+  <span class="summary-meta" id="summaryMeta">
+    문서 등급 {{ risk.grade_label }} · 민감성 점수 {{ risk.score }}/100
+  </span>
+  <div class="summary-grades" id="summaryGrades"></div>
+</div>
+
 <div class="app-shell">
+{% if blocked %}
+  <!-- 특급 등급: 공개 금지 차단 화면 -->
+  <div class="blocked-state">
+    <div class="blocked-icon">⛔</div>
+    <h3>이 문서는 공개가 금지된 등급입니다</h3>
+    <p>위험성 평가 결과 <strong>{{ risk.grade_label }}</strong>(민감성 점수 {{ risk.score }}/100)으로 분류되어,
+    문서 내용 및 다운로드가 제공되지 않습니다. 보안 담당자에게 별도 승인을 요청하세요.</p>
+  </div>
+{% else %}
 
-  <!-- 사이드바 -->
-  <nav class="sidebar">
-    <div class="nav-section-label">메뉴</div>
+  <!-- GPT 폴백 형식 안내 (필요시 노출) -->
+  <div class="fallback-banner" id="fallbackBanner" style="display:none"></div>
 
-    <a class="nav-item" href="#">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5Zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5Zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5Zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5Z"/>
-      </svg>
-      대시보드
-    </a>
+  <div class="panes">
 
-    <a class="nav-item active" href="/">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
-      </svg>
-      문서검열
-    </a>
-
-    <div class="nav-divider"></div>
-    <div class="nav-section-label">설정</div>
-
-    <a class="nav-item" href="#">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M7.429 1.525a6.593 6.593 0 0 1 1.142 0c.036.003.108.036.137.146l.289 1.105c.147.56.55.967.997 1.189.174.086.341.183.501.29.417.278.97.319 1.453.11l1.02-.442c.104-.045.172-.014.205.011.254.19.48.41.672.652.015.018.051.082.005.178l-.479 1.005c-.234.492-.22 1.07.045 1.544.152.279.272.578.354.889.107.414.497.707.945.771l1.123.158c.107.015.161.08.169.117a6.588 6.588 0 0 1 0 1.174c-.008.036-.062.102-.169.117l-1.123.158c-.448.064-.838.357-.945.771a4.8 4.8 0 0 1-.354.889c-.265.474-.279 1.052-.045 1.544l.479 1.005c.046.096.01.16-.005.178a5.05 5.05 0 0 1-.672.652c-.033.025-.101.056-.205.011l-1.02-.442c-.483-.209-1.037-.168-1.452.11-.16.107-.328.204-.502.29-.447.222-.85.629-.997 1.189l-.289 1.105c-.029.11-.101.143-.137.146a6.613 6.613 0 0 1-1.142 0c-.036-.003-.108-.036-.137-.146l-.289-1.105c-.147-.56-.55-.967-.997-1.189a4.758 4.758 0 0 1-.501-.29c-.417-.278-.97-.319-1.454-.11l-1.02.442c-.104.045-.172.014-.204-.011a5.052 5.052 0 0 1-.672-.652c-.015-.018-.051-.082-.005-.178l.479-1.005c.234-.492.22-1.07-.045-1.544a4.799 4.799 0 0 1-.354-.889c-.107-.414-.497-.707-.945-.771l-1.123-.158C1.562 8.99 1.508 8.924 1.5 8.887a6.613 6.613 0 0 1 0-1.174c.008-.036.062-.102.169-.117l1.123-.158c.448-.064.838-.357.945-.771.082-.311.202-.61.354-.889.265-.474.279-1.052.045-1.544L3.657 3.23c-.046-.096-.01-.16.005-.178.192-.243.418-.462.672-.652.032-.025.1-.056.204-.011l1.02.442c.483.209 1.037.168 1.453-.11.16-.107.328-.204.502-.29.447-.222.85-.629.997-1.189l.289-1.105c.029-.11.101-.143.137-.146ZM8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/>
-      </svg>
-      정책설정
-    </a>
-
-    <a class="nav-item" href="#">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7-3.25v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5a.75.75 0 0 1 1.5 0Z"/>
-      </svg>
-      검열이력
-    </a>
-
-    <div class="sidebar-footer">
-      <div class="status-indicator">
-        <div class="status-dot"></div>
-        시스템 정상
+    <!-- 문서 미리보기 -->
+    <div class="doc-card">
+      <div class="doc-head">
+        <span class="doc-head-title">검열본 미리보기</span>
+        <label class="toggle">
+          원문 대조
+          <input type="checkbox" id="revealToggle">
+          <span class="toggle-track"></span>
+        </label>
       </div>
-      <div class="sidebar-version">DLP Engine v1.0 · (주) Sentinal</div>
+      <div class="doc-body" id="docBody"><div class="empty-state">파싱 중...</div></div>
     </div>
-  </nav>
 
-  <!-- 콘텐츠 쉘 -->
-  <div class="content-shell">
-
-    <!-- 상단 통계 바 -->
-    <div class="summary-bar">
-      <div class="summary-stat">
-        <div class="summary-icon" style="background:var(--person-bg)">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--person)"><path d="M10.561 8.073a6.005 6.005 0 0 1 3.432 5.142.75.75 0 0 1-1.498.07 4.5 4.5 0 0 0-8.99 0 .75.75 0 0 1-1.498-.07 6.004 6.004 0 0 1 3.431-5.142 3.999 3.999 0 1 1 5.123 0ZM8 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/></svg>
-        </div>
-        <div>
-          <div class="summary-num" style="color:var(--person)" id="s-person">—</div>
-          <div class="summary-lbl">개인정보</div>
-        </div>
+    <!-- 탐지 패널 -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-head-title">탐지 항목</span>
+        <span class="panel-count" id="panelCount">—</span>
       </div>
-      <div class="summary-stat">
-        <div class="summary-icon" style="background:var(--org-bg)">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--org)"><path d="M1.5 14.25c0 .138.112.25.25.25H4v-1.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 .75.75v1.25h2.25a.25.25 0 0 0 .25-.25V1.75a.25.25 0 0 0-.25-.25h-8.5a.25.25 0 0 0-.25.25ZM1.75 0h8.5C11.216 0 12 .784 12 1.75v12.5A1.75 1.75 0 0 1 10.25 16h-8.5A1.75 1.75 0 0 1 0 14.25V1.75C0 .784.784 0 1.75 0ZM3 7.75A.75.75 0 0 1 3.75 7h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 3 7.75ZM3.75 4a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5ZM3 10.75A.75.75 0 0 1 3.75 10h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 3 10.75ZM6.75 7a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5ZM6 4.75A.75.75 0 0 1 6.75 4h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 6 4.75ZM6.75 10a.75.75 0 0 0 0 1.5h.5a.75.75 0 0 0 0-1.5Z"/></svg>
-        </div>
-        <div>
-          <div class="summary-num" style="color:var(--org)" id="s-org">—</div>
-          <div class="summary-lbl">기업/기관</div>
-        </div>
-      </div>
-      <div class="summary-stat">
-        <div class="summary-icon" style="background:var(--ip-bg)">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--ip)"><path d="M8.22 1.754a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-.25-5.25a.75.75 0 0 0-1.5 0v2.5a.75.75 0 0 0 1.5 0Z"/></svg>
-        </div>
-        <div>
-          <div class="summary-num" style="color:var(--ip)" id="s-ip">—</div>
-          <div class="summary-lbl">지적재산</div>
-        </div>
-      </div>
-      <div class="summary-stat">
-        <div class="summary-icon" style="background:var(--auth-bg)">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--auth)"><path d="M4 4a4 4 0 0 1 8 0v2h.25c.966 0 1.75.784 1.75 1.75v5.5A1.75 1.75 0 0 1 12.25 15h-8.5A1.75 1.75 0 0 1 2 13.25v-5.5C2 6.784 2.784 6 3.75 6H4Zm8.25 3.5h-8.5a.25.25 0 0 0-.25.25v5.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-5.5a.25.25 0 0 0-.25-.25ZM10.5 6V4a2.5 2.5 0 0 0-5 0v2Z"/></svg>
-        </div>
-        <div>
-          <div class="summary-num" style="color:var(--auth)" id="s-auth">—</div>
-          <div class="summary-lbl">인증정보</div>
-        </div>
-      </div>
-      <div class="summary-stat">
-        <div class="summary-icon" style="background:var(--secret-bg)">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="var(--secret)"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>
-        </div>
-        <div>
-          <div class="summary-num" style="color:var(--secret)" id="s-secret">—</div>
-          <div class="summary-lbl">금융/기타</div>
-        </div>
+      <div class="panel-list" id="detList"></div>
+      <div class="panel-foot">
+        <button class="btn btn-primary" type="button" onclick="applyAndExport()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
+          승인하고 내보내기
+        </button>
+        <div class="foot-note">담당자 검토 후 승인됩니다 · Human-in-the-Loop</div>
       </div>
     </div>
 
-    {% if blocked %}
-    <!-- 특급 등급: 공개 금지 차단 화면 -->
-    <div class="blocked-state">
-      <div class="blocked-icon">⛔</div>
-      <h3>이 문서는 공개가 금지된 등급입니다</h3>
-      <p>위험성 평가 결과 <strong>{{ risk.grade_label }}</strong>(민감성 점수 {{ risk.score }}/100)으로 분류되어,
-      문서 내용 및 다운로드가 제공되지 않습니다. 보안 담당자에게 별도 승인을 요청하세요.</p>
-    </div>
-    {% else %}
-
-    <!-- GPT 폴백 형식 안내 (필요시 노출) -->
-    <div class="fallback-banner" id="fallbackBanner" style="display:none"></div>
-
-    <!-- 검토자 항목별 치환 검토 (Human-in-the-loop) — 단어 클릭 시에만 표시 -->
-    <div class="review-panel" id="reviewPanel" style="display:none">
-      <div class="review-header">
-        <h4>검토자 치환 검토 <span class="review-sub">치환 표현을 자유롭게 수정할 수 있습니다</span></h4>
-        <button class="btn-apply-all" onclick="applyReview()">검토 결과 적용 &amp; 저장</button>
-      </div>
-      <div class="review-list" id="reviewList"></div>
-    </div>
-
-    <!-- 검열전 / 검열후 비교 패널 -->
-    <div class="main">
-      <div class="doc-panel">
-        <div class="panel-header">
-          <span class="panel-title">검열 전<span class="panel-tag before">원본</span></span>
-        </div>
-        <div class="doc-scroll" id="beforeArea"><div class="empty-state">파싱 중...</div></div>
-      </div>
-
-      <div class="doc-panel">
-        <div class="panel-header">
-          <span class="panel-title">검열 후<span class="panel-tag after">결과</span></span>
-          <span class="count-badge" id="countBadge">—</span>
-        </div>
-        <div class="doc-scroll" id="afterArea"><div class="empty-state">파싱 중...</div></div>
-      </div>
-    </div>
-
-    <!-- 범례 (ISO 27005 등급 기준 색상) -->
-    <div class="legend-bar">
-      <div class="leg"><div class="leg-dot" style="background:var(--person)"></div>특급</div>
-      <div class="leg"><div class="leg-dot" style="background:var(--ip)"></div>1급</div>
-      <div class="leg"><div class="leg-dot" style="background:var(--org)"></div>2급</div>
-      <div class="leg"><div class="leg-dot" style="background:var(--secret)"></div>3급</div>
-    </div>
-    {% endif %}
-
-  </div><!-- /content-shell -->
-</div><!-- /app-shell -->
+  </div>
+{% endif %}
+</div>
 
 {% if not blocked %}
 <script id="rawResult" type="text/plain">{{ result | e }}</script>
 <script id="reviewMeta" type="application/json">{{ filename | tojson }}</script>
 <script>
 const raw = document.getElementById('rawResult').textContent;
+const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
 const DOC_GRADE = {{ risk.grade | tojson }};
 const DOC_SCORE = {{ risk.score | tojson }};
 const ITEM_GRADES = ["특급","1급","2급","3급"];
@@ -207,9 +111,7 @@ function getSection(text, n) {
   return m ? m[0] : '';
 }
 
-/* ══════════════════════════════════════════════
-   파서 A: @@REDACT|type|grade|score|orig|replaced@@ 마커
-══════════════════════════════════════════════ */
+/* 파서 A: @@REDACT|type|grade|score|orig|replaced@@ 마커 */
 const MARKER_RE = /@@REDACT\|([^|@\n]+)\|([^|@\n]+)\|([^|@\n]+)\|([^|@\n]*(?:\\\|[^|@\n]*)*)\|([^@\n]*(?:\\\|[^@\n]*)*)@@/g;
 function unescapePipe(s){ return s.replace(/\\\|/g,'|'); }
 
@@ -227,14 +129,14 @@ function parseMarkersFromText(docText) {
     const key = type+'|'+orig;
     if (seen[key] === undefined) {
       seen[key] = items.length;
-      items.push({ type, grade, score, orig, replaced, typeLabel: typeToLabel(type), count: 1, source:'marker' });
+      items.push({ type, grade, score, orig, replaced, typeLabel: typeToLabel(type), count: 1, allowed:false, source:'marker' });
     } else { items[seen[key]].count++; }
   }
   return items;
 }
 
-/* 검열 후(치환값) 렌더링 — 강조 색상은 등급(grade) 기준 */
-function renderDocAfter(docText, items) {
+/* 문서를 .ent 토큰으로 렌더 (mask=치환값, orig=원문) */
+function renderDocument(docText, items) {
   const keyToIdx = {};
   items.forEach((item,idx) => { keyToIdx[item.type+'|'+item.orig] = idx; });
   MARKER_RE.lastIndex = 0;
@@ -243,92 +145,56 @@ function renderDocAfter(docText, items) {
     const replaced = unescapePipe(rawRep.trim());
     const t = type.trim();
     const idx = keyToIdx[t+'|'+orig];
-    const g = items[idx] ? items[idx].grade : grade.trim();
-    return `<span class="hl hl-${esc(g)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
+    return `<span class="ent ent-${esc(t)}" data-idx="${idx}" onclick="selectItem(${idx})">`
+         + `<span class="ent-mask">${esc(replaced)}</span>`
+         + `<span class="ent-orig">${esc(orig)}</span></span>`;
   });
   return toParas(html);
 }
 
-/* 검열 전(원문) 렌더링 — 검열후와 동일한 data-idx를 부여해 두 패널의 강조 표시를 동기화 */
-function renderDocBefore(docText, items) {
-  const keyToIdx = {};
-  items.forEach((item,idx) => { keyToIdx[item.type+'|'+item.orig] = idx; });
-  MARKER_RE.lastIndex = 0;
-  let html = docText.replace(MARKER_RE, (match, type, grade, score, rawOrig) => {
-    const orig = unescapePipe(rawOrig.trim());
-    const t = type.trim();
-    const idx = keyToIdx[t+'|'+orig];
-    const g = items[idx] ? items[idx].grade : grade.trim();
-    return `<span class="hl hl-${esc(g)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(orig)}</span>`;
-  });
-  return toParas(html);
-}
-
-/* ══════════════════════════════════════════════
-   파서 B: <Rn>[치환값]</Rn> 폴백
-   GPT가 프롬프트를 무시하고 XML 태그 형식을 쓸 때 처리
-══════════════════════════════════════════════ */
+/* 파서 B: <Rn>[치환값]</Rn> 폴백 */
 const XML_TAG_RE = /<R(\d+)>([^<]*)<\/R\1>/g;
 
 function parseMarkersFromXml(docText, sec2) {
-  // sec2 테이블에서 원문 목록 파싱
   const tableItems = parseTableItems(sec2);
   const items = [];
-  const tagMap = {}; // tagNum → item idx
-
+  const tagMap = {};
   let m; XML_TAG_RE.lastIndex = 0;
   while ((m = XML_TAG_RE.exec(docText)) !== null) {
     const tagNum   = m[1];
     const replaced = m[2].trim();
-    if (tagMap[tagNum] !== undefined) {
-      items[tagMap[tagNum]].count++;
-      continue;
-    }
-    // sec2 테이블에서 이 치환값에 대응하는 원문/유형 찾기
+    if (tagMap[tagNum] !== undefined) { items[tagMap[tagNum]].count++; continue; }
     const match = tableItems.find(t => t.replaced === replaced || t.replaced.includes(replaced) || replaced.includes(t.replaced));
     const orig     = match ? match.orig     : replaced;
     const type     = match ? match.type     : guessTypeFromReplaced(replaced);
     const reason   = match ? match.reason   : '';
     tagMap[tagNum] = items.length;
-    items.push({ type, grade: DOC_GRADE, score: DOC_SCORE, orig, replaced, typeLabel: typeToLabel(type), count: 1, reason, source:'xml' });
+    items.push({ type, grade: DOC_GRADE, score: DOC_SCORE, orig, replaced, typeLabel: typeToLabel(type), count: 1, allowed:false, reason, source:'xml' });
   }
   return items;
 }
-
 function _xmlTagToIdx(docText) {
   let m; XML_TAG_RE.lastIndex = 0; let counter = 0;
   const tagMap = {};
-  while ((m = XML_TAG_RE.exec(docText)) !== null) {
-    if (tagMap[m[1]] === undefined) { tagMap[m[1]] = counter++; }
-  }
+  while ((m = XML_TAG_RE.exec(docText)) !== null) { if (tagMap[m[1]] === undefined) tagMap[m[1]] = counter++; }
   const tagToIdx = {};
   Object.keys(tagMap).sort((a,b) => +a - +b).forEach((num, i) => { tagToIdx[num] = i; });
   return tagToIdx;
 }
-
-function renderDocXmlAfter(docText, items) {
+function renderDocumentXml(docText, items) {
   const tagToIdx = _xmlTagToIdx(docText);
   XML_TAG_RE.lastIndex = 0;
   let html = docText.replace(XML_TAG_RE, (match, num, replaced) => {
     const idx = tagToIdx[num] !== undefined ? tagToIdx[num] : 0;
-    const item = items[idx] || { grade: DOC_GRADE };
-    return `<span class="hl hl-${esc(item.grade)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(replaced)}</span>`;
+    const item = items[idx] || { type:'person', orig: replaced };
+    return `<span class="ent ent-${esc(item.type)}" data-idx="${idx}" onclick="selectItem(${idx})">`
+         + `<span class="ent-mask">${esc(replaced)}</span>`
+         + `<span class="ent-orig">${esc(item.orig)}</span></span>`;
   });
   return toParas(html);
 }
 
-function renderDocXmlBefore(docText, items) {
-  const tagToIdx = _xmlTagToIdx(docText);
-  XML_TAG_RE.lastIndex = 0;
-  let html = docText.replace(XML_TAG_RE, (match, num, replaced) => {
-    const idx = tagToIdx[num] !== undefined ? tagToIdx[num] : 0;
-    const item = items[idx] || { grade: DOC_GRADE, orig: replaced };
-    return `<span class="hl hl-${esc(item.grade)}" data-idx="${idx}" onclick="selectItem(${idx})">${esc(item.orig)}</span>`;
-  });
-  return toParas(html);
-}
-
-/* ── 테이블 파싱 (섹션 2) ── */
+/* ── 테이블 / 요약 파싱 ── */
 function parseTableItems(sec2) {
   const result = [];
   for (const line of sec2.split('\n')) {
@@ -337,35 +203,15 @@ function parseTableItems(sec2) {
     if (cells.length < 2 || /유형|---/.test(cells[0])) continue;
     const [typeStr, orig, , reason] = cells;
     if (!orig || orig==='원문') continue;
-
-    // 치환 결과 섹션에서 치환값 찾기
     result.push({ type: classifyType(typeStr), orig: orig.trim(), replaced: '', reason: (reason||'').trim() });
   }
   return result;
 }
-
-function parseReasonMap(sec2) {
-  const map = {};
-  for (const line of sec2.split('\n')) {
-    if (!line.includes('|')) continue;
-    const cells = line.split('|').map(c=>c.trim()).filter(Boolean);
-    if (cells.length < 4 || /유형|---/.test(cells[0])) continue;
-    const [, orig, , reason] = cells;
-    if (orig && reason) map[orig] = reason;
-  }
-  return map;
-}
-
 function parseSummary(sec4) {
   const s = {};
   for (const l of sec4.split('\n')) {
     const num = l.match(/:\s*(\d+)/);
     if (!num) continue;
-    if (/개인/i.test(l))       s.person = +num[1];
-    if (/금융/i.test(l))       s.secret = +num[1];
-    if (/인증/i.test(l))       s.auth   = +num[1];
-    if (/기업|기밀/i.test(l))  s.org    = +num[1];
-    if (/지적/i.test(l))       s.ip     = +num[1];
     if (/총.*탐지|탐지.*건/i.test(l)) s.total = +num[1];
   }
   return s;
@@ -391,128 +237,95 @@ function guessTypeFromReplaced(r) {
 function typeToLabel(t) {
   return {person:'개인정보',org:'기업/기관',ip:'지적재산',auth:'인증정보',secret:'금융/기타'}[t]||'기타';
 }
-
 function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function toParas(html) {
-  // 마크다운 볼드 처리
   html = html.replace(/\*\*([^*\n]+)\*\*/g,'<strong>$1</strong>');
   return html.split('\n').map(l=>l.trim()).filter(l=>l.length>0).map(l=>`<p>${l}</p>`).join('');
 }
 
-/* ── 인터랙션: 단어를 클릭하면 양쪽 패널에서 동기화 강조 + 검토 패널 표시
-   같은 단어를 다시 클릭하면 검토 패널이 닫힌다 ── */
+/* ── 탐지 패널 렌더 ── */
+function renderPanel(items) {
+  const list = document.getElementById('detList');
+  if (!items.length) {
+    list.innerHTML = '<div class="empty-state">탐지된 민감정보가 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = items.map((item, idx) => `
+    <div class="det" data-idx="${idx}" onclick="selectItem(${idx})">
+      <div class="det-top">
+        <span class="cat-chip cat-${esc(item.type)}">${esc(item.typeLabel)}</span>
+        <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
+        <span class="det-score">${esc(item.score)}점</span>
+      </div>
+      <div class="det-orig" title="${esc(item.orig)}">${esc(item.orig)}</div>
+      <div class="det-loc">→ ${esc(item.replaced)}${item.count > 1 ? ' · '+item.count+'회 탐지' : ''}</div>
+      <div class="seg" data-idx="${idx}" onclick="event.stopPropagation()">
+        <button type="button" class="on-redact" data-act="redact" onclick="setAllow(${idx}, false)">검열 유지</button>
+        <button type="button" data-act="allow" onclick="setAllow(${idx}, true)">반출 허용</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ── 요약 등급 칩 ── */
+function renderSummaryGrades(items) {
+  const counts = {"특급":0,"1급":0,"2급":0,"3급":0};
+  items.forEach(i => { if (counts[i.grade] !== undefined) counts[i.grade] += i.count; });
+  const el = document.getElementById('summaryGrades');
+  el.innerHTML = ITEM_GRADES
+    .filter(g => counts[g] > 0)
+    .map(g => `<span class="grade-chip grade-${g}">${g} ${counts[g]}</span>`)
+    .join('');
+}
+
+/* ── 인터랙션 ── */
 let selected = -1;
 function selectItem(idx){
-  if(selected===idx){ closeReviewPanel(); return; }
-  if(selected>=0){
-    document.querySelectorAll(`.hl[data-idx="${selected}"]`).forEach(e=>e.classList.remove('active'));
-  }
-  selected=idx;
-  document.querySelectorAll(`.hl[data-idx="${idx}"]`).forEach(e=>e.classList.add('active'));
-  showReviewForItem(idx);
+  document.querySelectorAll('.ent.active, .det.active').forEach(e=>e.classList.remove('active'));
+  if (selected === idx) { selected = -1; return; }
+  selected = idx;
+  document.querySelectorAll(`.ent[data-idx="${idx}"], .det[data-idx="${idx}"]`).forEach(e=>e.classList.add('active'));
+  const det = document.querySelector(`.det[data-idx="${idx}"]`);
+  if (det) det.scrollIntoView({ block:'nearest', behavior:'smooth' });
 }
 
-function closeReviewPanel(){
-  if(selected>=0){
-    document.querySelectorAll(`.hl[data-idx="${selected}"]`).forEach(e=>e.classList.remove('active'));
-  }
-  selected=-1;
-  document.getElementById('reviewPanel').style.display = 'none';
-}
-
-/* ══════════════════════════════════════════════
-   메인 실행
-══════════════════════════════════════════════ */
-(function run(){
-  const sec1 = getSection(raw,1).replace(/^###\s*1[.\s][^\n]*\n/,'').trim();
-  const sec2 = getSection(raw,2);
-  const sec4 = getSection(raw,4);
-  const summary   = parseSummary(sec4);
-
-  // 파서 선택: @@REDACT 마커가 있으면 A, <Rn> 태그가 있으면 B
-  const hasMarker = MARKER_RE.test(sec1); MARKER_RE.lastIndex=0;
-  const hasXmlTag = XML_TAG_RE.test(sec1); XML_TAG_RE.lastIndex=0;
-
-  let items, beforeHtml, afterHtml;
-  window.__sec1 = sec1;
-  window.__hasMarker = hasMarker;
-
-  if (hasMarker) {
-    items      = parseMarkersFromText(sec1);
-    beforeHtml = renderDocBefore(sec1, items);
-    afterHtml  = renderDocAfter(sec1, items);
-  } else if (hasXmlTag) {
-    // 폴백: XML 태그 형식
-    items      = parseMarkersFromXml(sec1, sec2);
-    beforeHtml = renderDocXmlBefore(sec1, items);
-    afterHtml  = renderDocXmlAfter(sec1, items);
-    const banner = document.getElementById('fallbackBanner');
-    banner.textContent = '⚠ GPT가 대체 형식으로 응답했습니다. 일부 항목이 부정확할 수 있습니다.';
-    banner.style.display = 'block';
-  } else {
-    // 아무 마커도 없으면 원문 그대로 표시
-    items      = [];
-    beforeHtml = afterHtml = toParas(sec1 || raw.substring(0,3000));
-  }
-
-  document.getElementById('beforeArea').innerHTML = beforeHtml || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
-  document.getElementById('afterArea').innerHTML  = afterHtml  || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
-
-  const total = summary.total || items.length;
-  document.getElementById('countBadge').textContent = total+'건 마스킹';
-  document.getElementById('totalChip').textContent  = '민감정보 '+total+'건 탐지';
-  if(total>0) document.getElementById('totalChip').classList.add('danger');
-
-  const cnt={person:0,org:0,ip:0,auth:0,secret:0};
-  items.forEach(i=>{ if(cnt[i.type]!==undefined) cnt[i.type]+=i.count; });
-  ['person','org','ip','auth','secret'].forEach(k=>{
-    const el=document.getElementById('s-'+k);
-    if(el) el.textContent=summary[k]!==undefined?summary[k]:cnt[k];
-  });
-
-  window.__items = items;
-})();
-
-/* ══════════════════════════════════════════════
-   Human-in-the-loop 검토 패널
-   단어를 클릭했을 때만 해당 항목 1건을 보여주고, 등급/점수를 함께 표시한다.
-   승인/반려뿐 아니라 검토자가 치환 표현을 자유롭게 수정 가능
-══════════════════════════════════════════════ */
-function showReviewForItem(idx) {
+function setAllow(idx, allow){
   const items = window.__items || [];
-  const item = items[idx];
-  if (!item) return;
-  const panel = document.getElementById('reviewPanel');
-  const list  = document.getElementById('reviewList');
-  panel.style.display = 'block';
-  list.innerHTML = `
-    <div class="review-row" data-idx="${idx}">
-      <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
-      <span class="review-score">${esc(item.score)}점</span>
-      <span class="review-type hl-${esc(item.grade)}">${esc(item.typeLabel)}</span>
-      <span class="review-orig" title="${esc(item.orig)}">${esc(item.orig)}</span>
-      <input class="review-input" id="review-input-${idx}" value="${esc(item.replaced)}">
-      <button class="btn-mini" onclick="resetReviewRow(${idx}, '${esc(item.orig).replace(/'/g,"&#39;")}')">원문유지</button>
-    </div>
-  `;
+  if (!items[idx]) return;
+  items[idx].allowed = allow;
+  // 세그먼트 버튼 상태
+  const seg = document.querySelector(`.seg[data-idx="${idx}"]`);
+  if (seg) {
+    seg.querySelectorAll('button').forEach(b=>b.classList.remove('on-redact','on-allow'));
+    seg.querySelector(`[data-act="${allow?'allow':'redact'}"]`).classList.add(allow?'on-allow':'on-redact');
+  }
+  // 문서 토큰 + 카드 상태
+  document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>e.classList.toggle('allowed', allow));
+  const det = document.querySelector(`.det[data-idx="${idx}"]`);
+  if (det) det.classList.toggle('allowed', allow);
+  syncCount();
 }
 
-function resetReviewRow(idx, orig) {
-  document.getElementById('review-input-'+idx).value = orig;
-}
-
-function applyReview() {
+function syncCount(){
   const items = window.__items || [];
-  if (selected < 0 || !items[selected]) return;
-  const idx = selected;
-  const item = items[idx];
-  const el = document.getElementById('review-input-'+idx);
-  const edits = [{ type: item.type, orig: item.orig, replacement: el ? el.value : item.replaced }];
+  const allowed = items.filter(i=>i.allowed).length;
+  const redacted = items.length - allowed;
+  document.getElementById('panelCount').textContent = `검열 ${redacted} · 허용 ${allowed}`;
+  document.getElementById('summaryMeta').textContent =
+    `문서 등급 {{ risk.grade_label }} · 점수 {{ risk.score }}/100 · 민감정보 ${items.length}건 탐지`;
+}
 
-  const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
-
+/* ── 승인하고 내보내기: 허용 항목은 원문 유지로 저장 후 다운로드 ── */
+function applyAndExport(){
+  const items = window.__items || [];
+  if (!items.length) { window.location = `/download/${filename}_redacted.txt`; return; }
+  const edits = items.map(it => ({
+    type: it.type,
+    orig: it.orig,
+    replacement: it.allowed ? it.orig : it.replaced,
+  }));
   fetch(`/apply_review/${encodeURIComponent(filename)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -521,16 +334,47 @@ function applyReview() {
     .then(r => r.json())
     .then(data => {
       if (!data.ok) { alert('적용 실패: ' + (data.error||'')); return; }
-      item.replaced = el ? el.value : item.replaced;
-      const afterHtml = window.__hasMarker
-        ? renderDocAfter(window.__sec1, items)
-        : renderDocXmlAfter(window.__sec1, items);
-      document.getElementById('afterArea').innerHTML = afterHtml;
-      alert('검토 결과가 적용되어 저장되었습니다.');
-      closeReviewPanel();
+      window.location = `/download/${filename}_redacted.txt`;
     })
     .catch(() => alert('서버와 통신 중 오류가 발생했습니다.'));
 }
+
+/* ── 원문 대조 토글 ── */
+document.getElementById('revealToggle').addEventListener('change', e => {
+  document.body.classList.toggle('reveal', e.target.checked);
+});
+
+/* ══ 메인 실행 ══ */
+(function run(){
+  const sec1 = getSection(raw,1).replace(/^###\s*1[.\s][^\n]*\n/,'').trim();
+  const sec2 = getSection(raw,2);
+  const sec4 = getSection(raw,4);
+  const summary = parseSummary(sec4);
+
+  const hasMarker = MARKER_RE.test(sec1); MARKER_RE.lastIndex=0;
+  const hasXmlTag = XML_TAG_RE.test(sec1); XML_TAG_RE.lastIndex=0;
+
+  let items, docHtml;
+  if (hasMarker) {
+    items   = parseMarkersFromText(sec1);
+    docHtml = renderDocument(sec1, items);
+  } else if (hasXmlTag) {
+    items   = parseMarkersFromXml(sec1, sec2);
+    docHtml = renderDocumentXml(sec1, items);
+    const banner = document.getElementById('fallbackBanner');
+    banner.textContent = '⚠ GPT가 대체 형식으로 응답했습니다. 일부 항목이 부정확할 수 있습니다.';
+    banner.style.display = 'block';
+  } else {
+    items   = [];
+    docHtml = toParas(sec1 || raw.substring(0,3000));
+  }
+
+  document.getElementById('docBody').innerHTML = docHtml || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
+  window.__items = items;
+  renderPanel(items);
+  renderSummaryGrades(items);
+  syncCount();
+})();
 </script>
 {% endif %}
 </body>

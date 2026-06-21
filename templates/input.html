@@ -59,18 +59,24 @@
   </div>
 </div>
 
-<!-- 로딩 오버레이 -->
+<!-- 로딩 오버레이 (검열 중) -->
 <div id="loading">
-  <div class="spinner"></div>
-  <div class="loading-text">
-    <h3>문서 검열 중...</h3>
-    <p>AI가 민감정보를 분석하고 있습니다</p>
-  </div>
-  <div class="loading-steps">
-    <div class="step active" id="step1"><div class="step-dot"></div>문서 업로드 및 파싱</div>
-    <div class="step" id="step2"><div class="step-dot"></div>민감정보 탐지 중</div>
-    <div class="step" id="step3"><div class="step-dot"></div>비식별화 처리 중</div>
-    <div class="step" id="step4"><div class="step-dot"></div>결과 문서 생성 중</div>
+  <div class="scan-card">
+    <div class="scan-visual">
+      <span class="line"></span><span class="line"></span><span class="line"></span>
+      <span class="line"></span><span class="line"></span>
+      <div class="scan-beam"></div>
+    </div>
+    <div class="loading-text">
+      <h3>문서 검열 중...</h3>
+      <p>AI가 민감정보를 분석하고 있습니다</p>
+    </div>
+    <div class="loading-steps">
+      <div class="step active" id="step1"><span class="step-dot"></span>문서 업로드 및 파싱</div>
+      <div class="step" id="step2"><span class="step-dot"></span>민감정보 탐지 중</div>
+      <div class="step" id="step3"><span class="step-dot"></span>비식별화 처리 중</div>
+      <div class="step" id="step4"><span class="step-dot"></span>결과 문서 생성 중</div>
+    </div>
   </div>
 </div>
 
