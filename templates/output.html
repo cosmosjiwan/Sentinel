@@ -18,6 +18,10 @@
       <span>{{ filename }}</span>
     </div>
     {% if not blocked %}
+    <button class="btn btn-primary btn-sm" type="button" onclick="applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
+      승인하고 내보내기
+    </button>
     <a class="btn btn-secondary btn-sm" href="/download/{{ filename }}_redacted.txt">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
       검열본 다운로드
@@ -68,22 +72,15 @@
       <div class="doc-body" id="docBody"><div class="empty-state">파싱 중...</div></div>
     </div>
 
-    <!-- 탐지 패널 -->
-    <div class="panel">
-      <div class="panel-head">
-        <span class="panel-head-title">탐지 항목</span>
-        <span class="panel-count" id="panelCount">—</span>
-      </div>
-      <div class="panel-list" id="detList"></div>
-      <div class="panel-foot">
-        <button class="btn btn-primary" type="button" onclick="applyAndExport()">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
-          승인하고 내보내기
-        </button>
-        <div class="foot-note">담당자 검토 후 승인됩니다 · Human-in-the-Loop</div>
-      </div>
-    </div>
+  </div>
 
+  <!-- 탐지 패널: 검열본에서 단어를 클릭했을 때만 표시 -->
+  <div class="panel" id="reviewPanel">
+    <div class="panel-head">
+      <span class="panel-head-title">탐지 항목</span>
+      <button class="icon-btn" type="button" onclick="closeReviewPanel()" aria-label="닫기">✕</button>
+    </div>
+    <div class="panel-list" id="detList"></div>
   </div>
 {% endif %}
 </div>
@@ -245,15 +242,11 @@ function toParas(html) {
   return html.split('\n').map(l=>l.trim()).filter(l=>l.length>0).map(l=>`<p>${l}</p>`).join('');
 }
 
-/* ── 탐지 패널 렌더 ── */
-function renderPanel(items) {
+/* ── 탐지 패널 렌더: 클릭된 항목 하나만 표시 ── */
+function renderSingleItem(item, idx) {
   const list = document.getElementById('detList');
-  if (!items.length) {
-    list.innerHTML = '<div class="empty-state">탐지된 민감정보가 없습니다.</div>';
-    return;
-  }
-  list.innerHTML = items.map((item, idx) => `
-    <div class="det" data-idx="${idx}" onclick="selectItem(${idx})">
+  list.innerHTML = `
+    <div class="det active" data-idx="${idx}">
       <div class="det-top">
         <span class="cat-chip cat-${esc(item.type)}">${esc(item.typeLabel)}</span>
         <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
@@ -261,12 +254,12 @@ function renderPanel(items) {
       </div>
       <div class="det-orig" title="${esc(item.orig)}">${esc(item.orig)}</div>
       <div class="det-loc">→ ${esc(item.replaced)}${item.count > 1 ? ' · '+item.count+'회 탐지' : ''}</div>
-      <div class="seg" data-idx="${idx}" onclick="event.stopPropagation()">
-        <button type="button" class="on-redact" data-act="redact" onclick="setAllow(${idx}, false)">검열 유지</button>
-        <button type="button" data-act="allow" onclick="setAllow(${idx}, true)">반출 허용</button>
+      <div class="seg" data-idx="${idx}">
+        <button type="button" class="${item.allowed?'':'on-redact'}" data-act="redact" onclick="setAllow(${idx}, false)">검열 유지</button>
+        <button type="button" class="${item.allowed?'on-allow':''}" data-act="allow" onclick="setAllow(${idx}, true)">반출 허용</button>
       </div>
     </div>
-  `).join('');
+  `;
 }
 
 /* ── 요약 등급 칩 ── */
@@ -280,15 +273,27 @@ function renderSummaryGrades(items) {
     .join('');
 }
 
-/* ── 인터랙션 ── */
+/* ── 인터랙션: 단어를 클릭했을 때만 탐지 패널을 표시 ── */
 let selected = -1;
 function selectItem(idx){
+  if (selected === idx) { closeReviewPanel(); return; }
+  showReviewForItem(idx);
+}
+
+function showReviewForItem(idx){
+  const items = window.__items || [];
+  if (!items[idx]) return;
   document.querySelectorAll('.ent.active, .det.active').forEach(e=>e.classList.remove('active'));
-  if (selected === idx) { selected = -1; return; }
   selected = idx;
-  document.querySelectorAll(`.ent[data-idx="${idx}"], .det[data-idx="${idx}"]`).forEach(e=>e.classList.add('active'));
-  const det = document.querySelector(`.det[data-idx="${idx}"]`);
-  if (det) det.scrollIntoView({ block:'nearest', behavior:'smooth' });
+  document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>e.classList.add('active'));
+  renderSingleItem(items[idx], idx);
+  document.getElementById('reviewPanel').style.display = 'flex';
+}
+
+function closeReviewPanel(){
+  document.querySelectorAll('.ent.active, .det.active').forEach(e=>e.classList.remove('active'));
+  selected = -1;
+  document.getElementById('reviewPanel').style.display = 'none';
 }
 
 function setAllow(idx, allow){
@@ -301,18 +306,13 @@ function setAllow(idx, allow){
     seg.querySelectorAll('button').forEach(b=>b.classList.remove('on-redact','on-allow'));
     seg.querySelector(`[data-act="${allow?'allow':'redact'}"]`).classList.add(allow?'on-allow':'on-redact');
   }
-  // 문서 토큰 + 카드 상태
+  // 문서 토큰 상태
   document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>e.classList.toggle('allowed', allow));
-  const det = document.querySelector(`.det[data-idx="${idx}"]`);
-  if (det) det.classList.toggle('allowed', allow);
   syncCount();
 }
 
 function syncCount(){
   const items = window.__items || [];
-  const allowed = items.filter(i=>i.allowed).length;
-  const redacted = items.length - allowed;
-  document.getElementById('panelCount').textContent = `검열 ${redacted} · 허용 ${allowed}`;
   document.getElementById('summaryMeta').textContent =
     `문서 등급 {{ risk.grade_label }} · 점수 {{ risk.score }}/100 · 민감정보 ${items.length}건 탐지`;
 }
@@ -371,10 +371,16 @@ document.getElementById('revealToggle').addEventListener('change', e => {
 
   document.getElementById('docBody').innerHTML = docHtml || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
   window.__items = items;
-  renderPanel(items);
   renderSummaryGrades(items);
   syncCount();
 })();
+
+/* 패널 바깥(문서 내 빈 영역, 헤더 등)을 클릭하면 패널을 닫는다 */
+document.addEventListener('click', (e) => {
+  if (selected === -1) return;
+  if (e.target.closest('.ent') || e.target.closest('#reviewPanel')) return;
+  closeReviewPanel();
+});
 </script>
 {% endif %}
 </body>
