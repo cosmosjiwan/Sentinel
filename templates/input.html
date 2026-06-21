@@ -12,6 +12,9 @@
 <!-- 헤더 -->
 <div class="topbar">
   <div class="brand">Sentinel</div>
+  <div class="topbar-right">
+    <span class="chip" id="lastModified" style="display:none"></span>
+  </div>
 </div>
 
 <!-- 콘텐츠 영역 -->
@@ -72,10 +75,9 @@
       <p>AI가 민감정보를 분석하고 있습니다</p>
     </div>
     <div class="loading-steps">
-      <div class="step active" id="step1"><span class="step-dot"></span>문서 업로드 및 파싱</div>
-      <div class="step" id="step2"><span class="step-dot"></span>민감정보 탐지 중</div>
-      <div class="step" id="step3"><span class="step-dot"></span>비식별화 처리 중</div>
-      <div class="step" id="step4"><span class="step-dot"></span>결과 문서 생성 중</div>
+      <div class="step active" id="step1"><span class="step-dot"></span>1단계: 민감정보 탐지</div>
+      <div class="step" id="step2"><span class="step-dot"></span>2단계: 보안 등급 분류</div>
+      <div class="step" id="step3"><span class="step-dot"></span>3단계: 검열 표현 결정</div>
     </div>
   </div>
 </div>
@@ -87,6 +89,14 @@ const fileNameEl = document.getElementById('file-name');
 const fileNameText = document.getElementById('file-name-text');
 const submitBtn = document.getElementById('submitBtn');
 
+const lastModifiedEl = document.getElementById('lastModified');
+
+function formatLastModified(ms) {
+  const d = new Date(ms);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function setFiles(fileList) {
   if (!fileList.length) return;
   fileNameText.textContent = fileList.length === 1
@@ -95,6 +105,12 @@ function setFiles(fileList) {
   fileNameEl.classList.add('show');
   dropArea.classList.add('has-file');
   submitBtn.disabled = false;
+
+  const latest = Math.max(...Array.from(fileList).map(f => f.lastModified || 0));
+  if (latest > 0) {
+    lastModifiedEl.textContent = `최종 수정 ${formatLastModified(latest)}`;
+    lastModifiedEl.style.display = 'inline-flex';
+  }
 }
 
 fileInput.addEventListener('change', () => {
@@ -116,7 +132,7 @@ function advanceStep() {
     document.getElementById('step' + (stepIdx - 1)).classList.remove('active');
     document.getElementById('step' + (stepIdx - 1)).classList.add('done');
   }
-  if (stepIdx <= 4) {
+  if (stepIdx <= 3) {
     document.getElementById('step' + stepIdx).classList.add('active');
     stepIdx++;
     stepTimer = setTimeout(advanceStep, 3500);
