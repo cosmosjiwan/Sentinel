@@ -83,11 +83,11 @@
 </div>
 
 {% if not blocked %}
-<script id="docBody-src" type="text/plain">{{ body | e }}</script>
+<script id="docBody-src" type="application/json">{{ body | tojson }}</script>
 <script id="itemsData" type="application/json">{{ items | tojson }}</script>
 <script id="reviewMeta" type="application/json">{{ filename | tojson }}</script>
 <script>
-const bodyText = document.getElementById('docBody-src').textContent;
+const bodyText = JSON.parse(document.getElementById('docBody-src').textContent);
 const items = JSON.parse(document.getElementById('itemsData').textContent);
 const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
 const ITEM_GRADES = ["특급","1급","2급","3급"];
