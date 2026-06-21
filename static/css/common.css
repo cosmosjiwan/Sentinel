@@ -59,14 +59,14 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  height: 48px;
+  height: 60px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   z-index: 100;
 }
 .brand {
-  font-size: 22px;
+  font-size: 32px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: var(--text);
@@ -186,7 +186,7 @@ body {
   .topbar { flex-wrap: wrap; height: auto; padding: 10px 12px; gap: 8px; row-gap: 8px; }
   .topbar-right { flex-wrap: wrap; gap: 6px; width: 100%; justify-content: flex-start; }
   .topbar-username { display: none; }
-  .brand { font-size: 18px; }
+  .brand { font-size: 24px; }
 
   .app-shell { flex-direction: column; overflow: visible; min-height: 0; }
 

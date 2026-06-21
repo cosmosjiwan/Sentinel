@@ -27,10 +27,10 @@ body { min-height: 100vh; }
 .summary-meta { font-size: 12px; color: var(--muted); }
 .summary-grades { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-wrap: wrap; }
 
-/* ── 2-pane 본문 ── */
+/* ── 본문 ── */
 .panes {
   flex: 1; display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr;
   gap: 16px; padding: 16px 24px;
   min-height: 0;
 }
@@ -107,23 +107,24 @@ body.reveal .ent-orig { display: inline; }
 .ent.allowed .ent-mask { display: none; }
 .ent.allowed .ent-orig { display: inline; opacity: .75; border-bottom-style: dashed; }
 
-/* ── 탐지 패널 ── */
+/* ── 탐지 패널: 검열본에서 단어를 클릭했을 때만 표시되는 플로팅 패널 ── */
 .panel {
+  display: none;
+  position: fixed;
+  top: 130px; right: 24px;
+  width: 360px; max-height: calc(100vh - 160px);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-card);
-  box-shadow: var(--shadow2);
-  display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: var(--shadow16);
+  flex-direction: column; overflow: hidden;
+  z-index: 60;
 }
 .panel-head {
   padding: 12px 16px; border-bottom: 1px solid var(--divider);
   display: flex; align-items: center; justify-content: space-between;
 }
 .panel-head-title { font-size: 13px; font-weight: 600; }
-.panel-count {
-  font-size: 11px; font-weight: 600; color: var(--accent);
-  background: var(--accent-bg); padding: 2px 8px; border-radius: var(--r-control);
-}
 .panel-list { overflow-y: auto; flex: 1; }
 
 .det {
@@ -168,15 +169,6 @@ body.reveal .ent-orig { display: inline; }
 .seg button.on-redact { background: var(--accent); color: #fff; }
 .seg button.on-allow  { background: var(--ip); color: #fff; }
 
-/* ── 패널 푸터 (HITL 최종 승인) ── */
-.panel-foot {
-  padding: 14px 16px; border-top: 1px solid var(--divider);
-  display: flex; flex-direction: column; gap: 8px;
-  background: var(--surface);
-}
-.foot-note { font-size: 11px; color: var(--subtle); text-align: center; }
-.panel-foot .btn { width: 100%; }
-
 /* ── 폴백 안내 배너 ── */
 .fallback-banner {
   margin: 12px 24px 0;
@@ -207,8 +199,8 @@ body.reveal .ent-orig { display: inline; }
 
 /* ── 모바일 대응 ── */
 @media (max-width: 900px) {
-  .panes { grid-template-columns: 1fr; padding: 12px; }
-  .panel { order: -1; }
+  .panes { padding: 12px; }
+  .panel { left: 12px; right: 12px; width: auto; top: auto; bottom: 12px; max-height: 60vh; }
 }
 @media (max-width: 768px) {
   .file-chip { max-width: 100%; flex: 1; }

@@ -312,26 +312,22 @@ def safe_force_mask(text, grade):
     return re.sub(r'\x00(\d+)\x00', restore, masked)
 
 
-def apply_grade_marker_rewrite(text, grade):
-    """등급별 처리 방침에 따라 마커의 '치환값' 필드를 재작성한다.
-    (마커 구조 자체는 유지하므로 프론트엔드 파서는 변경 없이 그대로 동작한다)"""
-    action = action_for_grade(grade)
+def apply_grade_marker_rewrite(text):
+    """각 마커에 담긴 항목 단위 등급(2번 필드)에 따라 마커의 '치환값' 필드를 재작성한다.
+    (문서 전체 등급이 아니라 항목 각각의 등급으로 결정한다.
+    마커 구조 자체는 유지하므로 프론트엔드 파서는 변경 없이 그대로 동작한다)"""
 
-    if action == "publish":  # 3급: 원문 그대로 노출
-        return MARKER_RE.sub(
-            lambda m: f"@@REDACT|{m.group(1)}|{m.group(2)}|{m.group(3)}|{m.group(4)}|{m.group(4)}@@",
-            text,
-        )
+    def rewrite(m):
+        type_, item_grade, score, orig, replaced = m.groups()
+        action = action_for_grade(item_grade.strip())
+        if action == "publish":  # 3급: 원문 그대로 노출
+            replaced = orig
+        elif action in ("mask", "block"):  # 특급/1급: 완전 마스킹 (항목 단위에는 "차단"이 없으므로 마스킹 처리)
+            replaced = MASK_TOKEN.get(type_, "[마스킹]")
+        # substitute (2급): 모델이 제안한 의미유지 치환값 그대로 사용
+        return f"@@REDACT|{type_}|{item_grade}|{score}|{orig}|{replaced}@@"
 
-    if action == "mask":  # 1급: 완전 마스킹
-        return MARKER_RE.sub(
-            lambda m: f"@@REDACT|{m.group(1)}|{m.group(2)}|{m.group(3)}|{m.group(4)}|"
-                      f"{MASK_TOKEN.get(m.group(1), '[마스킹]')}@@",
-            text,
-        )
-
-    # substitute (2급): 모델이 제안한 의미유지 치환값 그대로 사용
-    return text
+    return MARKER_RE.sub(rewrite, text)
 
 
 def process_file(upload_path, filename):
@@ -353,7 +349,7 @@ def process_file(upload_path, filename):
             f"공개·다운로드가 금지됩니다. (민감성 점수: {risk['score']})"
         )
     else:
-        display_text = apply_grade_marker_rewrite(result_text, grade)
+        display_text = apply_grade_marker_rewrite(result_text)
         clean_text = clean_markers(display_text)
 
     base = os.path.basename(filename)
