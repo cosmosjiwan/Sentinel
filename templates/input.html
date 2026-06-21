@@ -14,7 +14,6 @@
   <div class="brand">Sentinal<span>.</span>DLP</div>
   <div class="topbar-right">
     <span class="chip">Data Loss Prevention</span>
-    <span class="chip">AI 기반 문서 검열</span>
     <div class="topbar-user">
       <div class="topbar-avatar">관</div>
       <span class="topbar-username">관리자</span>
@@ -22,184 +21,51 @@
   </div>
 </div>
 
-<!-- 앱 쉘 -->
-<div class="app-shell">
+<!-- 콘텐츠 영역 -->
+<div class="content-area">
+  <div class="upload-hero">
+    <div class="upload-hero-title">문서를 업로드하세요</div>
+    <div class="upload-hero-sub">AI가 민감정보를 자동으로 탐지하고 비식별화합니다</div>
 
-  <!-- 사이드바 -->
-  <nav class="sidebar">
-    <div class="nav-section-label">메뉴</div>
+    <form action="/redact" method="post" enctype="multipart/form-data" id="uploadForm" style="width:100%">
 
-    <a class="nav-item" href="#">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5Zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5Zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5Zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5Z"/>
-      </svg>
-      대시보드
-    </a>
-
-    <a class="nav-item active" href="#">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
-      </svg>
-      문서검열
-    </a>
-
-    <div class="nav-divider"></div>
-    <div class="nav-section-label">설정</div>
-
-    <a class="nav-item" href="#">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M7.429 1.525a6.593 6.593 0 0 1 1.142 0c.036.003.108.036.137.146l.289 1.105c.147.56.55.967.997 1.189.174.086.341.183.501.29.417.278.97.319 1.453.11l1.02-.442c.104-.045.172-.014.205.011.254.19.48.41.672.652.015.018.051.082.005.178l-.479 1.005c-.234.492-.22 1.07.045 1.544.152.279.272.578.354.889.107.414.497.707.945.771l1.123.158c.107.015.161.08.169.117a6.588 6.588 0 0 1 0 1.174c-.008.036-.062.102-.169.117l-1.123.158c-.448.064-.838.357-.945.771a4.8 4.8 0 0 1-.354.889c-.265.474-.279 1.052-.045 1.544l.479 1.005c.046.096.01.16-.005.178a5.05 5.05 0 0 1-.672.652c-.033.025-.101.056-.205.011l-1.02-.442c-.483-.209-1.037-.168-1.452.11-.16.107-.328.204-.502.29-.447.222-.85.629-.997 1.189l-.289 1.105c-.029.11-.101.143-.137.146a6.613 6.613 0 0 1-1.142 0c-.036-.003-.108-.036-.137-.146l-.289-1.105c-.147-.56-.55-.967-.997-1.189a4.758 4.758 0 0 1-.501-.29c-.417-.278-.97-.319-1.454-.11l-1.02.442c-.104.045-.172.014-.204-.011a5.052 5.052 0 0 1-.672-.652c-.015-.018-.051-.082-.005-.178l.479-1.005c.234-.492.22-1.07-.045-1.544a4.799 4.799 0 0 1-.354-.889c-.107-.414-.497-.707-.945-.771l-1.123-.158C1.562 8.99 1.508 8.924 1.5 8.887a6.613 6.613 0 0 1 0-1.174c.008-.036.062-.102.169-.117l1.123-.158c.448-.064.838-.357.945-.771.082-.311.202-.61.354-.889.265-.474.279-1.052.045-1.544L3.657 3.23c-.046-.096-.01-.16.005-.178.192-.243.418-.462.672-.652.032-.025.1-.056.204-.011l1.02.442c.483.209 1.037.168 1.453-.11.16-.107.328-.204.502-.29.447-.222.85-.629.997-1.189l.289-1.105c.029-.11.101-.143.137-.146ZM8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5Z"/>
-      </svg>
-      정책설정
-    </a>
-
-    <a class="nav-item" href="#">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7-3.25v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5a.75.75 0 0 1 1.5 0Z"/>
-      </svg>
-      검열이력
-    </a>
-
-    <div class="sidebar-footer">
-      <div class="status-indicator">
-        <div class="status-dot"></div>
-        시스템 정상
-      </div>
-      <div class="sidebar-version">DLP Engine v1.0 · (주) Sentinal</div>
-    </div>
-  </nav>
-
-  <!-- 콘텐츠 영역 -->
-  <div class="content-area">
-
-    <!-- 페이지 헤더 -->
-    <div class="page-header">
-      <div class="page-header-left">
-        <h2>문서검열</h2>
-        <div class="breadcrumb">
-          <span>DLP</span>
-          <span class="breadcrumb-sep">›</span>
-          <span class="breadcrumb-current">문서검열</span>
-        </div>
-      </div>
-      <div class="page-header-right">
-        <div class="date-main">2026-06-15</div>
-        <span style="color:#444c56">마지막 업데이트 09:42</span>
-      </div>
-    </div>
-
-    <!-- 통계 카드 -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(56,139,253,0.12)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--accent-h)">
+      <div class="upload-box" id="dropArea">
+        <div class="upload-icon">
+          <svg width="28" height="28" viewBox="0 0 16 16" fill="currentColor">
             <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
           </svg>
         </div>
-        <div>
-          <div class="stat-value" style="color:var(--accent-h)">24</div>
-          <div class="stat-label">오늘 검열 건수</div>
-          <div class="stat-sub">오늘 기준 · 전일 대비 +3</div>
+        <div class="upload-title">파일을 끌어다 놓거나 선택하세요</div>
+        <div class="upload-sub">PDF, DOCX, TXT, MD 파일 지원 · 여러 파일 동시 업로드(일괄 처리) 가능<br>최대 50MB</div>
+
+        <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.txt,.md" multiple required hidden>
+
+        <button type="button" class="select-btn" onclick="document.getElementById('fileInput').click()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/></svg>
+          파일 선택
+        </button>
+
+        <div class="format-chips">
+          <span class="fmt-chip">.pdf</span>
+          <span class="fmt-chip">.docx</span>
+          <span class="fmt-chip">.txt</span>
+          <span class="fmt-chip">.md</span>
+        </div>
+
+        <div id="file-name">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
+          <span id="file-name-text"></span>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(210,153,34,0.12)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--ip)">
-            <path d="M8.22 1.754a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm-1.763-.707c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-.25-5.25a.75.75 0 0 0-1.5 0v2.5a.75.75 0 0 0 1.5 0Z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="stat-value" style="color:var(--ip)">142</div>
-          <div class="stat-label">탐지된 민감정보</div>
-          <div class="stat-sub">오늘 기준 · 개인정보 89건 포함</div>
-        </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon" style="background:rgba(248,81,73,0.12)">
-          <svg width="18" height="18" viewBox="0 0 16 16" fill="var(--person)">
-            <path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
-          </svg>
-        </div>
-        <div>
-          <div class="stat-value" style="color:var(--person)">3</div>
-          <div class="stat-label">차단 건수</div>
-          <div class="stat-sub">오늘 기준 · 정책 위반 문서</div>
-        </div>
-      </div>
-    </div>
 
-    <!-- 문서 업로드 섹션 -->
-    <div class="section-card">
-      <div class="section-header">
-        <h3>파일 업로드</h3>
-        <p>문서를 업로드하면 AI가 민감정보를 자동으로 탐지하고 비식별화합니다.</p>
-        <div class="section-divider"></div>
-      </div>
-      <div class="section-body">
+      <button class="submit-btn" type="submit" id="submitBtn" disabled style="margin-top:20px">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M9.504.43a1.516 1.516 0 0 1 2.437 1.713L10.415 5.5h2.123c1.57 0 2.346 1.909 1.22 3.004l-7.34 7.142a1.249 1.249 0 0 1-.871.354h-.302a1.25 1.25 0 0 1-1.157-1.723L5.633 10.5H3.462c-1.57 0-2.346-1.909-1.22-3.004L9.503.43Z"/></svg>
+        검열 시작
+      </button>
 
-        <form action="/redact" method="post" enctype="multipart/form-data" id="uploadForm">
-
-          <div class="upload-box" id="dropArea">
-            <div class="upload-icon">
-              <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
-                <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
-              </svg>
-            </div>
-            <div class="upload-title">파일을 끌어다 놓거나 선택하세요</div>
-            <div class="upload-sub">PDF, DOCX, TXT, MD 파일 지원 · 여러 파일 동시 업로드(일괄 처리) 가능<br>최대 50MB</div>
-
-            <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.txt,.md" multiple required hidden>
-
-            <button type="button" class="select-btn" onclick="document.getElementById('fileInput').click()">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/></svg>
-              파일 선택
-            </button>
-
-            <div class="format-chips">
-              <span class="fmt-chip">.pdf</span>
-              <span class="fmt-chip">.docx</span>
-              <span class="fmt-chip">.txt</span>
-              <span class="fmt-chip">.md</span>
-            </div>
-
-            <div id="file-name">
-              <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
-              <span id="file-name-text"></span>
-            </div>
-          </div>
-
-          <button class="submit-btn" type="submit" id="submitBtn" disabled>
-            <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M9.504.43a1.516 1.516 0 0 1 2.437 1.713L10.415 5.5h2.123c1.57 0 2.346 1.909 1.22 3.004l-7.34 7.142a1.249 1.249 0 0 1-.871.354h-.302a1.25 1.25 0 0 1-1.157-1.723L5.633 10.5H3.462c-1.57 0-2.346-1.909-1.22-3.004L9.503.43Z"/></svg>
-            검열 시작
-          </button>
-
-        </form>
-
-        <!-- 기능 안내 -->
-        <div class="features">
-          <div class="feature-item">
-            <div class="feat-dot" style="background:var(--person)"></div>
-            <div class="feat-text"><strong>개인정보 탐지</strong>이름, 연락처, 이메일, 주민번호</div>
-          </div>
-          <div class="feature-item">
-            <div class="feat-dot" style="background:var(--ip)"></div>
-            <div class="feat-text"><strong>지적재산 보호</strong>신약, 수치, 프로젝트 코드명</div>
-          </div>
-          <div class="feature-item">
-            <div class="feat-dot" style="background:var(--auth)"></div>
-            <div class="feat-text"><strong>인증정보 마스킹</strong>API Key, Password, Token</div>
-          </div>
-          <div class="feature-item">
-            <div class="feat-dot" style="background:var(--muted)"></div>
-            <div class="feat-text"><strong>기업/기관 비식별화</strong>회사명, 연구소, 대학교</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-  </div><!-- /content-area -->
-</div><!-- /app-shell -->
+    </form>
+  </div>
+</div>
 
 <!-- 로딩 오버레이 -->
 <div id="loading">

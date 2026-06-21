@@ -1,22 +1,21 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap');
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600&display=swap');
 
 :root {
-  --bg:        #090d1a;
-  --surface:   #10162b;
-  --surface2:  #161e3a;
-  --border:    #232c4d;
-  --text:      #eef1fb;
-  --muted:     #8893b8;
-  --accent:    #3667ff;
-  --accent-h:  #5b86ff;
-  --accent-bg: rgba(54,103,255,.14);
-  --glow:      0 0 0 1px rgba(54,103,255,.25), 0 0 24px rgba(54,103,255,.12);
-  --person:   #d9818f; --person-bg: rgba(217,129,143,.15);
-  --org:      #7c9bc9; --org-bg:    rgba(124,155,201,.15);
-  --ip:       #cda36b; --ip-bg:     rgba(205,163,107,.15);
-  --auth:     #a594c9; --auth-bg:   rgba(165,148,201,.15);
-  --secret:   #7bae93; --secret-bg: rgba(123,174,147,.15);
+  --bg:        #faf9f8;
+  --surface:   #ffffff;
+  --surface2:  #f3f2f1;
+  --border:    #e1dfdd;
+  --text:      #201f1e;
+  --muted:     #605e5c;
+  --accent:    #0078d4;
+  --accent-h:  #106ebe;
+  --accent-bg: rgba(0,120,212,.08);
+  --glow:      0 0 0 1px rgba(0,120,212,.18), 0 2px 8px rgba(0,120,212,.12);
+  --person:   #c4314b; --person-bg: rgba(196,49,75,.08);
+  --org:      #0078d4; --org-bg:    rgba(0,120,212,.08);
+  --ip:       #986f0b; --ip-bg:     rgba(152,111,11,.08);
+  --auth:     #8764b8; --auth-bg:   rgba(135,100,184,.08);
+  --secret:   #107c10; --secret-bg: rgba(16,124,16,.08);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -24,69 +23,80 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Noto Sans KR', sans-serif;
   display: flex;
   flex-direction: column;
 }
 
-/* ── 상단 헤더 (공통) ── */
+/* ── 상단 헤더 (공통, Purview 스타일 브레드크럼 바) ── */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  height: 52px;
+  height: 48px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   z-index: 100;
 }
 .brand {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.brand span { color: var(--accent-h); text-shadow: 0 0 12px rgba(54,103,255,.5); }
+.brand span { color: var(--accent); }
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 .chip {
   font-size: 11px;
   padding: 3px 10px;
-  border-radius: 20px;
-  font-family: 'IBM Plex Mono', monospace;
+  border-radius: 12px;
   font-weight: 500;
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--muted);
 }
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .12s;
+}
+.icon-btn:hover { background: var(--surface2); color: var(--accent); }
 .topbar-user {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px 4px 6px;
-  border-radius: 6px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
+  padding: 4px 10px 4px 6px;
+  border-radius: 4px;
   cursor: default;
 }
 .topbar-avatar {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), var(--accent-h));
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   color: #fff;
-  font-family: 'IBM Plex Mono', monospace;
-  box-shadow: var(--glow);
 }
 .topbar-username {
   font-size: 12px;
@@ -114,12 +124,11 @@ body {
 
 .nav-section-label {
   font-size: 10px;
-  font-family: 'IBM Plex Mono', monospace;
   color: var(--muted);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   padding: 20px 16px 8px;
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 .nav-item {
@@ -140,7 +149,7 @@ body {
 }
 .nav-item.active {
   background: var(--accent-bg);
-  color: var(--accent-h);
+  color: var(--accent);
   border-left-color: var(--accent);
 }
 .nav-item svg { flex-shrink: 0; opacity: 0.7; }
@@ -163,7 +172,6 @@ body {
   align-items: center;
   gap: 8px;
   font-size: 11px;
-  font-family: 'IBM Plex Mono', monospace;
   color: var(--muted);
 }
 .status-dot {
@@ -171,23 +179,20 @@ body {
   height: 7px;
   border-radius: 50%;
   background: var(--secret);
-  box-shadow: 0 0 6px var(--secret);
   flex-shrink: 0;
 }
 .sidebar-version {
   margin-top: 6px;
   font-size: 10px;
-  font-family: 'IBM Plex Mono', monospace;
-  color: #444c56;
+  color: #a19f9d;
 }
 
 /* ── 위험성 등급 칩 (ISO 27005 기반) ── */
 .grade-chip {
   font-size: 11px;
   padding: 3px 10px;
-  border-radius: 20px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-weight: 500;
+  border-radius: 12px;
+  font-weight: 600;
 }
 .grade-특급 { background: var(--person-bg); color: var(--person); }
 .grade-1급  { background: var(--ip-bg);     color: var(--ip); }
