@@ -490,14 +490,16 @@ def view_result(filename):
     with open(json_path, "r", encoding="utf-8") as f:
         record = json.load(f)
 
-    return render_template(
+    resp = app.make_response(render_template(
         "output.html",
         filename=record["filename"],
         body=record["body"],
         items=record["items"],
         risk=record["risk"],
         blocked=record["blocked"],
-    )
+    ))
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return resp
 
 
 @app.route("/apply_review/<filename>", methods=["POST"])
@@ -546,10 +548,12 @@ def apply_review(filename):
 
 @app.route("/download/<filename>")
 def download(filename):
-    return send_file(
+    resp = send_file(
         os.path.join("results", filename),
         as_attachment=True
     )
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return resp
 
 
 if __name__ == "__main__":
