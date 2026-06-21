@@ -3,6 +3,29 @@ from openai import OpenAI
 import os
 import re
 import json
+import subprocess
+import datetime
+
+# 한국 표준시(KST, UTC+9) — 배포 시각을 서버 타임존과 무관하게 일관되게 표기하기 위함
+KST = datetime.timezone(datetime.timedelta(hours=9))
+
+
+def get_deploy_time():
+    """현재 배포된 코드(main HEAD 커밋)의 시각을 KST 'YYYY.MM.DD HH:MM' 형식으로 반환한다.
+    git 정보를 얻지 못하면 app.py 파일의 수정 시각으로 대체한다."""
+    repo_dir = os.path.dirname(os.path.abspath(__file__))
+    try:
+        ts = subprocess.check_output(
+            ["git", "-C", repo_dir, "log", "-1", "--format=%ct"],
+            stderr=subprocess.DEVNULL,
+        ).decode().strip()
+        epoch = int(ts)
+    except (subprocess.SubprocessError, ValueError, OSError):
+        try:
+            epoch = int(os.path.getmtime(os.path.abspath(__file__)))
+        except OSError:
+            return ""
+    return datetime.datetime.fromtimestamp(epoch, KST).strftime("%Y.%m.%d %H:%M")
 
 from patterns import scan_regex, force_mask_residual, MASK_TOKEN
 from risk import compute_score, grade_for_score, action_for_grade, GRADE_LABEL, GRADE_THRESHOLDS
@@ -318,6 +341,37 @@ def get_section(text, n):
     return m.group(0) if m else ''
 
 
+def extract_body(result_text):
+    """검열된 본문(섹션 1)을 추출한다. 헤딩 형식에 의존하지 않고, '탐지 상세 표(섹션 2)'가
+    시작되기 직전까지를 본문으로 간주한다 — 모델이 헤딩 번호/형식을 정확히 지키지 않아도
+    <R번호> 태그가 든 본문이 비지 않도록 하기 위함이다."""
+    cut = len(result_text)
+    # 섹션 2 헤딩 또는 탐지 표(| 번호 | ...)가 나오는 가장 빠른 위치에서 자른다.
+    for pat in (r'#{1,6}\s*2[.\s]', r'^\s*\|\s*번호\s*\|'):
+        m = re.search(pat, result_text, re.MULTILINE)
+        if m:
+            cut = min(cut, m.start())
+    body = result_text[:cut]
+    lines = body.splitlines()
+
+    def is_heading_noise(line):
+        s = line.strip().strip("*").strip()
+        return (not s
+                or line.lstrip().startswith("#")
+                or set(line.strip()) <= {"-", "=", "*"}
+                or s.startswith("RISK_JSON")
+                or ("검열된" in s and "문서" in s and "<R" not in s)
+                or ("탐지된" in s and "상세" in s and "<R" not in s))
+
+    # 앞쪽의 섹션 헤딩/구분선 줄(### 1. ..., ## 검열된 문서, ---, RISK_JSON 등)을 제거한다.
+    while lines and is_heading_noise(lines[0]):
+        lines.pop(0)
+    # 표 직전에 남은 섹션 2 헤딩성 줄도 제거한다.
+    while lines and is_heading_noise(lines[-1]):
+        lines.pop()
+    return "\n".join(lines).strip()
+
+
 def safe_force_mask(body, grade):
     """<R번호> 태그 구간은 보존한 채, 태그 밖에 평문으로 남은 정규식 매칭 잔여 노출을 강제 마스킹한다."""
     if grade == "3급":
@@ -368,8 +422,7 @@ def process_file(upload_path, filename):
     risk = parse_risk(result_text)
     grade = risk["grade"]
 
-    body = get_section(result_text, 1)
-    body = re.sub(r'^#{2,3}\s*1[.\s][^\n]*\n?', '', body).strip()
+    body = extract_body(result_text)
     body = safe_force_mask(body, grade)
 
     blocked = action_for_grade(grade) == "block"
@@ -408,7 +461,7 @@ def process_file(upload_path, filename):
 
 @app.route("/")
 def home():
-    return render_template("input.html")
+    return render_template("input.html", deploy_time=get_deploy_time())
 
 
 @app.route("/redact", methods=["POST"])
