@@ -40,7 +40,7 @@ body {
   width: 100%;
   border: 2px dashed var(--border);
   border-radius: 16px;
-  padding: 72px 32px;
+  padding: 110px 48px;
   text-align: center;
   background: var(--surface);
   cursor: pointer;
@@ -75,13 +75,7 @@ body {
   font-size: 18px;
   font-weight: 500;
   color: var(--text);
-  margin-bottom: 8px;
-}
-.upload-sub {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 24px;
-  line-height: 1.7;
+  margin-bottom: 28px;
 }
 .select-btn {
   display: inline-flex;
@@ -118,14 +112,15 @@ body {
 
 .format-chips {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   justify-content: center;
   margin-top: 22px;
 }
 .fmt-chip {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 14px;
   background: var(--surface2);
   border: 1px solid var(--border);
   color: var(--muted);
