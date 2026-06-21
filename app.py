@@ -166,7 +166,7 @@ PROMPT = """
 - 가용성(A): 문서가 유실되거나 비공개 처리될 경우 업무에 미치는 영향.
   핵심 연구/의사결정 자료는 높게, 참고용 자료는 낮게.
 
-이 3가지 점수는 섹션 5에 아래 형식의 한 줄 JSON으로 반드시 출력한다 (다른 텍스트 섞지 말 것):
+이 3가지 점수는 섹션 4에 아래 형식의 한 줄 JSON으로 반드시 출력한다 (다른 텍스트 섞지 말 것):
 
 RISK_JSON: {"confidentiality": <0-100 정수>, "integrity": <0-100 정수>, "availability": <0-100 정수>}
 
@@ -195,11 +195,6 @@ RISK_JSON: {"confidentiality": 0, "integrity": 0, "availability": 0}
 
 RISK_RE = re.compile(r'RISK_JSON:\s*(\{[^\n]*\})')
 TAG_RE = re.compile(r'<R(\d+)>(.*?)</R\1>', re.DOTALL)
-TABLE_ROW_RE = re.compile(
-    r'^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|'
-    r'\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]*?)\s*\|\s*$',
-    re.MULTILINE,
-)
 ITEM_GRADES = ("특급", "1급", "2급", "3급")
 
 
@@ -209,27 +204,34 @@ def clean_markers(text):
 
 
 def parse_items(result_text):
-    """섹션 2 표를 파싱해 항목별 상세 정보를 {번호: {...}} 딕셔너리로 만든다."""
+    """섹션 2 표를 파싱해 항목별 상세 정보를 {번호: {...}} 딕셔너리로 만든다.
+    줄 단위로 파이프(|)를 분리하는 관대한 방식 — 모델이 들여쓰기/말미 파이프 누락 등
+    표 형식을 정확히 지키지 않아도 행을 인식할 수 있도록 한다."""
     items = {}
-    for m in TABLE_ROW_RE.finditer(result_text):
-        id_str, type_, grade, score_str, orig, replaced, reason = m.groups()
-        if not id_str.isdigit() or type_ in ("유형", "---", "------"):
+    for line in result_text.splitlines():
+        line = line.strip()
+        if not line or "|" not in line:
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) < 7:
+            continue
+        id_str, type_, grade, score_str, orig, replaced, reason = cells[:7]
+        if not id_str.isdigit() or type_ in ("유형", "") or set(type_) <= {"-"}:
             continue
         try:
-            score = max(0, min(100, int(score_str.strip())))
+            score = max(0, min(100, int(re.sub(r'[^\d-]', '', score_str) or 0)))
         except ValueError:
             score = 50
-        grade = grade.strip()
         if grade not in ITEM_GRADES:
             grade = grade_for_score(score)
         items[id_str] = {
             "id": id_str,
-            "type": type_.strip(),
+            "type": type_,
             "grade": grade,
             "score": score,
-            "orig": orig.strip(),
-            "replaced": replaced.strip(),
-            "reason": reason.strip(),
+            "orig": orig,
+            "replaced": replaced,
+            "reason": reason,
         }
     return items
 
@@ -310,8 +312,9 @@ def parse_risk(result_text):
 
 
 def get_section(text, n):
-    """'### n. ...' 헤딩으로 시작해 다음 '### 숫자' 헤딩 전까지의 섹션 텍스트를 추출한다."""
-    m = re.search(rf'###\s*{n}[.\s][\s\S]*?(?=###\s*\d|\Z)', text)
+    """'### n. ...' 헤딩으로 시작해 다음 '## 숫자' 헤딩 전까지의 섹션 텍스트를 추출한다.
+    모델이 '##'/'###' 중 어느 쪽을 쓰든 인식하도록 관대하게 매칭한다."""
+    m = re.search(rf'#{{2,3}}\s*{n}[.\s][\s\S]*?(?=#{{2,3}}\s*\d|\Z)', text)
     return m.group(0) if m else ''
 
 
@@ -366,7 +369,7 @@ def process_file(upload_path, filename):
     grade = risk["grade"]
 
     body = get_section(result_text, 1)
-    body = re.sub(r'^###\s*1[.\s][^\n]*\n?', '', body).strip()
+    body = re.sub(r'^#{2,3}\s*1[.\s][^\n]*\n?', '', body).strip()
     body = safe_force_mask(body, grade)
 
     blocked = action_for_grade(grade) == "block"
