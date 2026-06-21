@@ -94,7 +94,7 @@ body {
   color: var(--accent);
   font-size: 13px;
   font-weight: 500;
-  font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   cursor: pointer;
   transition: border-color .15s, background .15s;
 }
@@ -141,7 +141,7 @@ body {
   color: #fff;
   font-size: 15px;
   font-weight: 500;
-  font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;

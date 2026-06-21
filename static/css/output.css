@@ -16,7 +16,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   transition: box-shadow .15s;
 }
 .btn-dl:hover { box-shadow: 0 0 16px rgba(54,103,255,.45); }
@@ -30,7 +30,7 @@ body {
   font-size: 12px;
   cursor: pointer;
   text-decoration: none;
-  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  font-family: 'Pretendard', sans-serif;
   transition: border-color .15s, color .15s;
 }
 .btn-home:hover { border-color: var(--text); color: var(--text); }
@@ -68,7 +68,7 @@ body {
   flex-shrink: 0;
 }
 .summary-num {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
   font-size: 22px;
   font-weight: 500;
   line-height: 1;
@@ -88,7 +88,7 @@ body {
   padding: 6px 14px;
   border-radius: 6px;
   margin: 8px 16px 0;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
   flex-shrink: 0;
 }
 
@@ -132,7 +132,7 @@ body {
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 10px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
   text-transform: none;
   letter-spacing: 0;
 }
@@ -140,7 +140,7 @@ body {
 .panel-tag.after  { background: var(--secret-bg); color: var(--secret); }
 
 .count-badge {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--person);
@@ -242,7 +242,7 @@ body {
 }
 .review-score {
   font-size: 11px;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
   color: var(--text);
   text-align: center;
 }
@@ -251,11 +251,11 @@ body {
   padding: 2px 8px;
   border-radius: 10px;
   text-align: center;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
 }
 .review-orig {
   color: var(--muted);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Pretendard', sans-serif;
   font-size: 11px;
   overflow: hidden;
   text-overflow: ellipsis;
