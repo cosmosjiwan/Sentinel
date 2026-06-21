@@ -54,9 +54,6 @@
   </div>
 {% else %}
 
-  <!-- GPT 폴백 형식 안내 (필요시 노출) -->
-  <div class="fallback-banner" id="fallbackBanner" style="display:none"></div>
-
   <div class="panes">
 
     <!-- 문서 미리보기 -->
@@ -86,151 +83,30 @@
 </div>
 
 {% if not blocked %}
-<script id="rawResult" type="text/plain">{{ result | e }}</script>
+<script id="docBody-src" type="text/plain">{{ body | e }}</script>
+<script id="itemsData" type="application/json">{{ items | tojson }}</script>
 <script id="reviewMeta" type="application/json">{{ filename | tojson }}</script>
 <script>
-const raw = document.getElementById('rawResult').textContent;
+const bodyText = document.getElementById('docBody-src').textContent;
+const items = JSON.parse(document.getElementById('itemsData').textContent);
 const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
-const DOC_GRADE = {{ risk.grade | tojson }};
-const DOC_SCORE = {{ risk.score | tojson }};
 const ITEM_GRADES = ["특급","1급","2급","3급"];
-function gradeFromScore(score) {
-  if (score >= 90) return "특급";
-  if (score >= 70) return "1급";
-  if (score >= 40) return "2급";
-  return "3급";
-}
 
-/* ── 섹션 추출 ── */
-function getSection(text, n) {
-  const re = new RegExp(`###\\s*${n}[.\\s][\\s\\S]*?(?=###\\s*\\d|$)`, 'i');
-  const m = text.match(re);
-  return m ? m[0] : '';
-}
-
-/* 파서 A: @@REDACT|type|grade|score|orig|replaced@@ 마커 */
-const MARKER_RE = /@@REDACT\|([^|@\n]+)\|([^|@\n]+)\|([^|@\n]+)\|([^|@\n]*(?:\\\|[^|@\n]*)*)\|([^@\n]*(?:\\\|[^@\n]*)*)@@/g;
-function unescapePipe(s){ return s.replace(/\\\|/g,'|'); }
-
-function parseMarkersFromText(docText) {
-  const items = [], seen = {};
-  let m; MARKER_RE.lastIndex = 0;
-  while ((m = MARKER_RE.exec(docText)) !== null) {
-    const type     = m[1].trim();
-    let   grade    = m[2].trim();
-    let   score    = parseInt(m[3].trim(), 10);
-    if (isNaN(score)) score = 50; else score = Math.max(0, Math.min(100, score));
-    if (!ITEM_GRADES.includes(grade)) grade = gradeFromScore(score);
-    const orig     = unescapePipe(m[4].trim());
-    const replaced = unescapePipe(m[5].trim());
-    const key = type+'|'+orig;
-    if (seen[key] === undefined) {
-      seen[key] = items.length;
-      items.push({ type, grade, score, orig, replaced, typeLabel: typeToLabel(type), count: 1, allowed:false, source:'marker' });
-    } else { items[seen[key]].count++; }
-  }
-  return items;
-}
-
-/* 문서를 .ent 토큰으로 렌더 (mask=치환값, orig=원문) */
-function renderDocument(docText, items) {
-  const keyToIdx = {};
-  items.forEach((item,idx) => { keyToIdx[item.type+'|'+item.orig] = idx; });
-  MARKER_RE.lastIndex = 0;
-  let html = docText.replace(MARKER_RE, (match, type, grade, score, rawOrig, rawRep) => {
-    const orig     = unescapePipe(rawOrig.trim());
-    const replaced = unescapePipe(rawRep.trim());
-    const t = type.trim();
-    const idx = keyToIdx[t+'|'+orig];
-    return `<span class="ent ent-${esc(t)}" data-idx="${idx}" onclick="selectItem(${idx})">`
-         + `<span class="ent-mask">${esc(replaced)}</span>`
-         + `<span class="ent-orig">${esc(orig)}</span></span>`;
-  });
-  return toParas(html);
-}
-
-/* 파서 B: <Rn>[치환값]</Rn> 폴백 */
-const XML_TAG_RE = /<R(\d+)>([^<]*)<\/R\1>/g;
-
-function parseMarkersFromXml(docText, sec2) {
-  const tableItems = parseTableItems(sec2);
-  const items = [];
-  const tagMap = {};
-  let m; XML_TAG_RE.lastIndex = 0;
-  while ((m = XML_TAG_RE.exec(docText)) !== null) {
-    const tagNum   = m[1];
-    const replaced = m[2].trim();
-    if (tagMap[tagNum] !== undefined) { items[tagMap[tagNum]].count++; continue; }
-    const match = tableItems.find(t => t.replaced === replaced || t.replaced.includes(replaced) || replaced.includes(t.replaced));
-    const orig     = match ? match.orig     : replaced;
-    const type     = match ? match.type     : guessTypeFromReplaced(replaced);
-    const reason   = match ? match.reason   : '';
-    tagMap[tagNum] = items.length;
-    items.push({ type, grade: DOC_GRADE, score: DOC_SCORE, orig, replaced, typeLabel: typeToLabel(type), count: 1, allowed:false, reason, source:'xml' });
-  }
-  return items;
-}
-function _xmlTagToIdx(docText) {
-  let m; XML_TAG_RE.lastIndex = 0; let counter = 0;
-  const tagMap = {};
-  while ((m = XML_TAG_RE.exec(docText)) !== null) { if (tagMap[m[1]] === undefined) tagMap[m[1]] = counter++; }
-  const tagToIdx = {};
-  Object.keys(tagMap).sort((a,b) => +a - +b).forEach((num, i) => { tagToIdx[num] = i; });
-  return tagToIdx;
-}
-function renderDocumentXml(docText, items) {
-  const tagToIdx = _xmlTagToIdx(docText);
-  XML_TAG_RE.lastIndex = 0;
-  let html = docText.replace(XML_TAG_RE, (match, num, replaced) => {
-    const idx = tagToIdx[num] !== undefined ? tagToIdx[num] : 0;
-    const item = items[idx] || { type:'person', orig: replaced };
-    return `<span class="ent ent-${esc(item.type)}" data-idx="${idx}" onclick="selectItem(${idx})">`
-         + `<span class="ent-mask">${esc(replaced)}</span>`
+/* 본문의 <R번호>치환표현</R번호> 태그를 클릭 가능한 .ent 토큰으로 렌더 (mask=치환표현, orig=원문) */
+const TAG_RE = /<R(\d+)>([\s\S]*?)<\/R\1>/g;
+function renderDocument(text) {
+  TAG_RE.lastIndex = 0;
+  let html = text.replace(TAG_RE, (match, id, inner) => {
+    const item = items[id];
+    if (!item) return esc(inner);
+    item.count = (item.count || 0) + 1;
+    return `<span class="ent ent-${esc(item.type)}" data-idx="${id}" onclick="selectItem(${id})">`
+         + `<span class="ent-mask">${esc(inner)}</span>`
          + `<span class="ent-orig">${esc(item.orig)}</span></span>`;
   });
   return toParas(html);
 }
 
-/* ── 테이블 / 요약 파싱 ── */
-function parseTableItems(sec2) {
-  const result = [];
-  for (const line of sec2.split('\n')) {
-    if (!line.includes('|')) continue;
-    const cells = line.split('|').map(c=>c.trim()).filter(Boolean);
-    if (cells.length < 2 || /유형|---/.test(cells[0])) continue;
-    const [typeStr, orig, , reason] = cells;
-    if (!orig || orig==='원문') continue;
-    result.push({ type: classifyType(typeStr), orig: orig.trim(), replaced: '', reason: (reason||'').trim() });
-  }
-  return result;
-}
-function parseSummary(sec4) {
-  const s = {};
-  for (const l of sec4.split('\n')) {
-    const num = l.match(/:\s*(\d+)/);
-    if (!num) continue;
-    if (/총.*탐지|탐지.*건/i.test(l)) s.total = +num[1];
-  }
-  return s;
-}
-
-/* ── 유형 분류 헬퍼 ── */
-function classifyType(t) {
-  t = t || '';
-  if (/개인|이름|연락|전화|이메일|주민|생년/.test(t)) return 'person';
-  if (/기업|기관|회사|대학|연구소|조직/.test(t))       return 'org';
-  if (/지적|신약|후보|물질|프로젝트|알고|성능|수치|효능|제품|기술|특허/.test(t)) return 'ip';
-  if (/인증|api|key|password|secret|token|access/i.test(t)) return 'auth';
-  return 'secret';
-}
-function guessTypeFromReplaced(r) {
-  if (/\[연락처\]|\[이메일\]|\[주민/.test(r)) return 'person';
-  if (/\[API_KEY\]|\[PASSWORD\]|\[SECRET\]|\[ACCESS/.test(r)) return 'auth';
-  if (/\[계좌\]|\[카드/.test(r)) return 'secret';
-  if (/국내 기업|국내 대학|연구기관/.test(r)) return 'org';
-  if (/연구개발|후보물질|개발 제품|핵심 알고/.test(r)) return 'ip';
-  return 'person';
-}
 function typeToLabel(t) {
   return {person:'개인정보',org:'기업/기관',ip:'지적재산',auth:'인증정보',secret:'금융/기타'}[t]||'기타';
 }
@@ -248,7 +124,7 @@ function renderSingleItem(item, idx) {
   list.innerHTML = `
     <div class="det active" data-idx="${idx}">
       <div class="det-top">
-        <span class="cat-chip cat-${esc(item.type)}">${esc(item.typeLabel)}</span>
+        <span class="cat-chip cat-${esc(item.type)}">${esc(typeToLabel(item.type))}</span>
         <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
         <span class="det-score">${esc(item.score)}점</span>
       </div>
@@ -265,7 +141,7 @@ function renderSingleItem(item, idx) {
 /* ── 요약 등급 칩 ── */
 function renderSummaryGrades(items) {
   const counts = {"특급":0,"1급":0,"2급":0,"3급":0};
-  items.forEach(i => { if (counts[i.grade] !== undefined) counts[i.grade] += i.count; });
+  Object.values(items).forEach(i => { if (counts[i.grade] !== undefined) counts[i.grade] += (i.count || 0); });
   const el = document.getElementById('summaryGrades');
   el.innerHTML = ITEM_GRADES
     .filter(g => counts[g] > 0)
@@ -281,7 +157,7 @@ function selectItem(idx){
 }
 
 function showReviewForItem(idx){
-  const items = window.__items || [];
+  const items = window.__items || {};
   if (!items[idx]) return;
   document.querySelectorAll('.ent.active, .det.active').forEach(e=>e.classList.remove('active'));
   selected = idx;
@@ -297,7 +173,7 @@ function closeReviewPanel(){
 }
 
 function setAllow(idx, allow){
-  const items = window.__items || [];
+  const items = window.__items || {};
   if (!items[idx]) return;
   items[idx].allowed = allow;
   // 세그먼트 버튼 상태
@@ -312,19 +188,19 @@ function setAllow(idx, allow){
 }
 
 function syncCount(){
-  const items = window.__items || [];
+  const items = window.__items || {};
   document.getElementById('summaryMeta').textContent =
-    `문서 등급 {{ risk.grade_label }} · 점수 {{ risk.score }}/100 · 민감정보 ${items.length}건 탐지`;
+    `문서 등급 {{ risk.grade_label }} · 점수 {{ risk.score }}/100 · 민감정보 ${Object.keys(items).length}건 탐지`;
 }
 
 /* ── 승인하고 내보내기: 허용 항목은 원문 유지로 저장 후 다운로드 ── */
 function applyAndExport(){
-  const items = window.__items || [];
-  if (!items.length) { window.location = `/download/${filename}_redacted.txt`; return; }
-  const edits = items.map(it => ({
-    type: it.type,
-    orig: it.orig,
-    replacement: it.allowed ? it.orig : it.replaced,
+  const items = window.__items || {};
+  const ids = Object.keys(items);
+  if (!ids.length) { window.location = `/download/${filename}_redacted.txt`; return; }
+  const edits = ids.map(id => ({
+    id: +id,
+    replacement: items[id].allowed ? items[id].orig : items[id].replaced,
   }));
   fetch(`/apply_review/${encodeURIComponent(filename)}`, {
     method: 'POST',
@@ -346,29 +222,7 @@ document.getElementById('revealToggle').addEventListener('change', e => {
 
 /* ══ 메인 실행 ══ */
 (function run(){
-  const sec1 = getSection(raw,1).replace(/^###\s*1[.\s][^\n]*\n/,'').trim();
-  const sec2 = getSection(raw,2);
-  const sec4 = getSection(raw,4);
-  const summary = parseSummary(sec4);
-
-  const hasMarker = MARKER_RE.test(sec1); MARKER_RE.lastIndex=0;
-  const hasXmlTag = XML_TAG_RE.test(sec1); XML_TAG_RE.lastIndex=0;
-
-  let items, docHtml;
-  if (hasMarker) {
-    items   = parseMarkersFromText(sec1);
-    docHtml = renderDocument(sec1, items);
-  } else if (hasXmlTag) {
-    items   = parseMarkersFromXml(sec1, sec2);
-    docHtml = renderDocumentXml(sec1, items);
-    const banner = document.getElementById('fallbackBanner');
-    banner.textContent = '⚠ GPT가 대체 형식으로 응답했습니다. 일부 항목이 부정확할 수 있습니다.';
-    banner.style.display = 'block';
-  } else {
-    items   = [];
-    docHtml = toParas(sec1 || raw.substring(0,3000));
-  }
-
+  const docHtml = renderDocument(bodyText);
   document.getElementById('docBody').innerHTML = docHtml || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
   window.__items = items;
   renderSummaryGrades(items);

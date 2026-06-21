@@ -27,17 +27,22 @@ PROMPT = """
 🚨 출력 형식 규칙 — 이것이 가장 중요한 지시사항이다
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-검열된 문서(섹션 1)에서 민감정보는 반드시 아래 마커로만 표시한다.
-다른 어떤 형식(XML 태그, 대괄호, 볼드, 밑줄 등)도 절대 사용하지 않는다.
+검열된 문서(섹션 1) 본문에는 민감정보의 "치환 표현"만 짧은 번호 태그로 표시하고,
+원문/등급/점수 같은 상세 정보는 절대 본문에 넣지 않는다 — 반드시 섹션 2의 표로만 보낸다.
+이렇게 분리하는 이유: 이메일 주소처럼 특수문자(@)가 포함된 원문이 본문에 그대로
+섞여 들어가면 다른 표시 형식과 충돌하므로, 본문은 항상 일반 텍스트만 유지한다.
 
-✅ 반드시 사용할 마커 형식:
-@@REDACT|유형코드|등급|점수|원문|치환값@@
+✅ 본문(섹션 1)에서 반드시 사용할 태그 형식:
+<R번호>치환표현</R번호>
+(번호는 1부터 시작하는 정수이며, 동일 엔티티는 문서 전체에서 동일 번호를 사용한다)
 
 ❌ 절대 사용 금지 (이 형식들을 쓰면 시스템이 작동하지 않는다):
-- <R1>[치환값]</R1>  ← XML 태그 형식 금지
+- @@REDACT|...@@     ← 구버전 마커 형식 금지
 - **[치환값]**       ← 볼드 마커 형식 금지
-- [치환값]           ← 단순 대괄호 형식 금지
-- {치환값}           ← 중괄호 형식 금지
+- [치환값]           ← 태그 없는 단순 대괄호 형식 금지 (반드시 <R번호>로 감싼다)
+
+✅ 본문 밖, 섹션 2 표에 반드시 채워야 할 상세 정보:
+| 번호 | 유형 | 등급 | 점수 | 원문 | 치환표현 | 판단 근거 |
 
 유형코드:
 - person  → 개인정보 (이름, 전화번호, 이메일, 주민번호 등)
@@ -62,21 +67,31 @@ PROMPT = """
   소속: 오리온바이오텍 연구소
   API 키: sk-abc123xyz
 
-올바른 출력:
-  프로젝트명: @@REDACT|ip|2급|55|Project Orion-X|연구개발 프로젝트@@
-  담당자: @@REDACT|person|2급|50|김민수|부장 A@@ 부장
-  연락처: @@REDACT|person|1급|75|010-4827-1934|[연락처]@@
-  이메일: @@REDACT|person|1급|72|mskim@orionbiotech.co.kr|[이메일]@@
-  소속: @@REDACT|org|2급|45|오리온바이오텍 연구소|국내 기업 연구소@@
-  API 키: @@REDACT|auth|특급|95|sk-abc123xyz|[API_KEY]@@
+섹션 1 (본문) 올바른 출력:
+  프로젝트명: <R1>연구개발 프로젝트</R1>
+  담당자: <R2>부장 A</R2> 부장
+  연락처: <R3>[연락처]</R3>
+  이메일: <R4>[이메일]</R4>
+  소속: <R5>국내 기업 연구소</R5>
+  API 키: <R6>[API_KEY]</R6>
+
+섹션 2 (표) 올바른 출력:
+| 번호 | 유형 | 등급 | 점수 | 원문 | 치환표현 | 판단 근거 |
+|------|------|------|------|------|----------|-----------|
+| 1 | ip | 2급 | 55 | Project Orion-X | 연구개발 프로젝트 | 프로젝트 코드명 |
+| 2 | person | 2급 | 50 | 김민수 | 부장 A | 이름 |
+| 3 | person | 1급 | 75 | 010-4827-1934 | [연락처] | 전화번호 |
+| 4 | person | 1급 | 72 | mskim@orionbiotech.co.kr | [이메일] | 이메일 |
+| 5 | org | 2급 | 45 | 오리온바이오텍 연구소 | 국내 기업 연구소 | 소속 기관 |
+| 6 | auth | 특급 | 95 | sk-abc123xyz | [API_KEY] | API 키 |
 
 ━━━ 주의사항 ━━━
-- "연락처:", "이메일:", "담당자:" 같은 레이블은 마커 밖에 그대로 둔다.
-- 마커 안 원문에는 민감한 값만 넣는다 (레이블 제외).
-- 동일 엔티티는 문서 전체에서 동일한 마커로 일관되게 치환한다 (등급/점수도 동일하게 유지).
-- 파이프(|) 문자가 값에 포함되면 \\| 로 이스케이프한다 (원문/치환값 필드에만 적용).
+- "연락처:", "이메일:", "담당자:" 같은 레이블은 태그 밖에 그대로 둔다.
+- <R번호> 태그 안에는 치환 표현만 넣는다 (레이블 제외, 원문 절대 금지).
+- 동일 엔티티는 문서 전체에서 동일한 번호로 일관되게 치환한다 (등급/점수도 동일하게 유지).
+- 표의 셀 값에 파이프(|) 문자가 포함되면 다른 기호(예: /)로 바꿔 표 구조가 깨지지 않게 한다.
 - 아래 "사전 탐지된 정규식 매칭 항목"이 입력으로 함께 제공되면, 해당 항목들은
-  반드시 누락 없이 마커로 포함시키고, 추가로 발견되는 항목도 함께 탐지한다.
+  반드시 누락 없이 태그로 포함시키고, 추가로 발견되는 항목도 함께 탐지한다.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -160,17 +175,13 @@ RISK_JSON: {"confidentiality": <0-100 정수>, "integrity": <0-100 정수>, "ava
 ## 출력 구조 (반드시 이 순서와 형식으로)
 
 ### 1. 검열된 전체 문서
-(원문 구조를 유지하되 민감정보는 @@REDACT|유형|등급|점수|원문|치환값@@ 마커로만 표시)
+(원문 구조를 유지하되 민감정보는 <R번호>치환표현</R번호> 태그로만 표시)
 
-### 2. 탐지된 민감정보 목록
-| 유형 | 원문 | 위치 | 판단 근거 |
-|------|------|------|-----------|
+### 2. 탐지된 민감정보 상세
+| 번호 | 유형 | 등급 | 점수 | 원문 | 치환표현 | 판단 근거 |
+|------|------|------|------|------|----------|-----------|
 
-### 3. 치환 결과
-| 원문 | 치환값 |
-|------|--------|
-
-### 4. 검열 요약
+### 3. 검열 요약
 - 총 탐지 건수:
 - 개인정보:
 - 금융정보:
@@ -178,44 +189,49 @@ RISK_JSON: {"confidentiality": <0-100 정수>, "integrity": <0-100 정수>, "ava
 - 기업기밀:
 - 지적재산:
 
-### 5. 위험성 평가 (ISO 27005)
+### 4. 위험성 평가 (ISO 27005)
 RISK_JSON: {"confidentiality": 0, "integrity": 0, "availability": 0}
 """
 
 RISK_RE = re.compile(r'RISK_JSON:\s*(\{[^\n]*\})')
-# group 1=유형, 2=등급, 3=점수, 4=원문, 5=치환값
-MARKER_RE = re.compile(r'@@REDACT\|(\w+)\|([^|]+)\|([^|]+)\|(.+?)\|(.+?)@@', re.DOTALL)
+TAG_RE = re.compile(r'<R(\d+)>(.*?)</R\1>', re.DOTALL)
+TABLE_ROW_RE = re.compile(
+    r'^\|\s*(\d+)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|'
+    r'\s*([^|\n]+?)\s*\|\s*([^|\n]+?)\s*\|\s*([^|\n]*?)\s*\|\s*$',
+    re.MULTILINE,
+)
 ITEM_GRADES = ("특급", "1급", "2급", "3급")
 
 
 def clean_markers(text):
-    """
-    @@REDACT|type|등급|점수|원문|치환값@@ → 치환값
-    <Rn>[치환값]</Rn>                      → [치환값]  (폴백 형식도 처리)
-    """
-    text = MARKER_RE.sub(
-        lambda m: m.group(5).replace('\\|', '|'),
-        text
-    )
-    text = re.sub(r'<R\d+>(.*?)</R\d+>', r'\1', text, flags=re.DOTALL)
-    return text
+    """<R번호>치환표현</R번호> → 치환표현"""
+    return TAG_RE.sub(lambda m: m.group(2), text)
 
 
-def sanitize_item_markers(text):
-    """모델이 등급/점수를 형식에 맞지 않게 출력한 경우, 점수로부터 등급을 다시 산출해 보정한다."""
-    def fix(m):
-        type_, grade, score_str, orig, replaced = m.groups()
+def parse_items(result_text):
+    """섹션 2 표를 파싱해 항목별 상세 정보를 {번호: {...}} 딕셔너리로 만든다."""
+    items = {}
+    for m in TABLE_ROW_RE.finditer(result_text):
+        id_str, type_, grade, score_str, orig, replaced, reason = m.groups()
+        if not id_str.isdigit() or type_ in ("유형", "---", "------"):
+            continue
         try:
             score = max(0, min(100, int(score_str.strip())))
         except ValueError:
             score = 50
-        if grade.strip() not in ITEM_GRADES:
+        grade = grade.strip()
+        if grade not in ITEM_GRADES:
             grade = grade_for_score(score)
-        else:
-            grade = grade.strip()
-        return f"@@REDACT|{type_}|{grade}|{score}|{orig}|{replaced}@@"
-
-    return MARKER_RE.sub(fix, text)
+        items[id_str] = {
+            "id": id_str,
+            "type": type_.strip(),
+            "grade": grade,
+            "score": score,
+            "orig": orig.strip(),
+            "replaced": replaced.strip(),
+            "reason": reason.strip(),
+        }
+    return items
 
 
 def extract_text(path, filename):
@@ -293,17 +309,23 @@ def parse_risk(result_text):
     }
 
 
-def safe_force_mask(text, grade):
-    """마커 구간은 보존한 채, 마커 밖에 평문으로 남은 정규식 매칭 잔여 노출을 강제 마스킹한다."""
+def get_section(text, n):
+    """'### n. ...' 헤딩으로 시작해 다음 '### 숫자' 헤딩 전까지의 섹션 텍스트를 추출한다."""
+    m = re.search(rf'###\s*{n}[.\s][\s\S]*?(?=###\s*\d|\Z)', text)
+    return m.group(0) if m else ''
+
+
+def safe_force_mask(body, grade):
+    """<R번호> 태그 구간은 보존한 채, 태그 밖에 평문으로 남은 정규식 매칭 잔여 노출을 강제 마스킹한다."""
     if grade == "3급":
-        return text
+        return body
     placeholders = []
 
     def stash(m):
         placeholders.append(m.group(0))
         return f"\x00{len(placeholders) - 1}\x00"
 
-    stashed = MARKER_RE.sub(stash, text)
+    stashed = TAG_RE.sub(stash, body)
     masked = force_mask_residual(stashed)
 
     def restore(m):
@@ -312,22 +334,26 @@ def safe_force_mask(text, grade):
     return re.sub(r'\x00(\d+)\x00', restore, masked)
 
 
-def apply_grade_marker_rewrite(text):
-    """각 마커에 담긴 항목 단위 등급(2번 필드)에 따라 마커의 '치환값' 필드를 재작성한다.
-    (문서 전체 등급이 아니라 항목 각각의 등급으로 결정한다.
-    마커 구조 자체는 유지하므로 프론트엔드 파서는 변경 없이 그대로 동작한다)"""
+def apply_grade_rewrite(body, items):
+    """각 항목 자신의 등급(섹션 2 표에서 파싱한 grade)에 따라 본문 태그의 치환 표현을 재작성한다.
+    (문서 전체 등급이 아니라 항목 각각의 등급으로 결정한다. items 딕셔너리도 함께 갱신된다.)"""
 
     def rewrite(m):
-        type_, item_grade, score, orig, replaced = m.groups()
-        action = action_for_grade(item_grade.strip())
+        id_str, inner = m.group(1), m.group(2)
+        item = items.get(id_str)
+        if not item:
+            return m.group(0)
+        action = action_for_grade(item["grade"])
         if action == "publish":  # 3급: 원문 그대로 노출
-            replaced = orig
+            new = item["orig"]
         elif action in ("mask", "block"):  # 특급/1급: 완전 마스킹 (항목 단위에는 "차단"이 없으므로 마스킹 처리)
-            replaced = MASK_TOKEN.get(type_, "[마스킹]")
-        # substitute (2급): 모델이 제안한 의미유지 치환값 그대로 사용
-        return f"@@REDACT|{type_}|{item_grade}|{score}|{orig}|{replaced}@@"
+            new = MASK_TOKEN.get(item["type"], "[마스킹]")
+        else:  # substitute (2급): 모델이 제안한 의미유지 치환 표현 그대로 사용
+            new = inner
+        item["replaced"] = new
+        return f"<R{id_str}>{new}</R{id_str}>"
 
-    return MARKER_RE.sub(rewrite, text)
+    return TAG_RE.sub(rewrite, body)
 
 
 def process_file(upload_path, filename):
@@ -335,22 +361,25 @@ def process_file(upload_path, filename):
     결과를 results/ 에 저장한 뒤 요약 dict를 반환한다."""
     raw_text = extract_text(upload_path, filename)
     result_text = run_detection(upload_path, filename, raw_text)
-    result_text = sanitize_item_markers(result_text)
+    items = parse_items(result_text)
     risk = parse_risk(result_text)
     grade = risk["grade"]
 
-    result_text = safe_force_mask(result_text, grade)
+    body = get_section(result_text, 1)
+    body = re.sub(r'^###\s*1[.\s][^\n]*\n?', '', body).strip()
+    body = safe_force_mask(body, grade)
 
     blocked = action_for_grade(grade) == "block"
     if blocked:
-        display_text = None
+        display_body = ""
+        items = {}
         clean_text = (
             f"[차단됨] 본 문서는 위험성 평가 결과 '{risk['grade_label']}' 등급으로 분류되어 "
             f"공개·다운로드가 금지됩니다. (민감성 점수: {risk['score']})"
         )
     else:
-        display_text = apply_grade_marker_rewrite(result_text)
-        clean_text = clean_markers(display_text)
+        display_body = apply_grade_rewrite(body, items)
+        clean_text = clean_markers(display_body)
 
     base = os.path.basename(filename)
     txt_path = os.path.join("results", base + "_redacted.txt")
@@ -361,7 +390,8 @@ def process_file(upload_path, filename):
 
     record = {
         "filename": base,
-        "raw_result": display_text if not blocked else "",
+        "body": display_body,
+        "items": items,
         "clean_text": clean_text,
         "risk": risk,
         "blocked": blocked,
@@ -407,7 +437,8 @@ def view_result(filename):
     return render_template(
         "output.html",
         filename=record["filename"],
-        result=record["raw_result"],
+        body=record["body"],
+        items=record["items"],
         risk=record["risk"],
         blocked=record["blocked"],
     )
@@ -415,7 +446,7 @@ def view_result(filename):
 
 @app.route("/apply_review/<filename>", methods=["POST"])
 def apply_review(filename):
-    """검토자가 항목별 치환 표현을 직접 수정한 결과를 저장한다.
+    """검토자가 항목별 치환 표현을 번호(id) 기준으로 직접 수정한 결과를 저장한다.
     accept/reject 뿐 아니라 자유 텍스트 수정을 허용한다."""
     json_path = os.path.join("results", os.path.basename(filename) + ".json")
     if not os.path.exists(json_path):
@@ -429,27 +460,24 @@ def apply_review(filename):
     edits = request.get_json(silent=True) or {}
     edits = edits.get("edits", [])
 
-    text = record["raw_result"]
+    body = record["body"]
+    items = record["items"]
     for edit in edits:
-        type_ = edit.get("type", "")
-        orig = edit.get("orig", "")
+        id_str = str(edit.get("id", ""))
         replacement = edit.get("replacement", "")
-        if not orig:
+        if id_str not in items:
             continue
-        escaped_orig = re.escape(orig)
-        escaped_type = re.escape(type_)
-        pattern = re.compile(
-            r'@@REDACT\|' + escaped_type + r'\|([^|]+)\|([^|]+)\|' + escaped_orig + r'\|(.+?)@@',
-            re.DOTALL,
-        )
-        escaped_replacement = replacement.replace('|', chr(92) + '|')
-        text = pattern.sub(
-            lambda m: f"@@REDACT|{type_}|{m.group(1)}|{m.group(2)}|{orig}|{escaped_replacement}@@",
-            text,
+        items[id_str]["replaced"] = replacement
+        body = re.sub(
+            rf'<R{id_str}>.*?</R{id_str}>',
+            lambda m, r=replacement: f"<R{id_str}>{r}</R{id_str}>",
+            body,
+            flags=re.DOTALL,
         )
 
-    clean_text = clean_markers(text)
-    record["raw_result"] = text
+    clean_text = clean_markers(body)
+    record["body"] = body
+    record["items"] = items
     record["clean_text"] = clean_text
 
     with open(json_path, "w", encoding="utf-8") as f:
