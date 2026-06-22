@@ -1,4 +1,5 @@
-body { min-height: 100vh; }
+html { height: 100%; }
+body { height: 100%; overflow: hidden; }
 
 /* ── 헤더 파일 칩 ── */
 .file-chip {
@@ -46,6 +47,8 @@ body { min-height: 100vh; }
 .doc-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 16px; border-bottom: 1px solid var(--divider);
+  position: sticky; top: 0; z-index: 10;
+  background: var(--surface);
 }
 .doc-head-title { font-size: 13px; font-weight: 600; color: var(--text); }
 .toggle {
@@ -173,21 +176,37 @@ body.reveal .ent-orig { display: inline; }
 .compare-arrow { font-size: 12px; color: var(--subtle); text-align: center; line-height: 1; margin: -1px 0; }
 .det-loc { font-size: 11px; color: var(--subtle); margin-bottom: 10px; }
 
-/* HITL segmented control */
-.seg {
-  display: inline-flex; border: 1px solid var(--border);
+/* HITL 검열 방식 선택 (마스킹/치환/공개) */
+.method-seg {
+  display: flex; border: 1px solid var(--border);
   border-radius: var(--r-control); overflow: hidden;
+  margin-bottom: 8px;
 }
-.seg button {
+.method-seg button {
+  flex: 1;
   font-family: 'Pretendard', sans-serif;
   font-size: 12px; font-weight: 600;
-  padding: 5px 12px; border: none; cursor: pointer;
+  padding: 6px 10px; border: none; cursor: pointer;
   background: var(--surface); color: var(--muted);
   transition: background .12s, color .12s;
 }
-.seg button + button { border-left: 1px solid var(--border); }
-.seg button.on-redact { background: var(--accent); color: #fff; }
-.seg button.on-allow  { background: var(--ip); color: #fff; }
+.method-seg button + button { border-left: 1px solid var(--border); }
+.method-seg button.on-mask { background: var(--person); color: #fff; }
+.method-seg button.on-sub  { background: var(--accent); color: #fff; }
+.method-seg button.on-pub  { background: var(--ip); color: #fff; }
+
+.sub-input-wrap { margin-bottom: 10px; }
+.sub-input {
+  width: 100%;
+  font-family: 'Pretendard', sans-serif;
+  font-size: 13px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  color: var(--text);
+}
+.sub-input:focus { border-color: var(--accent); }
 
 /* ── 폴백 안내 배너 ── */
 .fallback-banner {
