@@ -491,7 +491,9 @@ def process_file(upload_path, filename):
 
 @app.route("/")
 def home():
-    return render_template("input.html", deploy_time=get_deploy_time())
+    resp = app.make_response(render_template("input.html", deploy_time=get_deploy_time()))
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return resp
 
 
 @app.route("/redact", methods=["POST"])
