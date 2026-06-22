@@ -421,6 +421,27 @@ def apply_grade_rewrite(body, items):
     return TAG_RE.sub(rewrite, body)
 
 
+def disambiguate_duplicate_labels(body, items):
+    """치환 표현이 동일하지만 원문이 서로 다른 항목들(모델이 같은 표현을 잘못 재사용한 경우)에
+    'A'/'B'/'C' 접미사를 붙여 구분한다. (예: "black monkey" 중복 노출 방지)"""
+    groups = {}
+    for id_str, item in items.items():
+        groups.setdefault(item["replaced"], []).append(id_str)
+
+    for label, ids in groups.items():
+        if len(ids) < 2:
+            continue
+        origs = {items[i]["orig"] for i in ids}
+        if len(origs) < 2:
+            continue  # 같은 개체의 반복 등장이므로 그대로 둔다
+        for idx, id_str in enumerate(sorted(ids, key=int)):
+            new_label = f"{label} {chr(ord('A') + idx)}"
+            items[id_str]["replaced"] = new_label
+            tag_re = re.compile(rf'(<R{id_str}>)(.*?)(</R{id_str}>)', re.DOTALL)
+            body = tag_re.sub(lambda m, nl=new_label: f"{m.group(1)}{nl}{m.group(3)}", body)
+    return body
+
+
 def process_file(upload_path, filename):
     """단일 파일에 대해 탐지 → 위험성평가 → 등급별 처리까지 전체 파이프라인을 수행하고
     결과를 results/ 에 저장한 뒤 요약 dict를 반환한다."""
@@ -443,6 +464,7 @@ def process_file(upload_path, filename):
         )
     else:
         display_body = apply_grade_rewrite(body, items)
+        display_body = disambiguate_duplicate_labels(display_body, items)
         clean_text = clean_markers(display_body)
 
     base = os.path.basename(filename)

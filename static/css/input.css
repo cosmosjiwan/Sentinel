@@ -279,12 +279,29 @@ body {
   .content-area { overflow: visible; }
 }
 
-/* ── 모바일 대응 ── */
+/* ── 모바일: 스크롤 없이 한 화면에 업로드 흐름 전체가 보이도록 ── */
 @media (max-width: 768px) {
-  .content-area { padding: 24px 16px; }
-  .upload-hero-title { font-size: 20px; }
-  .upload-box { padding: 40px 16px; }
-  .upload-icon { width: 56px; height: 56px; }
+  html, body { height: 100%; overflow: hidden; }
+  .content-area {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 14px 16px;
+    overflow: hidden;
+  }
+  .upload-hero { gap: 10px; }
+  .upload-hero-title { font-size: 18px; line-height: 24px; }
+  .upload-hero-sub { font-size: 13px; margin-top: -4px; }
+
+  .upload-box { min-height: 0; padding: 22px 16px; }
+  .upload-icon { width: 44px; height: 44px; margin: 0 auto 14px; }
+  .upload-icon svg { width: 20px; height: 20px; }
+  .upload-title { font-size: 14px; margin-bottom: 14px; }
+  .select-btn { padding: 9px 18px; font-size: 14px; }
+  .format-chips { margin-top: 12px; gap: 8px; }
+  .fmt-chip { font-size: 12px; padding: 5px 12px; }
+  #file-name { margin-top: 12px; font-size: 12px; }
+
+  .submit-btn { padding: 12px; font-size: 15px; margin-top: 14px !important; }
 
   .scan-card { width: 100%; padding: 24px 16px; }
 }
