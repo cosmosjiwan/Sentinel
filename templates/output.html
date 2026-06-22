@@ -23,9 +23,7 @@
 <!-- 요약 스트립 -->
 <div class="summary collapsed" id="summaryStrip" onclick="toggleSummary()">
   <span class="summary-title">검열 완료</span>
-  <span class="summary-meta" id="summaryMeta">
-    문서 등급 {{ risk.grade_label }} · 민감성 점수 {{ risk.score }}/100
-  </span>
+  <span class="summary-meta" id="summaryMeta"></span>
   <div class="summary-right">
     <div class="summary-grades" id="summaryGrades"></div>
     {% if not blocked %}
@@ -69,7 +67,7 @@
   <div class="panel" id="reviewPanel">
     <div class="panel-head">
       <span class="panel-head-title">탐지 항목</span>
-      <button class="icon-btn" type="button" onclick="closeReviewPanel()" aria-label="닫기">✕</button>
+      <button class="icon-btn panel-close-btn" type="button" onclick="closeReviewPanel()" aria-label="닫기">✕</button>
     </div>
     <div class="panel-list" id="detList"></div>
   </div>
@@ -86,6 +84,14 @@ const items = JSON.parse(document.getElementById('itemsData').textContent);
 const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
 const ITEM_GRADES = ["특급","1급","2급","3급"];
 const MASK_TOKEN = {person:'[개인정보 마스킹]',org:'[기관정보 마스킹]',ip:'[기밀정보 마스킹]',auth:'[인증정보 마스킹]',secret:'[금융정보 마스킹]'};
+const SUB_FALLBACK = {person:'[개인 비식별화]',org:'[기관명 비공개]',ip:'[기밀정보 비공개]',auth:'[인증정보 비공개]',secret:'[금융정보 비공개]'};
+
+/* GPT가 실제로는 다른 표현으로 치환하지 않은 항목(원문==치환문)은, 치환 모드에서도 텍스트가 그대로 보여 변화가 없는 것처럼 보인다.
+   이 경우 의미 있는 대체 표현으로 보정한다. */
+function effectiveSubText(item) {
+  if (item.subText && item.subText !== item.orig) return item.subText;
+  return SUB_FALLBACK[item.type] || '[치환됨]';
+}
 
 /* 등급별 기본 검열 방식: 1급=마스킹, 2급=치환, 3급=공개 (양방향 고정 대응) */
 const GRADE_METHOD = {'1급':'mask','2급':'substitute','3급':'publish'};
@@ -145,11 +151,16 @@ function renderSingleItem(item, idx) {
       </div>
       ${item.method === 'substitute' ? `
       <div class="sub-input-wrap">
-        <input type="text" class="sub-input" value="${esc(item.subText ?? item.replaced)}"
+        <input type="text" class="sub-input" value="${esc(item.replaced)}"
                placeholder="원하는 치환 표현 입력" oninput="setSubText(${idx}, this.value)">
       </div>` : ''}
     </div>
   `;
+}
+
+/* 등급별 칩과 총 탐지건수는 같은 기준(문서 내 실제 탐지 횟수, item.count)으로 집계한다 */
+function totalDetections(items) {
+  return Object.values(items).reduce((sum, i) => sum + (i.count || 0), 0);
 }
 
 /* ── 요약 등급 칩 ── */
@@ -208,7 +219,7 @@ function setMethod(idx, method){
   item.grade = METHOD_GRADE[method] || item.grade;
   if (method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[마스킹]';
   else if (method === 'publish') item.replaced = item.orig;
-  else item.replaced = item.subText || item.replaced;
+  else item.replaced = effectiveSubText(item);
   applyMethodToToken(idx, item);
   renderSingleItem(item, idx);
   renderSummaryGrades(items);
@@ -230,8 +241,8 @@ function setSubText(idx, val){
 
 function syncCount(){
   const items = window.__items || {};
-  document.getElementById('summaryMeta').textContent =
-    `문서 등급 {{ risk.grade_label }} · 점수 {{ risk.score }}/100 · 민감정보 ${Object.keys(items).length}건 탐지`;
+  document.getElementById('summaryMeta').innerHTML =
+    `민감성 점수 <strong>{{ risk.score }}</strong>/100 · 총 탐지건수 <strong>${totalDetections(items)}</strong>건`;
 }
 
 /* ── 검열본 다운로드: 항목별 현재 검열 방식을 서버에 반영한 뒤 다운로드 ── */
@@ -275,6 +286,7 @@ document.getElementById('revealToggle').addEventListener('change', e => {
     item.subText = item.replaced;
     if (item.method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[마스킹]';
     else if (item.method === 'publish') item.replaced = item.orig;
+    else item.replaced = effectiveSubText(item);
     applyMethodToToken(idx, item);
   });
   window.__items = items;
@@ -282,12 +294,6 @@ document.getElementById('revealToggle').addEventListener('change', e => {
   syncCount();
 })();
 
-/* 패널 바깥(문서 내 빈 영역, 헤더 등)을 클릭하면 패널을 닫는다 */
-document.addEventListener('click', (e) => {
-  if (selected === -1) return;
-  if (e.target.closest('.ent') || e.target.closest('#reviewPanel')) return;
-  closeReviewPanel();
-});
 </script>
 {% endif %}
 </body>
