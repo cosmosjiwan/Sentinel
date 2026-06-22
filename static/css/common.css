@@ -76,6 +76,17 @@ body {
   cursor: pointer;
 }
 .brand span { color: var(--accent); }
+
+/* ── 로고 영역과 분리된 보조 정보 바 (배포 시각 등 자잘한 텍스트) ── */
+.topbar-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 24px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
 .topbar-right {
   display: flex;
   align-items: center;
@@ -189,6 +200,7 @@ body {
   .topbar-right { flex-wrap: wrap; gap: 6px; width: 100%; justify-content: flex-start; }
   .topbar-username { display: none; }
   .brand { font-size: 24px; }
+  .topbar-sub { padding: 6px 12px; flex-wrap: wrap; }
 
   .app-shell { flex-direction: column; overflow: visible; min-height: 0; }
 

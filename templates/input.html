@@ -11,11 +11,14 @@
 
 <!-- 헤더 -->
 <div class="topbar">
-  <div class="brand">Sentinel</div>
-  <div class="topbar-right">
-    {% if deploy_time %}<span class="chip" title="현재 배포된 버전이 main에 푸시된 시각 (KST)">최종 배포 {{ deploy_time }}</span>{% endif %}
-  </div>
+  <a class="brand" href="/">Sentinel</a>
 </div>
+
+{% if deploy_time %}
+<div class="topbar-sub">
+  <span class="chip" title="현재 배포된 버전이 main에 푸시된 시각 (KST)">최종 배포 {{ deploy_time }}</span>
+</div>
+{% endif %}
 
 <!-- 콘텐츠 영역 -->
 <div class="content-area">
