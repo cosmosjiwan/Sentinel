@@ -146,11 +146,31 @@ body.reveal .ent-orig { display: inline; }
 .cat-secret { background: var(--secret-bg); color: var(--secret); }
 .det-score { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--subtle); }
 
-.det-orig {
+.det-compare {
+  display: flex; flex-direction: column; gap: 4px;
+  margin-bottom: 10px;
+}
+.compare-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: var(--r-control);
+  border: 1px solid var(--border);
+}
+.compare-before { background: var(--person-bg); border-color: var(--person); }
+.compare-after  { background: var(--ip-bg);     border-color: var(--ip); }
+.compare-label {
+  flex: 0 0 auto;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px;
+  background: rgba(0,0,0,.06);
+}
+.compare-before .compare-label { color: var(--person); }
+.compare-after  .compare-label { color: var(--ip); }
+.compare-val {
   font-size: 13px; font-weight: 600; color: var(--text);
-  margin-bottom: 2px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.compare-before .compare-val { text-decoration: line-through; text-decoration-color: var(--person); opacity: .85; }
+.compare-arrow { font-size: 12px; color: var(--subtle); text-align: center; line-height: 1; margin: -1px 0; }
 .det-loc { font-size: 11px; color: var(--subtle); margin-bottom: 10px; }
 
 /* HITL segmented control */
