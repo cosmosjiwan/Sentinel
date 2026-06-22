@@ -289,11 +289,11 @@ body {
   .content-area { overflow: visible; }
 }
 
-/* ── 모바일: 스크롤 없이 한 화면에 업로드 흐름 전체가 보이도록 ── */
+/* ── 모바일: 업로드 박스가 화면을 세로로 가득 채우고, 검열 버튼은 화면 하단에 위치하도록 ── */
 @media (max-width: 768px) {
   html, body { height: 100%; overflow: hidden; }
   .content-area {
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: flex-start;
     padding: 14px 16px;
     overflow: hidden;
@@ -302,17 +302,23 @@ body {
   .upload-hero-title { font-size: 19px; line-height: 25px; }
   .upload-hero-sub { font-size: 13px; margin-top: -6px; }
 
-  .upload-box { min-height: 0; padding: 22px 16px; border-radius: 16px; flex-direction: column; text-align: center; gap: 0; }
+  /* 폼이 남은 세로 공간을 모두 차지하고, 그 안에서 업로드 박스가 늘어나 버튼을 바닥으로 민다 */
+  #uploadForm { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  .upload-box {
+    flex: 1; min-height: 0;
+    padding: 24px 16px; border-radius: 16px;
+    flex-direction: column; text-align: center; gap: 0;
+  }
   .upload-content { align-items: center; }
-  .upload-icon { width: 44px; height: 44px; margin: 0 auto 12px; border-radius: 12px; }
-  .upload-icon svg { width: 20px; height: 20px; }
-  .upload-title { font-size: 14px; margin-bottom: 12px; }
-  .select-btn { padding: 9px 18px; font-size: 13px; }
-  .format-chips { margin-top: 10px; gap: 6px; justify-content: center; }
+  .upload-icon { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 14px; }
+  .upload-icon svg { width: 24px; height: 24px; }
+  .upload-title { font-size: 15px; margin-bottom: 14px; }
+  .select-btn { padding: 10px 20px; font-size: 14px; }
+  .format-chips { margin-top: 12px; gap: 6px; justify-content: center; }
   .fmt-chip { font-size: 11px; padding: 5px 11px; }
-  #file-name { margin-top: 10px; font-size: 12px; justify-content: center; }
+  #file-name { margin-top: 12px; font-size: 12px; justify-content: center; }
 
-  .submit-btn { padding: 13px; font-size: 15px; margin-top: 14px !important; }
+  .submit-btn { flex-shrink: 0; padding: 15px; font-size: 16px; margin-top: 14px !important; }
 
   .scan-card { width: 100%; padding: 24px 16px; }
 }

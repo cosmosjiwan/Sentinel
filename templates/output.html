@@ -200,9 +200,20 @@ function expandSummary(){
   document.getElementById('summaryWrap').classList.remove('collapsed');
 }
 
+/* 스크롤 방향에 따라 요약 스트립을 접고 편다:
+   - 맨 위에서는 항상 전체 요약 창을 보여준다
+   - 아래로 스크롤하면 얇은 탭으로 접는다 (탭은 화면 상단에 고정되어 떠 있다)
+   - 위로 스크롤하면 전체 요약 창이 다시 나타난다 */
+let lastScrollY = 0;
 function handleScrollTop(scrollTop){
-  if (scrollTop <= 0) expandSummary();
-  else collapseSummary();
+  if (scrollTop <= 4) {
+    expandSummary();
+  } else if (scrollTop > lastScrollY + 6) {
+    collapseSummary();
+  } else if (scrollTop < lastScrollY - 6) {
+    expandSummary();
+  }
+  lastScrollY = scrollTop;
 }
 
 function closeReviewPanel(){
