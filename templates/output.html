@@ -203,15 +203,30 @@ function expandSummary(){
 /* 스크롤 방향에 따라 요약 스트립을 접고 편다:
    - 맨 위에서는 항상 전체 요약 창을 보여준다
    - 아래로 스크롤하면 얇은 탭으로 접는다 (탭은 화면 상단에 고정되어 떠 있다)
-   - 위로 스크롤하면 전체 요약 창이 다시 나타난다 */
+   - 위로 스크롤하면 전체 요약 창이 다시 나타난다
+   접힘/펼침 애니메이션(max-height 변화)이 sticky 요약 높이를 바꾸면 본문이 reflow되어
+   scrollY가 흔들리고, 그 스크롤 이벤트가 다시 상태를 뒤집어 깜빡거림이 생긴다.
+   → 전환 중에는 잠금(lock)을 걸어 재진입을 막고, 임계값(hysteresis)을 넉넉히 둔다. */
 let lastScrollY = 0;
+let summaryLocked = false;
+function lockSummary(){
+  summaryLocked = true;
+  clearTimeout(lockSummary._t);
+  lockSummary._t = setTimeout(() => {
+    summaryLocked = false;
+    lastScrollY = window.scrollY || document.getElementById('docBody').scrollTop || 0;
+  }, 440);
+}
 function handleScrollTop(scrollTop){
+  if (summaryLocked) { return; }
+  const wrap = document.getElementById('summaryWrap');
+  const collapsed = wrap.classList.contains('collapsed');
   if (scrollTop <= 4) {
-    expandSummary();
-  } else if (scrollTop > lastScrollY + 6) {
-    collapseSummary();
-  } else if (scrollTop < lastScrollY - 6) {
-    expandSummary();
+    if (collapsed) { expandSummary(); lockSummary(); }
+  } else if (!collapsed && scrollTop > lastScrollY + 24) {
+    collapseSummary(); lockSummary();
+  } else if (collapsed && scrollTop < lastScrollY - 24) {
+    expandSummary(); lockSummary();
   }
   lastScrollY = scrollTop;
 }

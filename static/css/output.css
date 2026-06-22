@@ -260,7 +260,7 @@ body.reveal .ent-orig { display: inline; }
 }
 .compare-after .compare-val[readonly] { cursor: default; }
 .compare-arrow { font-size: 17px; font-weight: 900; color: var(--muted); text-align: center; line-height: 1; margin: -1px 0; }
-.det-loc { font-size: 11px; color: var(--subtle); margin-bottom: 14px; }
+.det-loc { font-size: 11px; color: var(--text); margin-bottom: 14px; }
 
 /* HITL 검열 방식 선택 (마스킹/치환/공개) — 세그먼트 컨트롤 */
 .method-seg {

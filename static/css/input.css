@@ -291,11 +291,13 @@ body {
 
 /* ── 모바일: 업로드 박스가 화면을 세로로 가득 채우고, 검열 버튼은 화면 하단에 위치하도록 ── */
 @media (max-width: 768px) {
-  html, body { height: 100%; overflow: hidden; }
+  /* 모바일 브라우저의 접히는 주소창/하단 툴바를 제외한 실제 가시 영역(dvh) 기준으로
+     높이를 잡아야 검열 시작 버튼이 브라우저 UI 뒤로 가려지지 않는다 */
+  html, body { height: 100dvh; overflow: hidden; }
   .content-area {
     align-items: stretch;
     justify-content: flex-start;
-    padding: 14px 16px;
+    padding: 14px 16px calc(18px + env(safe-area-inset-bottom));
     overflow: hidden;
   }
   .upload-hero { gap: 12px; }
@@ -306,7 +308,7 @@ body {
      박스 안 요소는 고르게 분산 배치한다. 남는 공간만큼 검열 버튼이 아래로 내려간다 */
   #uploadForm { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   .upload-box {
-    flex: 0 1 75%; min-height: 0;
+    flex: 0 1 68%; min-height: 0;
     padding: 32px 16px; border-radius: 16px;
     flex-direction: column; justify-content: space-evenly; text-align: center; gap: 0;
   }
@@ -319,7 +321,7 @@ body {
   .fmt-chip { font-size: 11px; padding: 5px 11px; }
   #file-name { margin-top: 12px; font-size: 12px; justify-content: center; }
 
-  .submit-btn { flex-shrink: 0; padding: 15px; font-size: 16px; margin-top: auto !important; }
+  .submit-btn { flex-shrink: 0; padding: 15px; font-size: 16px; margin-top: 16px !important; }
 
   .scan-card { width: 100%; padding: 24px 16px; }
 }
