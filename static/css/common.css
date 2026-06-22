@@ -1,46 +1,46 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
 
 :root {
-  /* ── Fluent 2 · Neutral ramp ── */
-  --bg:        #f5f5f5;   /* canvas (NeutralBackground3) */
-  --surface:   #ffffff;   /* layer  (NeutralBackground1) */
-  --surface2:  #f0f0f0;   /* hover surface */
-  --surface3:  #fafafa;
-  --border:    #d1d1d1;   /* NeutralStroke1 */
-  --divider:   #e0e0e0;   /* NeutralStroke2 */
-  --text:      #242424;   /* NeutralForeground1 */
-  --muted:     #616161;   /* NeutralForeground2 */
-  --subtle:    #707070;   /* NeutralForeground3 */
-  --disabled:  #bdbdbd;   /* NeutralForegroundDisabled */
+  /* ── Neutral ramp (cool, soft) ── */
+  --bg:        #f5f6fa;
+  --surface:   #ffffff;
+  --surface2:  #eef0f6;
+  --surface3:  #f9fafc;
+  --border:    #e2e5ee;
+  --divider:   #edeff5;
+  --text:      #16181d;
+  --muted:     #6b7280;
+  --subtle:    #8d91a3;
+  --disabled:  #c7cad6;
 
-  /* ── Fluent 2 · Brand ramp ── */
-  --accent:    #0f6cbd;   /* BrandForeground / Primary */
-  --accent-h:  #115ea3;   /* hover  */
-  --accent-p:  #0e4775;   /* pressed */
-  --accent-bg: #ebf3fc;   /* BrandBackground2 (selected tint) */
-  --accent-bg-h:#cfe4fa;
+  /* ── Brand ramp (indigo) ── */
+  --accent:    #4f46e5;
+  --accent-h:  #4338ca;
+  --accent-p:  #3730a3;
+  --accent-bg: #eef0ff;
+  --accent-bg-h:#dfe3ff;
 
-  /* ── Fluent elevation (shadow2 / shadow8 / shadow16) ── */
-  --shadow2:  0 1px 2px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12);
-  --shadow8:  0 4px 8px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12);
-  --shadow16: 0 8px 16px rgba(0,0,0,.14), 0 0 2px rgba(0,0,0,.12);
+  /* ── Elevation ── */
+  --shadow2:  0 1px 2px rgba(16,24,40,.06), 0 1px 1px rgba(16,24,40,.04);
+  --shadow8:  0 6px 16px rgba(16,24,40,.08), 0 2px 4px rgba(16,24,40,.04);
+  --shadow16: 0 16px 40px rgba(16,24,40,.14), 0 4px 10px rgba(16,24,40,.05);
 
-  /* ── Fluent corner radii ── */
-  --r-control: 4px;   /* buttons, inputs */
-  --r-card:    8px;   /* cards, dropzone */
+  /* ── Corner radii ── */
+  --r-control: 12px;
+  --r-card:    20px;
 
-  /* ── Fluent focus indicator (white gap + accent stroke) ── */
-  --focus: 0 0 0 1px #ffffff, 0 0 0 3px var(--accent);
+  /* ── Focus indicator ── */
+  --focus: 0 0 0 2px #ffffff, 0 0 0 4px var(--accent);
 
-  /* ── Semantic (위험성 등급 · Fluent status palette) ── */
-  --person:   #c50f1f; --person-bg: #fdf3f4;  /* danger  · 특급 */
-  --org:      #0f6cbd; --org-bg:    #ebf3fc;  /* brand   · 2급 */
-  --ip:       #bc4b09; --ip-bg:     #fdf6f3;  /* severe  · 1급 */
-  --auth:     #8764b8; --auth-bg:   #f5f1fb;  /* accent  */
-  --secret:   #0e700e; --secret-bg: #e7f3e7;  /* success · 3급 */
+  /* ── Semantic (위험성 등급) ── */
+  --person:   #e11d48; --person-bg: #fef1f4;  /* 특급 */
+  --org:      #2563eb; --org-bg:    #eff4ff;  /* 2급  */
+  --ip:       #ea580c; --ip-bg:     #fff4ec;  /* 1급  */
+  --auth:     #7c3aed; --auth-bg:   #f5f0ff;
+  --secret:   #16a34a; --secret-bg: #edfbf1;  /* 3급  */
 }
 
-/* Fluent keyboard focus indicator */
+/* Keyboard focus indicator */
 :focus-visible { outline: none; box-shadow: var(--focus); }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -49,6 +49,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: 'Pretendard', 'Pretendard Variable', sans-serif;
+  -webkit-font-smoothing: antialiased;
   display: flex;
   flex-direction: column;
 }
@@ -61,19 +62,28 @@ body {
   padding: 0 24px;
   height: 60px;
   background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 0 var(--border);
   flex-shrink: 0;
   z-index: 100;
 }
 .brand {
-  font-size: 32px;
+  font-size: 22px;
   font-weight: 800;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   color: var(--text);
   display: flex;
   align-items: center;
+  gap: 8px;
   text-decoration: none;
   cursor: pointer;
+}
+.brand::before {
+  content: "";
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-bg);
+  flex-shrink: 0;
 }
 .brand span { color: var(--accent); }
 
@@ -84,18 +94,18 @@ body {
 }
 .chip {
   font-size: 11px;
-  padding: 2px 8px;
-  border-radius: var(--r-control);
-  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
   background: var(--surface2);
-  border: 1px solid var(--border);
+  border: none;
   color: var(--muted);
 }
-.chip-plain { background: var(--surface); }
+.chip-plain { background: var(--surface3); }
 .icon-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--r-control);
   border: none;
   background: transparent;
   color: var(--muted);
@@ -103,15 +113,16 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background .12s;
+  transition: background .15s, color .15s;
 }
 .icon-btn:hover { background: var(--surface2); color: var(--accent); }
+.icon-btn:active { transform: scale(.94); }
 .topbar-user {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 4px 10px 4px 6px;
-  border-radius: 4px;
+  border-radius: 999px;
   cursor: default;
 }
 .topbar-avatar {
@@ -131,25 +142,26 @@ body {
   color: var(--text);
 }
 
-/* ── 버튼 (Fluent, 공통) ── */
+/* ── 버튼 (공통) ── */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   font-family: 'Pretendard', sans-serif;
-  font-size: 13px; font-weight: 600;
-  padding: 8px 16px;
+  font-size: 13px; font-weight: 700;
+  padding: 9px 18px;
   border-radius: var(--r-control);
   cursor: pointer;
   text-decoration: none;
   border: 1px solid transparent;
-  transition: background .12s, border-color .12s, color .12s;
+  transition: background .12s, border-color .12s, color .12s, transform .08s;
 }
-.btn-primary { background: var(--accent); color: #fff; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(79,70,229,.28); }
 .btn-primary:hover { background: var(--accent-h); }
 .btn-primary:active { background: var(--accent-p); }
-.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
-.btn-secondary:hover { background: var(--surface2); border-color: var(--subtle); }
-.btn-secondary:active { background: var(--divider); }
-.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-secondary { background: var(--surface2); color: var(--text); border-color: transparent; }
+.btn-secondary:hover { background: var(--border); }
+.btn-secondary:active { background: var(--border); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
 
 /* ── 앱 쉘 (공통) ── */
 .app-shell {
@@ -162,9 +174,9 @@ body {
 /* ── 위험성 등급 칩 (ISO 27005 기반) ── */
 .grade-chip {
   font-size: 11px;
-  padding: 2px 8px;
-  border-radius: var(--r-control);
-  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-weight: 700;
   white-space: nowrap;
 }
 .grade-특급 { background: var(--person-bg); color: var(--person); }
@@ -187,17 +199,17 @@ body {
 @media (max-width: 768px) {
   body { height: auto; min-height: 100vh; overflow: visible; font-size: 13px; }
 
-  .topbar { height: auto; padding: 10px 12px; gap: 8px; }
+  .topbar { height: auto; padding: 12px 16px; gap: 8px; }
+  .brand { font-size: 19px; }
   .topbar-right { flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
   .topbar-username { display: none; }
-  .brand { font-size: 24px; }
 
   .app-shell { flex-direction: column; overflow: visible; min-height: 0; }
 
   .content-shell, .content-area { overflow: visible; }
 }
 
-/* Fluent quality floor — reduced motion */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: .001ms !important;

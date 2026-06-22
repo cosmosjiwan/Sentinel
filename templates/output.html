@@ -58,8 +58,10 @@
 
   </div>
 
-  <!-- 탐지 패널: 검열본에서 단어를 클릭했을 때만 표시 -->
+  <!-- 탐지 패널: 검열본에서 단어를 클릭했을 때만 표시 (모바일: 바텀시트) -->
+  <div class="panel-backdrop" id="panelBackdrop" onclick="closeReviewPanel()"></div>
   <div class="panel" id="reviewPanel">
+    <div class="panel-handle"></div>
     <div class="panel-head">
       <span class="panel-head-title">탐지 항목</span>
       <button class="icon-btn panel-close-btn" type="button" onclick="closeReviewPanel()" aria-label="닫기">✕</button>
@@ -178,7 +180,8 @@ function showReviewForItem(idx){
   selected = idx;
   document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>e.classList.add('active'));
   renderSingleItem(items[idx], idx);
-  document.getElementById('reviewPanel').style.display = 'flex';
+  document.getElementById('reviewPanel').classList.add('open');
+  document.getElementById('panelBackdrop').classList.add('open');
   collapseSummary();
 }
 
@@ -200,7 +203,8 @@ function handleScrollTop(scrollTop){
 function closeReviewPanel(){
   document.querySelectorAll('.ent.active, .det.active').forEach(e=>e.classList.remove('active'));
   selected = -1;
-  document.getElementById('reviewPanel').style.display = 'none';
+  document.getElementById('reviewPanel').classList.remove('open');
+  document.getElementById('panelBackdrop').classList.remove('open');
 }
 
 /* 문서 본문 내 해당 항목 토큰의 표시값/검열 방식을 현재 상태에 맞게 갱신한다 (방식이 바뀔 때마다 외형도 함께 바뀐다) */
