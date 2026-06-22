@@ -204,16 +204,6 @@ body {
   .how-text strong { font-size: var(--fs-sm); font-weight: 700; color: var(--text); }
   .how-text span { font-size: var(--fs-xs); color: var(--muted); }
   .how-arrow { align-self: center; color: var(--disabled); font-weight: 800; flex-shrink: 0; }
-
-  .trust-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; }
-  .trust-item {
-    position: relative; padding-left: 16px;
-    font-size: var(--fs-sm); color: var(--muted);
-  }
-  .trust-item::before {
-    content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-    width: 7px; height: 7px; border-radius: 50%; background: var(--secret);
-  }
 }
 
 /* ── 모바일: 업로드 박스가 화면을 세로로 가득 채우고, 검열 버튼은 화면 하단에 위치하도록 ── */

@@ -152,6 +152,7 @@ body.reveal .ent-tip,
   flex-shrink: 0;
 }
 .score-block { display: flex; align-items: center; gap: 18px; }
+.score-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 
 /* 원형 점수 게이지 — conic-gradient 링 + 안쪽 흰 원 + 숫자 */
 .score-gauge {
@@ -171,11 +172,11 @@ body.reveal .ent-tip,
 .score-label { font-size: var(--fs-lg); color: var(--text); font-weight: 800; letter-spacing: -0.01em; }
 .score-sub { font-size: var(--fs-sm); color: var(--muted); font-weight: 500; }
 
-/* 등급별 개수: 위에서 아래로 한 줄에 하나씩 (1급 3개 / 2급 7개 …) */
-.sidebar-grades { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+/* 등급별 개수: 점수 게이지 옆 우측 빈 공간에, 위에서 아래로 한 줄에 하나씩 (1급 3개 / 2급 7개 …) */
+.sidebar-grades { display: flex; flex-direction: column; align-items: stretch; gap: 6px; flex-shrink: 0; }
 .sidebar-grades .grade-chip {
-  display: flex; align-items: center; justify-content: space-between;
-  font-size: var(--fs-sm); padding: 9px 14px; border-radius: var(--r-control);
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  font-size: var(--fs-sm); padding: 6px 13px; border-radius: var(--r-control);
 }
 .sidebar-grades .grade-name { font-weight: 800; }
 .sidebar-grades .grade-cnt { font-weight: 700; }
@@ -216,10 +217,10 @@ body.reveal .ent-tip,
 .det:hover { border-color: var(--accent); box-shadow: var(--shadow8); }
 .det.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); }
 .det.allowed { opacity: .82; }
-.det-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
-.det-top .grade-chip { font-size: var(--fs-sm); padding: 5px 13px; }
-.det-count { font-size: var(--fs-xs); font-weight: 700; color: var(--text); white-space: nowrap; }
-.det-score { font-size: var(--fs-base); font-weight: 800; color: var(--text); }
+.det-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.det-top .grade-chip { font-size: var(--fs-sm); padding: 5px 13px; flex-shrink: 0; }
+.det-meta { font-size: var(--fs-xs); font-weight: 700; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.det-meta-sep { color: var(--border); margin: 0 1px; }
 
 .det-compare { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .compare-row {

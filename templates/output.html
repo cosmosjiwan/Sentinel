@@ -71,16 +71,18 @@
     <button class="sheet-handle" type="button" onclick="closeSheet()" aria-label="닫기"></button>
 
     <div class="sidebar-head">
-      <div class="score-block">
-        <div class="score-gauge" id="scoreGauge">
-          <span class="score-num">{{ risk.score }}</span>
+      <div class="score-row">
+        <div class="score-block">
+          <div class="score-gauge" id="scoreGauge">
+            <span class="score-num">{{ risk.score | round | int }}</span>
+          </div>
+          <div class="score-info">
+            <span class="score-label">민감성 점수</span>
+            <span class="score-sub">100점 만점 기준</span>
+          </div>
         </div>
-        <div class="score-info">
-          <span class="score-label">민감성 점수</span>
-          <span class="score-sub">100점 만점 기준</span>
-        </div>
+        <div class="sidebar-grades" id="summaryGrades"></div>
       </div>
-      <div class="sidebar-grades" id="summaryGrades"></div>
       <button class="btn-export" type="button" onclick="applyAndExport()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
         검열본 다운로드
@@ -156,8 +158,7 @@ function cardHTML(item, idx) {
     <div class="det${active}${allowed}" data-idx="${idx}" id="det-${idx}" onclick="focusFromCard(${idx})">
       <div class="det-top">
         <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
-        ${item.count > 1 ? `<span class="det-count">문서 내 ${item.count}회 탐지</span>` : ''}
-        <span class="det-score">${esc(item.score)}점</span>
+        <span class="det-meta">${esc(item.count || 1)}회 탐지 <span class="det-meta-sep">|</span> 민감성 점수 ${esc(item.score)}점</span>
       </div>
       <div class="det-compare">
         <div class="compare-row compare-before grade-${esc(item.grade)}">
@@ -333,7 +334,7 @@ function setSubText(idx, val) {
 
 function syncCount() {
   const m = document.getElementById('summaryMetaM');
-  if (m) m.innerHTML = `민감성 점수 <strong>${RISK.score}</strong>/100`;
+  if (m) m.innerHTML = `민감성 점수 <strong>${Math.round(RISK.score)}</strong>/100`;
 }
 
 /* ── 검열본 다운로드: 항목별 현재 검열 방식을 서버에 반영한 뒤 다운로드 ── */
