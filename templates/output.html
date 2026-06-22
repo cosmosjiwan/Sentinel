@@ -17,12 +17,6 @@
       <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Z"/></svg>
       <span>{{ filename }}</span>
     </div>
-    {% if not blocked %}
-    <button class="btn btn-secondary btn-sm" type="button" onclick="applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
-      검열본 다운로드
-    </button>
-    {% endif %}
   </div>
 </div>
 
@@ -32,7 +26,15 @@
   <span class="summary-meta" id="summaryMeta">
     문서 등급 {{ risk.grade_label }} · 민감성 점수 {{ risk.score }}/100
   </span>
-  <div class="summary-grades" id="summaryGrades"></div>
+  <div class="summary-right">
+    <div class="summary-grades" id="summaryGrades"></div>
+    {% if not blocked %}
+    <button class="btn btn-secondary btn-sm" type="button" onclick="event.stopPropagation(); applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
+      검열본 다운로드
+    </button>
+    {% endif %}
+  </div>
 </div>
 
 <div class="app-shell">
@@ -85,11 +87,10 @@ const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
 const ITEM_GRADES = ["특급","1급","2급","3급"];
 const MASK_TOKEN = {person:'[개인정보 마스킹]',org:'[기관정보 마스킹]',ip:'[기밀정보 마스킹]',auth:'[인증정보 마스킹]',secret:'[금융정보 마스킹]'};
 
-/* 항목의 현재 치환값으로부터 초기 검열 방식(마스킹/치환/공개)을 추론한다 */
+/* 등급별 기본 검열 방식: 1급=마스킹, 2급=치환, 3급=공개 */
+const GRADE_METHOD = {'1급':'mask','2급':'substitute','3급':'publish'};
 function inferMethod(item) {
-  if (item.replaced === item.orig) return 'publish';
-  if (Object.values(MASK_TOKEN).includes(item.replaced)) return 'mask';
-  return 'substitute';
+  return GRADE_METHOD[item.grade] || 'substitute';
 }
 
 /* 본문의 <R번호>치환표현</R번호> 태그를 클릭 가능한 .ent 토큰으로 렌더 (mask=치환표현, orig=원문) */
@@ -264,9 +265,12 @@ document.getElementById('revealToggle').addEventListener('change', e => {
 (function run(){
   const docHtml = renderDocument(bodyText);
   document.getElementById('docBody').innerHTML = docHtml || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
-  Object.values(items).forEach(item => {
+  Object.entries(items).forEach(([idx, item]) => {
     item.method = inferMethod(item);
     item.subText = item.replaced;
+    if (item.method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[마스킹]';
+    else if (item.method === 'publish') item.replaced = item.orig;
+    applyMethodToToken(idx, item);
   });
   window.__items = items;
   renderSummaryGrades(items);

@@ -29,7 +29,8 @@ body { height: 100%; overflow: hidden; }
 .summary-title::after { content: "▾"; margin-left: 6px; font-size: 10px; color: var(--muted); }
 .summary.collapsed .summary-title::after { content: "▸"; }
 .summary-meta { font-size: 12px; color: var(--muted); }
-.summary-grades { display: flex; align-items: center; gap: 6px; margin-left: auto; flex-wrap: wrap; }
+.summary-right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-wrap: wrap; }
+.summary-grades { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .summary.collapsed .summary-meta,
 .summary.collapsed .summary-grades { display: none; }
 
