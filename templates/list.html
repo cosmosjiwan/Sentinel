@@ -33,7 +33,7 @@
           <span class="batch-filename">{{ r.filename }}</span>
         </div>
         <div class="batch-row-meta">
-          <span class="batch-score">민감성 점수 <strong>{{ r.risk.score }}</strong>/100</span>
+          <span class="batch-score">민감성 점수 <strong>{{ r.risk.score | round | int }}</strong>/100</span>
           {% if r.blocked %}
             <span class="batch-blocked">차단됨 (공개 금지)</span>
           {% else %}

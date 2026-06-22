@@ -173,8 +173,6 @@ body {
 /* ── 배포 일시 배지 (상단바) ── */
 .deploy-badge {
   display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
-  padding: 4px 12px; border-radius: var(--r-control);
-  background: var(--surface2);
 }
 .deploy-label { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
 .deploy-time { font-size: var(--fs-sm); font-weight: 800; color: var(--text); }
@@ -201,7 +199,7 @@ body {
     border-radius: var(--r-card); padding: 20px 28px; box-shadow: var(--shadow2);
   }
   .how-step { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .how-step strong { font-size: var(--fs-sm); font-weight: 700; color: var(--text); }
+  .how-step strong { font-size: 16px; font-weight: 700; color: var(--text); }
   .how-num {
     width: 26px; height: 26px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
