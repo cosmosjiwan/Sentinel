@@ -15,19 +15,26 @@
 </div>
 
 <!-- 요약 스트립 -->
-<div class="summary" id="summaryStrip">
-  <div class="summary-top">
-    <span class="summary-title">검열 완료</span>
+<div class="summary-wrap" id="summaryWrap">
+  <div class="summary" id="summaryStrip">
+    <div class="summary-top">
+      <span class="summary-title">검열 완료</span>
+    </div>
+    {% if not blocked %}
+    <div class="summary-detail">
+      <div class="summary-left">
+        <span class="summary-meta" id="summaryMeta"></span>
+        <div class="summary-grades" id="summaryGrades"></div>
+      </div>
+      <button class="btn-download-sq" type="button" onclick="applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop" aria-label="검열본 다운로드">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
+      </button>
+    </div>
+    {% endif %}
   </div>
-  {% if not blocked %}
-  <div class="summary-detail">
-    <span class="summary-meta" id="summaryMeta"></span>
-    <div class="summary-grades" id="summaryGrades"></div>
-    <button class="btn-download-sq" type="button" onclick="applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop" aria-label="검열본 다운로드">
-      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
-    </button>
-  </div>
-  {% endif %}
+  <button class="summary-tab" id="summaryTab" type="button" onclick="expandSummary()" aria-label="검열 완료 정보 펼치기">
+    <span class="summary-tab-dot"></span>검열 완료
+  </button>
 </div>
 
 <div class="app-shell">
@@ -137,7 +144,10 @@ function renderSingleItem(item, idx) {
         <div class="compare-arrow">↓</div>
         <div class="compare-row compare-after grade-${esc(item.grade)}">
           <span class="compare-label">검열 후</span>
-          <span class="compare-val" title="${esc(item.replaced)}">${esc(item.replaced)}</span>
+          <input type="text" class="compare-val compare-edit" value="${esc(item.replaced)}"
+                 title="${esc(item.replaced)}" placeholder="원하는 치환 표현 입력"
+                 ${item.method === 'substitute' ? '' : 'readonly'}
+                 oninput="setSubText(${idx}, this.value)">
         </div>
       </div>
       ${item.count > 1 ? `<div class="det-loc">문서 내 ${item.count}회 탐지</div>` : ''}
@@ -146,11 +156,6 @@ function renderSingleItem(item, idx) {
         <button type="button" class="${item.method==='substitute'?'on-sub':''}" onclick="setMethod(${idx}, 'substitute')">치환</button>
         <button type="button" class="${item.method==='publish'?'on-pub':''}" onclick="setMethod(${idx}, 'publish')">공개</button>
       </div>
-      ${item.method === 'substitute' ? `
-      <div class="sub-input-wrap">
-        <input type="text" class="sub-input" value="${esc(item.replaced)}"
-               placeholder="원하는 치환 표현 입력" oninput="setSubText(${idx}, this.value)">
-      </div>` : ''}
     </div>
   `;
 }
@@ -185,14 +190,14 @@ function showReviewForItem(idx){
   collapseSummary();
 }
 
-/* 스크롤하거나 탐지 항목을 열어볼 때는 검열 완료 요약 스트립이 화면을 가리지 않도록 숨긴다 */
+/* 스크롤하거나 탐지 항목을 열어볼 때는 검열 완료 요약 스트립을 화면을 가리지 않는 얇은 탭으로 접는다 */
 function collapseSummary(){
-  document.getElementById('summaryStrip').classList.add('hidden');
+  document.getElementById('summaryWrap').classList.add('collapsed');
 }
 
-/* 문서 맨 위로 다시 스크롤하면 검열 완료 요약 스트립을 다시 보여준다 */
+/* 문서 맨 위로 다시 스크롤하거나 탭을 누르면 검열 완료 요약 스트립을 다시 펼친다 */
 function expandSummary(){
-  document.getElementById('summaryStrip').classList.remove('hidden');
+  document.getElementById('summaryWrap').classList.remove('collapsed');
 }
 
 function handleScrollTop(scrollTop){
@@ -236,15 +241,13 @@ function setMethod(idx, method){
   syncCount();
 }
 
-/* 치환 방식에서 사용자가 직접 입력한 표현 적용 */
+/* 치환 방식에서 사용자가 "검열 후" 칸에 직접 입력한 표현을 적용 */
 function setSubText(idx, val){
   const items = window.__items || {};
   const item = items[idx];
   if (!item) return;
   item.subText = val;
   item.replaced = val;
-  const afterVal = document.querySelector(`.det[data-idx="${idx}"] .compare-after .compare-val`);
-  if (afterVal) { afterVal.textContent = val; afterVal.title = val; }
   applyMethodToToken(idx, item);
   syncCount();
 }

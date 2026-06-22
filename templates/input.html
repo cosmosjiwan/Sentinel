@@ -33,27 +33,30 @@
             <path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/>
           </svg>
         </div>
-        <div class="upload-title">파일을 끌어다 놓거나 선택하세요</div>
 
-        <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.txt,.md" multiple required hidden>
+        <div class="upload-content">
+          <div class="upload-title">파일을 끌어다 놓거나 선택하세요</div>
 
-        <button type="button" class="select-btn" onclick="document.getElementById('fileInput').click()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/></svg>
-          파일 선택
-        </button>
+          <input type="file" id="fileInput" name="file" accept=".pdf,.docx,.txt,.md" multiple required hidden>
 
-        <div class="format-chips">
-          <span class="fmt-chip">.pdf</span>
-          <span class="fmt-chip">.docx</span>
-          <span class="fmt-chip">.txt</span>
-          <span class="fmt-chip">.md</span>
+          <button type="button" class="select-btn" onclick="document.getElementById('fileInput').click()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Zm6.75.062V4.25c0 .138.112.25.25.25h2.688l-.011-.013-2.914-2.914-.013-.011Z"/></svg>
+            파일 선택
+          </button>
+
+          <div class="format-chips">
+            <span class="fmt-chip">.pdf</span>
+            <span class="fmt-chip">.docx</span>
+            <span class="fmt-chip">.txt</span>
+            <span class="fmt-chip">.md</span>
+          </div>
+
+          <div id="file-name">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
+            <span id="file-name-text"></span>
+          </div>
+          <span class="chip" id="lastModified" style="display:none"></span>
         </div>
-
-        <div id="file-name">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
-          <span id="file-name-text"></span>
-        </div>
-        <span class="chip" id="lastModified" style="display:none"></span>
       </div>
 
       <button class="submit-btn" type="submit" id="submitBtn" disabled style="margin-top:20px">
