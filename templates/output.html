@@ -87,8 +87,9 @@ const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
 const ITEM_GRADES = ["특급","1급","2급","3급"];
 const MASK_TOKEN = {person:'[개인정보 마스킹]',org:'[기관정보 마스킹]',ip:'[기밀정보 마스킹]',auth:'[인증정보 마스킹]',secret:'[금융정보 마스킹]'};
 
-/* 등급별 기본 검열 방식: 1급=마스킹, 2급=치환, 3급=공개 */
+/* 등급별 기본 검열 방식: 1급=마스킹, 2급=치환, 3급=공개 (양방향 고정 대응) */
 const GRADE_METHOD = {'1급':'mask','2급':'substitute','3급':'publish'};
+const METHOD_GRADE = {mask:'1급', substitute:'2급', publish:'3급'};
 function inferMethod(item) {
   return GRADE_METHOD[item.grade] || 'substitute';
 }
@@ -188,6 +189,8 @@ function closeReviewPanel(){
 /* 문서 본문 내 해당 항목 토큰의 표시값/검열 방식을 현재 상태에 맞게 갱신한다 (방식이 바뀔 때마다 외형도 함께 바뀐다) */
 function applyMethodToToken(idx, item){
   document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>{
+    ITEM_GRADES.forEach(g => e.classList.remove('ent-' + g));
+    e.classList.add('ent-' + item.grade);
     e.classList.toggle('allowed', item.method === 'publish');
     e.classList.toggle('mtd-sub', item.method === 'substitute');
     const maskSpan = e.querySelector('.ent-mask');
@@ -195,18 +198,20 @@ function applyMethodToToken(idx, item){
   });
 }
 
-/* 검열 방식(마스킹/치환/공개) 변경 */
+/* 검열 방식(마스킹/치환/공개) 변경 — 방식과 등급은 1:1로 고정되어 있으므로 등급도 함께 갱신한다 */
 function setMethod(idx, method){
   const items = window.__items || {};
   const item = items[idx];
   if (!item) return;
   if (item.subText === undefined) item.subText = item.replaced;
   item.method = method;
+  item.grade = METHOD_GRADE[method] || item.grade;
   if (method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[마스킹]';
   else if (method === 'publish') item.replaced = item.orig;
   else item.replaced = item.subText || item.replaced;
   applyMethodToToken(idx, item);
   renderSingleItem(item, idx);
+  renderSummaryGrades(items);
   syncCount();
 }
 
