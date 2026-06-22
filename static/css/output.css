@@ -175,9 +175,9 @@ body.reveal .ent-orig { display: inline; }
 .det:hover { border-color: var(--accent); box-shadow: var(--shadow8); }
 .det.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); }
 .det.allowed { opacity: .82; }
-.det-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-.det-type { font-size: 12px; color: var(--muted); font-weight: 600; }
-.det-score { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--subtle); }
+.det-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.det-top .grade-chip { font-size: 13px; padding: 5px 13px; }
+.det-score { margin-left: auto; font-size: 15px; font-weight: 800; color: var(--text); }
 
 .det-compare { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .compare-row {
