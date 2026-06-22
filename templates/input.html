@@ -15,7 +15,7 @@
   <a class="brand" href="/">Sentinel</a>
   {% if deploy_time %}
   <div class="topbar-right">
-    <span class="chip chip-plain" title="현재 배포된 버전이 main에 푸시된 시각 (KST)">최종 배포 {{ deploy_time }}</span>
+    <span class="deploy-badge" title="현재 배포된 버전이 main에 푸시된 시각 (KST)"><span class="deploy-label">최종 배포</span><span class="deploy-time">{{ deploy_time }}</span></span>
   </div>
   {% endif %}
 </div>
@@ -53,10 +53,9 @@
           </div>
 
           <div id="file-name">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
             <span id="file-name-text"></span>
           </div>
-          <span class="chip" id="lastModified" style="display:none"></span>
         </div>
       </div>
 
@@ -67,23 +66,12 @@
 
     </form>
 
-    <!-- 이용 방법 안내 + 신뢰 지표 (데스크톱 전용 — 업로드 화면의 빈 공간을 채워 제품감을 준다) -->
     <div class="upload-extra">
-      <div class="how-steps">
-        <div class="how-step">
-          <span class="how-num">1</span>
-          <div class="how-text"><strong>문서 업로드</strong><span>PDF · DOCX · TXT · MD 지원</span></div>
-        </div>
-        <span class="how-arrow">→</span>
-        <div class="how-step">
-          <span class="how-num">2</span>
-          <div class="how-text"><strong>AI 검열 · 등급 분류</strong><span>ISO 27005 기반 위험성 평가</span></div>
-        </div>
-        <span class="how-arrow">→</span>
-        <div class="how-step">
-          <span class="how-num">3</span>
-          <div class="how-text"><strong>검토 후 다운로드</strong><span>담당자 확인 · 검열본 산출</span></div>
-        </div>
+      <div class="how-grid">
+        <div class="how-step"><span class="how-num">1</span><strong>민감정보 탐지</strong></div>
+        <div class="how-step"><span class="how-num">3</span><strong>등급별 검열</strong></div>
+        <div class="how-step"><span class="how-num">2</span><strong>보안등급 분류</strong></div>
+        <div class="how-step"><span class="how-num">4</span><strong>담당자 검토</strong></div>
       </div>
     </div>
   </div>
@@ -98,14 +86,7 @@ const fileInput = document.getElementById('fileInput');
 const fileNameEl = document.getElementById('file-name');
 const fileNameText = document.getElementById('file-name-text');
 const submitBtn = document.getElementById('submitBtn');
-
-const lastModifiedEl = document.getElementById('lastModified');
-
-function formatLastModified(ms) {
-  const d = new Date(ms);
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+const fmtChips = document.querySelector('.format-chips');
 
 function setFiles(fileList) {
   if (!fileList.length) return;
@@ -115,12 +96,7 @@ function setFiles(fileList) {
   fileNameEl.classList.add('show');
   dropArea.classList.add('has-file');
   submitBtn.disabled = false;
-
-  const latest = Math.max(...Array.from(fileList).map(f => f.lastModified || 0));
-  if (latest > 0) {
-    lastModifiedEl.textContent = `최종 수정 ${formatLastModified(latest)}`;
-    lastModifiedEl.style.display = 'inline-flex';
-  }
+  if (fmtChips) fmtChips.style.display = 'none';
 }
 
 fileInput.addEventListener('change', () => {

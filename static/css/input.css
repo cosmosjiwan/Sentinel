@@ -41,10 +41,10 @@ body {
 /* ── 업로드 박스 (가로로 넓은 드롭존) ── */
 .upload-box {
   width: 100%;
-  min-height: 200px;
+  min-height: 260px;
   border: 1.5px dashed var(--border);
   border-radius: var(--r-card);
-  padding: 40px 64px;
+  padding: 48px 64px;
   text-align: left;
   background: var(--surface);
   cursor: pointer;
@@ -73,7 +73,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: center;
   min-width: 0;
+  min-height: 120px;
 }
 
 .upload-icon {
@@ -116,18 +118,16 @@ body {
 
 #file-name {
   margin-top: 18px;
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--secret);
   display: none;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
-  font-weight: 600;
+  gap: 8px;
+  font-weight: 700;
 }
 #file-name.show { display: flex; }
 #file-name svg { flex-shrink: 0; }
-
-#lastModified { margin-top: 8px; }
 
 .format-chips {
   display: flex;
@@ -161,7 +161,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 14px rgba(79,70,229,.32);
+  box-shadow: 0 4px 14px rgba(124,58,237,.32);
   transition: background .12s, transform .08s;
 }
 .submit-btn:hover { background: var(--accent-h); }
@@ -170,40 +170,44 @@ body {
 
 /* 로딩(검열 중) 오버레이 스타일은 loading.css로 분리되어 있다. */
 
-/* ── 이용 방법 안내 + 신뢰 지표 (기본 숨김, 데스크톱에서만 노출) ── */
+/* ── 배포 일시 배지 (상단바) ── */
+.deploy-badge {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 1px;
+  padding: 4px 12px; border-radius: var(--r-control);
+  background: var(--surface2);
+}
+.deploy-label { font-size: var(--fs-xs); font-weight: 600; color: var(--muted); }
+.deploy-time { font-size: var(--fs-sm); font-weight: 800; color: var(--text); }
+
+/* ── 이용 방법 안내 (기본 숨김, 데스크톱에서만 노출) ── */
 .upload-extra { display: none; }
 
 /* ── 데스크톱: 시중 SaaS 업로드 화면 비율 참고 ── */
 @media (min-width: 769px) {
-  /* 콘텐츠가 한 화면을 넘으면 통째로 잘리지 않도록 영역 내부 스크롤을 허용 */
   html, body { height: 100%; overflow: hidden; }
   .content-area { overflow-y: auto; padding: 40px 32px; }
 
-  /* 가운데 정렬된 제품형 카드 폭으로 정돈 */
   .upload-hero { max-width: 760px; gap: 24px; }
   .upload-hero-title { font-size: 34px; }
   .upload-hero-sub { font-size: 16px; margin-top: -10px; }
-  .upload-box { padding: 44px 52px; gap: 40px; }
+  .upload-box { padding: 48px 56px; gap: 40px; min-height: 280px; }
 
-  /* 이용 방법 안내 + 신뢰 지표 노출 */
   .upload-extra { display: flex; flex-direction: column; gap: 18px; width: 100%; margin-top: 6px; }
 
-  .how-steps {
-    display: flex; align-items: stretch; gap: 12px;
+  /* 2×2 그리드: 1·민감정보 탐지  3·등급별 검열 / 2·보안등급 분류  4·담당자 검토 */
+  .how-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px;
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r-card); padding: 20px 24px; box-shadow: var(--shadow2);
+    border-radius: var(--r-card); padding: 20px 28px; box-shadow: var(--shadow2);
   }
-  .how-step { flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .how-step { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .how-step strong { font-size: var(--fs-sm); font-weight: 700; color: var(--text); }
   .how-num {
-    width: 30px; height: 30px; flex-shrink: 0;
+    width: 26px; height: 26px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
     border-radius: 50%; background: var(--accent-bg); color: var(--accent);
-    font-size: var(--fs-sm); font-weight: 800;
+    font-size: var(--fs-xs); font-weight: 800;
   }
-  .how-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-  .how-text strong { font-size: var(--fs-sm); font-weight: 700; color: var(--text); }
-  .how-text span { font-size: var(--fs-xs); color: var(--muted); }
-  .how-arrow { align-self: center; color: var(--disabled); font-weight: 800; flex-shrink: 0; }
 }
 
 /* ── 모바일: 업로드 박스가 화면을 세로로 가득 채우고, 검열 버튼은 화면 하단에 위치하도록 ── */

@@ -60,9 +60,9 @@
   position: absolute;
   left: 0; right: 0;
   height: 16px;
-  background: linear-gradient(180deg, transparent, rgba(79,70,229,.30), transparent);
+  background: linear-gradient(180deg, transparent, rgba(124,58,237,.30), transparent);
   border-top: 2px solid var(--accent);
-  box-shadow: 0 0 12px rgba(79,70,229,.45);
+  box-shadow: 0 0 12px rgba(124,58,237,.45);
   animation: scanmove 1.8s ease-in-out infinite;
 }
 @keyframes scanmove {

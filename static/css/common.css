@@ -13,12 +13,12 @@
   --subtle:    #8d91a3;
   --disabled:  #c7cad6;
 
-  /* ── Brand ramp (indigo) ── */
-  --accent:    #4f46e5;
-  --accent-h:  #4338ca;
-  --accent-p:  #3730a3;
-  --accent-bg: #eef0ff;
-  --accent-bg-h:#dfe3ff;
+  /* ── Brand ramp (purple) ── */
+  --accent:    #7c3aed;
+  --accent-h:  #6d28d9;
+  --accent-p:  #5b21b6;
+  --accent-bg: #f3f0ff;
+  --accent-bg-h:#e4deff;
 
   /* ── Elevation ── */
   --shadow2:  0 1px 2px rgba(16,24,40,.06), 0 1px 1px rgba(16,24,40,.04);
@@ -162,7 +162,7 @@ body {
   transition: background .12s, border-color .12s, color .12s, transform .08s;
 }
 .btn:active { transform: scale(.97); }
-.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(79,70,229,.28); }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(124,58,237,.28); }
 .btn-primary:hover { background: var(--accent-h); }
 .btn-primary:active { background: var(--accent-p); }
 .btn-secondary { background: var(--surface2); color: var(--text); border-color: transparent; }
