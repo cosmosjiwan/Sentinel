@@ -1,40 +1,37 @@
 html { height: 100%; }
 body { height: 100%; overflow: hidden; }
 
-/* ── 헤더 파일 칩 ── */
-.file-chip {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 12px; color: var(--text);
-  padding: 4px 10px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-control);
-  max-width: 240px;
-  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
-}
-.file-chip svg { color: var(--muted); flex-shrink: 0; }
-
 /* ── 앱 셸 (output: 세로) ── */
 .app-shell { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: visible; }
 
-/* ── 요약 스트립 (클릭으로 펼침/접힘) ── */
+/* ── 요약 스트립 ── */
 .summary {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 16px;
+  display: flex; flex-direction: column; gap: 10px;
   padding: 14px 24px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  cursor: pointer;
 }
+.summary.hidden { display: none; }
+.summary-top { display: flex; align-items: center; }
 .summary-title { font-size: 16px; font-weight: 600; color: var(--text); }
-.summary-title::after { content: "▾"; margin-left: 6px; font-size: 11px; color: var(--muted); }
-.summary.collapsed .summary-title::after { content: "▸"; }
+.summary-detail { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .summary-meta { font-size: 14px; color: var(--muted); }
 .summary-meta strong { color: var(--text); font-weight: 700; }
-.summary-right { display: flex; align-items: center; gap: 12px; margin-left: auto; flex-wrap: wrap; }
-.summary-grades { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.summary-grades { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-right: auto; }
 .summary-grades .grade-chip { font-size: 13px; padding: 4px 10px; }
-.summary.collapsed .summary-meta,
-.summary.collapsed .summary-grades { display: none; }
+.summary.static { cursor: default; }
+
+/* 정사각형 다운로드 버튼 */
+.btn-download-sq {
+  width: 38px; height: 38px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--r-control);
+  background: var(--accent); color: #fff;
+  border: none; cursor: pointer;
+  transition: background .12s;
+}
+.btn-download-sq:hover { background: var(--accent-h); }
+.btn-download-sq:active { background: var(--accent-p); }
 
 /* ── 본문 ── */
 .panes {
@@ -59,6 +56,11 @@ body { height: 100%; overflow: hidden; }
   background: var(--surface);
 }
 .doc-head-title { font-size: 13px; font-weight: 600; color: var(--text); }
+.doc-filename {
+  font-size: 14px; line-height: 2.0; color: var(--text);
+  font-family: 'Pretendard', sans-serif;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
 .toggle {
   display: inline-flex; align-items: center; gap: 8px;
   font-size: 12px; color: var(--muted); cursor: pointer; user-select: none;
@@ -243,11 +245,18 @@ body.reveal .ent-orig { display: inline; }
 /* ── 모바일 대응 ── */
 @media (max-width: 900px) {
   .panes { padding: 12px; }
-  .panel { left: 12px; right: 12px; width: auto; top: auto; bottom: 12px; max-height: 60vh; }
+  .panel {
+    left: 12px; right: 12px; width: auto; top: auto;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    max-height: 60vh;
+  }
 }
 @media (max-width: 768px) {
-  .file-chip { max-width: 100%; flex: 1; }
   .summary { padding: 12px; }
-  .summary-grades { margin-left: 0; width: 100%; }
-  .doc-body { padding: 20px; font-size: 13px; line-height: 1.9; }
+  .summary-grades { margin-right: 0; width: 100%; }
+  .doc-body {
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    font-size: 13px; line-height: 1.9;
+  }
 }

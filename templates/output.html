@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>검열 결과 — Sentinel</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/output.css') }}">
@@ -12,27 +12,22 @@
 <!-- 헤더 -->
 <div class="topbar">
   <a class="brand" href="/">Sentinel</a>
-  <div class="topbar-right">
-    <div class="file-chip">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Z"/></svg>
-      <span>{{ filename }}</span>
-    </div>
-  </div>
 </div>
 
 <!-- 요약 스트립 -->
-<div class="summary collapsed" id="summaryStrip" onclick="toggleSummary()">
-  <span class="summary-title">검열 완료</span>
-  <span class="summary-meta" id="summaryMeta"></span>
-  <div class="summary-right">
-    <div class="summary-grades" id="summaryGrades"></div>
-    {% if not blocked %}
-    <button class="btn btn-secondary btn-sm" type="button" onclick="event.stopPropagation(); applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
-      검열본 다운로드
-    </button>
-    {% endif %}
+<div class="summary" id="summaryStrip">
+  <div class="summary-top">
+    <span class="summary-title">검열 완료</span>
   </div>
+  {% if not blocked %}
+  <div class="summary-detail">
+    <span class="summary-meta" id="summaryMeta"></span>
+    <div class="summary-grades" id="summaryGrades"></div>
+    <button class="btn-download-sq" type="button" onclick="applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop" aria-label="검열본 다운로드">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
+    </button>
+  </div>
+  {% endif %}
 </div>
 
 <div class="app-shell">
@@ -51,7 +46,7 @@
     <!-- 문서 미리보기 -->
     <div class="doc-card">
       <div class="doc-head">
-        <span class="doc-head-title">검열본 미리보기</span>
+        <span class="doc-filename">{{ filename }}</span>
         <label class="toggle">
           원문 대조
           <input type="checkbox" id="revealToggle">
@@ -158,11 +153,6 @@ function renderSingleItem(item, idx) {
   `;
 }
 
-/* 등급별 칩과 총 탐지건수는 같은 기준(문서 내 실제 탐지 횟수, item.count)으로 집계한다 */
-function totalDetections(items) {
-  return Object.values(items).reduce((sum, i) => sum + (i.count || 0), 0);
-}
-
 /* ── 요약 등급 칩 ── */
 function renderSummaryGrades(items) {
   const counts = {"특급":0,"1급":0,"2급":0,"3급":0};
@@ -170,7 +160,7 @@ function renderSummaryGrades(items) {
   const el = document.getElementById('summaryGrades');
   el.innerHTML = ITEM_GRADES
     .filter(g => counts[g] > 0)
-    .map(g => `<span class="grade-chip grade-${g}">${g} ${counts[g]}</span>`)
+    .map(g => `<span class="grade-chip grade-${g}">${g} ${counts[g]}개</span>`)
     .join('');
 }
 
@@ -189,6 +179,12 @@ function showReviewForItem(idx){
   document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>e.classList.add('active'));
   renderSingleItem(items[idx], idx);
   document.getElementById('reviewPanel').style.display = 'flex';
+  collapseSummary();
+}
+
+/* 스크롤하거나 탐지 항목을 열어볼 때는 검열 완료 요약 스트립이 화면을 가리지 않도록 숨긴다 */
+function collapseSummary(){
+  document.getElementById('summaryStrip').classList.add('hidden');
 }
 
 function closeReviewPanel(){
@@ -240,9 +236,8 @@ function setSubText(idx, val){
 }
 
 function syncCount(){
-  const items = window.__items || {};
   document.getElementById('summaryMeta').innerHTML =
-    `민감성 점수 <strong>{{ risk.score }}</strong>/100 · 총 탐지건수 <strong>${totalDetections(items)}</strong>건`;
+    `민감성 점수 <strong>{{ risk.score }}</strong>/100`;
 }
 
 /* ── 검열본 다운로드: 항목별 현재 검열 방식을 서버에 반영한 뒤 다운로드 ── */
@@ -267,15 +262,15 @@ function applyAndExport(){
     .catch(() => alert('서버와 통신 중 오류가 발생했습니다.'));
 }
 
-/* ── 검열 완료 스트립: 클릭 시 펼침/접힘 ── */
-function toggleSummary(){
-  document.getElementById('summaryStrip').classList.toggle('collapsed');
-}
-
 /* ── 원문 대조 토글 ── */
 document.getElementById('revealToggle').addEventListener('change', e => {
   document.body.classList.toggle('reveal', e.target.checked);
 });
+
+/* ── 문서 본문을 스크롤하면 검열 완료 요약 스트립을 자동으로 숨긴다 ── */
+document.getElementById('docBody').addEventListener('scroll', () => {
+  collapseSummary();
+}, { passive: true });
 
 /* ══ 메인 실행 ══ */
 (function run(){
