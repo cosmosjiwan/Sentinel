@@ -123,3 +123,12 @@
 @media (max-width: 768px) {
   .scan-card { width: 100%; padding: 24px 16px; }
 }
+
+/* prefers-reduced-motion(특히 데스크톱/macOS에서 자주 켜져 있음)이 전역 규칙으로
+   모든 애니메이션을 .001ms로 죽여, 로딩 화면이 멈춘 듯 보이는 문제를 해결한다.
+   로딩 진행 표시는 "현재 처리 중"이라는 필수 피드백이므로 이 화면에 한해 애니메이션을 유지한다.
+   (전역 규칙보다 선택자 우선순위가 높아 !important끼리도 이 규칙이 이긴다) */
+@media (prefers-reduced-motion: reduce) {
+  .scan-beam { animation: scanmove 1.8s ease-in-out infinite !important; }
+  .step.active .step-dot { animation: spin 1.2s linear infinite !important; }
+}

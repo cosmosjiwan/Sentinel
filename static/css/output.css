@@ -171,8 +171,14 @@ body.reveal .ent-tip,
 .score-label { font-size: var(--fs-lg); color: var(--text); font-weight: 800; letter-spacing: -0.01em; }
 .score-sub { font-size: var(--fs-sm); color: var(--muted); font-weight: 500; }
 
-.sidebar-grades { display: flex; flex-wrap: wrap; gap: 6px; }
-.sidebar-grades .grade-chip { font-size: var(--fs-sm); padding: 4px 11px; }
+/* 등급별 개수: 위에서 아래로 한 줄에 하나씩 (1급 3개 / 2급 7개 …) */
+.sidebar-grades { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.sidebar-grades .grade-chip {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: var(--fs-sm); padding: 9px 14px; border-radius: var(--r-control);
+}
+.sidebar-grades .grade-name { font-weight: 800; }
+.sidebar-grades .grade-cnt { font-weight: 700; }
 
 .btn-export {
   width: 100%;
@@ -210,9 +216,10 @@ body.reveal .ent-tip,
 .det:hover { border-color: var(--accent); box-shadow: var(--shadow8); }
 .det.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-bg); }
 .det.allowed { opacity: .82; }
-.det-top { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.det-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .det-top .grade-chip { font-size: var(--fs-sm); padding: 5px 13px; }
-.det-score { margin-left: auto; font-size: var(--fs-base); font-weight: 800; color: var(--text); }
+.det-count { font-size: var(--fs-xs); font-weight: 700; color: var(--text); white-space: nowrap; }
+.det-score { font-size: var(--fs-base); font-weight: 800; color: var(--text); }
 
 .det-compare { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .compare-row {
@@ -235,7 +242,7 @@ body.reveal .ent-tip,
 .compare-row.grade-2급  .compare-label { color: var(--org); }
 .compare-row.grade-3급  .compare-label { color: var(--secret); }
 .compare-val {
-  font-size: var(--fs-sm); font-weight: 700; color: var(--text);
+  font-size: var(--fs-base); font-weight: 700; color: var(--text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .compare-after .compare-val {
@@ -245,8 +252,7 @@ body.reveal .ent-tip,
 }
 .compare-after .compare-val:not([readonly]) { cursor: text; border-bottom: 1.5px dashed currentColor; }
 .compare-after .compare-val[readonly] { cursor: default; }
-.compare-arrow { font-size: var(--fs-base); font-weight: 900; color: var(--muted); text-align: center; line-height: 1; margin: -1px 0; }
-.det-loc { font-size: var(--fs-xs); color: var(--text); margin-bottom: 14px; }
+.compare-arrow { font-size: var(--fs-lg); font-weight: 900; color: var(--muted); text-align: center; line-height: 1; margin: -1px 0; }
 
 /* HITL 검열 방식 선택 (마스킹/치환/공개) — 세그먼트 컨트롤 */
 .method-seg {
@@ -292,7 +298,7 @@ body.reveal .ent-tip,
 .summary-meta { font-size: var(--fs-sm); color: var(--muted); }
 .summary-meta strong { color: var(--accent); font-weight: 800; }
 .summary-grades { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.summary-grades .grade-chip { font-size: var(--fs-sm); padding: 4px 11px; }
+.summary-grades .grade-chip { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-sm); padding: 4px 11px; }
 
 .summary-tab {
   display: flex; align-items: center; gap: 7px; align-self: center;

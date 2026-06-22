@@ -156,6 +156,7 @@ function cardHTML(item, idx) {
     <div class="det${active}${allowed}" data-idx="${idx}" id="det-${idx}" onclick="focusFromCard(${idx})">
       <div class="det-top">
         <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
+        ${item.count > 1 ? `<span class="det-count">문서 내 ${item.count}회 탐지</span>` : ''}
         <span class="det-score">${esc(item.score)}점</span>
       </div>
       <div class="det-compare">
@@ -173,7 +174,6 @@ function cardHTML(item, idx) {
                  oninput="setSubText(${idx}, this.value)">
         </div>
       </div>
-      ${item.count > 1 ? `<div class="det-loc">문서 내 ${item.count}회 탐지</div>` : ''}
       <div class="method-seg" data-idx="${idx}">
         <button type="button" class="${item.method==='mask'?'on-mask':''}" onclick="event.stopPropagation();setMethod(${idx}, 'mask')">마스킹</button>
         <button type="button" class="${item.method==='substitute'?'on-sub':''}" onclick="event.stopPropagation();setMethod(${idx}, 'substitute')">치환</button>
@@ -203,7 +203,7 @@ function renderSummaryGrades(items) {
   Object.values(items).forEach(i => { if (counts[i.grade] !== undefined) counts[i.grade] += (i.count || 0); });
   const html = ITEM_GRADES
     .filter(g => counts[g] > 0)
-    .map(g => `<span class="grade-chip grade-${g}">${g} ${counts[g]}개</span>`)
+    .map(g => `<span class="grade-chip grade-${g}"><span class="grade-name">${g}</span><span class="grade-cnt">${counts[g]}개</span></span>`)
     .join('');
   ['summaryGrades', 'summaryGradesM'].forEach(id => {
     const el = document.getElementById(id);
