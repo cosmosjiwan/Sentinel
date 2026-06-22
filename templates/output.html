@@ -77,6 +77,7 @@
         </div>
         <div class="score-info">
           <span class="score-label">민감성 점수</span>
+          <span class="score-sub">100점 만점 기준</span>
         </div>
       </div>
       <div class="sidebar-grades" id="summaryGrades"></div>
@@ -141,7 +142,8 @@ function renderDocument(text) {
     item.count = (item.count || 0) + 1;
     return `<span class="ent ent-${esc(item.grade)}" data-idx="${id}" onclick="selectItem(${id})">`
          + `<span class="ent-mask">${esc(inner)}</span>`
-         + `<span class="ent-orig">${esc(item.orig)}</span></span>`;
+         + `<span class="ent-orig">${esc(item.orig)}</span>`
+         + `<span class="ent-tip" aria-hidden="true"><span class="ent-tip-label">검열 전</span>${esc(item.orig)}</span></span>`;
   });
   return toParas(html);
 }

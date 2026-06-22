@@ -29,6 +29,13 @@
   --r-control: 12px;
   --r-card:    20px;
 
+  /* ── Type scale (전 화면 공통 글자 크기) ── */
+  --fs-xs:   11px;  /* 마이크로 라벨·캡션 */
+  --fs-sm:   13px;  /* 보조 텍스트·컨트롤·칩 */
+  --fs-base: 15px;  /* 본문 기본 */
+  --fs-lg:   18px;  /* 카드·섹션 제목 */
+  --fs-xl:   30px;  /* 강조 수치(점수 등) */
+
   /* ── Focus indicator ── */
   --focus: 0 0 0 2px #ffffff, 0 0 0 4px var(--accent);
 
