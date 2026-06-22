@@ -9,7 +9,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 32px;
+  padding: 24px 32px;
 }
 
 /* ── 업로드 히어로 ── */
@@ -19,31 +19,31 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
+  gap: 20px;
 }
 
 .upload-hero-title {
-  font-size: 24px;
+  font-size: 30px;
   font-weight: 600;
-  line-height: 32px;
+  line-height: 38px;
   color: var(--text);
   text-align: center;
 }
 .upload-hero-sub {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 17px;
+  line-height: 24px;
   color: var(--muted);
   text-align: center;
-  margin-top: -16px;
+  margin-top: -10px;
 }
 
 /* ── 업로드 박스 (대형) ── */
 .upload-box {
   width: 100%;
-  min-height: 420px;
+  min-height: 260px;
   border: 1px dashed var(--border);
   border-radius: var(--r-card);
-  padding: 160px 64px;
+  padding: 56px 64px;
   text-align: center;
   background: var(--surface);
   cursor: pointer;
@@ -80,21 +80,21 @@ body {
 .upload-icon svg { color: var(--accent); }
 
 .upload-title {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 28px;
+  margin-bottom: 22px;
 }
 .select-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 8px;
+  padding: 13px 26px;
   border-radius: var(--r-control);
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   font-family: 'Pretendard', sans-serif;
   cursor: pointer;
@@ -125,7 +125,7 @@ body {
   display: flex;
   gap: 12px;
   justify-content: center;
-  margin-top: 22px;
+  margin-top: 18px;
 }
 .fmt-chip {
   font-size: 14px;
@@ -140,12 +140,12 @@ body {
 /* ── 검열 버튼 ── */
 .submit-btn {
   width: 100%;
-  padding: 14px;
+  padding: 16px;
   border-radius: var(--r-control);
   background: var(--accent);
   border: none;
   color: #fff;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 600;
   font-family: 'Pretendard', sans-serif;
   cursor: pointer;
@@ -272,6 +272,12 @@ body {
   background: currentColor;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 데스크톱: 스크롤 없이 한 화면에 업로드 흐름 전체가 보이도록 ── */
+@media (min-width: 769px) {
+  html, body { height: 100%; overflow: hidden; }
+  .content-area { overflow: visible; }
+}
 
 /* ── 모바일 대응 ── */
 @media (max-width: 768px) {

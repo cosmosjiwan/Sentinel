@@ -19,7 +19,7 @@
   </div>
 </div>
 
-<div class="summary">
+<div class="summary static">
   <span class="summary-title">일괄 검열 완료</span>
   <span class="summary-meta">{{ results|length }}개 문서의 위험성 평가가 완료되었습니다</span>
 </div>
@@ -30,7 +30,6 @@
       {% for r in results %}
       <div class="batch-row">
         <div class="batch-row-main">
-          <span class="grade-chip grade-{{ r.risk.grade }}">{{ r.risk.grade_label }}</span>
           <span class="batch-filename">{{ r.filename }}</span>
         </div>
         <div class="batch-row-meta">
@@ -38,7 +37,7 @@
           {% if r.blocked %}
             <span class="batch-blocked">차단됨 (공개 금지)</span>
           {% else %}
-            <a class="btn btn-primary btn-sm" href="/view/{{ r.filename }}">결과 보기</a>
+            <a class="btn btn-primary" href="/view/{{ r.filename }}">결과 보기</a>
           {% endif %}
         </div>
       </div>
@@ -57,11 +56,11 @@
   padding:14px 18px;
 }
 .batch-row-main { display:flex; align-items:center; gap:12px; }
-.batch-filename { font-size:13px; font-weight:600; color:var(--text); }
-.batch-row-meta { display:flex; align-items:center; gap:14px; }
-.batch-score { font-size:12px; color:var(--muted); }
-.batch-score strong { color: var(--text); }
-.batch-blocked { font-size:12px; font-weight:600; color:var(--person); }
+.batch-filename { font-size:15px; font-weight:600; color:var(--text); }
+.batch-row-meta { display:flex; align-items:center; gap:18px; }
+.batch-score { font-size:15px; color:var(--muted); }
+.batch-score strong { font-size:17px; color: var(--text); }
+.batch-blocked { font-size:13px; font-weight:600; color:var(--person); }
 
 @media (max-width: 768px) {
   .batch-wrap { padding: 16px; }

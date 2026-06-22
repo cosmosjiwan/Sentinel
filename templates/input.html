@@ -12,13 +12,12 @@
 <!-- 헤더 -->
 <div class="topbar">
   <a class="brand" href="/">Sentinel</a>
+  {% if deploy_time %}
+  <div class="topbar-right">
+    <span class="chip chip-plain" title="현재 배포된 버전이 main에 푸시된 시각 (KST)">최종 배포 {{ deploy_time }}</span>
+  </div>
+  {% endif %}
 </div>
-
-{% if deploy_time %}
-<div class="topbar-sub">
-  <span class="chip" title="현재 배포된 버전이 main에 푸시된 시각 (KST)">최종 배포 {{ deploy_time }}</span>
-</div>
-{% endif %}
 
 <!-- 콘텐츠 영역 -->
 <div class="content-area">
@@ -132,11 +131,14 @@ dropArea.addEventListener('drop', e => {
 /* 검열은 서버에서 GPT-5.1 호출 1회로 한 번에 처리되어 중간 진행률을 알 수 없으므로,
    단계 전환 시점은 실제 평균 처리 시간(문서 크기에 따라 보통 20~40초)에 맞춰 늘려둔다.
    3단계 진입 후에도 실제 응답까지는 추가 대기가 필요할 수 있어 안내 문구를 갱신한다. */
-const STEP_DELAYS = [9000, 14000]; // 1→2단계, 2→3단계
+const STEP_DELAYS = [9000, 14000]; // 1→2단계, 2→3단계 (응답이 더 빨리 오면 즉시 건너뜀)
 let stepIdx = 1;
 let stepTimer;
 let longWaitTimer;
+let requestDone = false;
+
 function advanceStep() {
+  if (requestDone) { finishAllSteps(); return; }
   if (stepIdx > 1) {
     document.getElementById('step' + (stepIdx - 1)).classList.remove('active');
     document.getElementById('step' + (stepIdx - 1)).classList.add('done');
@@ -149,13 +151,42 @@ function advanceStep() {
   }
 }
 
-document.getElementById('uploadForm').addEventListener('submit', () => {
+/* 실제 서버 응답이 도착하면, 진행 중인 단계 타이머를 모두 정리하고 즉시 마지막 단계까지 완료 표시한다. */
+function finishAllSteps() {
+  clearTimeout(stepTimer);
+  for (let i = 1; i <= 3; i++) {
+    const el = document.getElementById('step' + i);
+    el.classList.remove('active');
+    el.classList.add('done');
+  }
+}
+
+document.getElementById('uploadForm').addEventListener('submit', e => {
+  e.preventDefault();
   document.getElementById('loading').classList.add('show');
   stepIdx = 1;
+  requestDone = false;
   advanceStep();
   longWaitTimer = setTimeout(() => {
     document.querySelector('.loading-text p').textContent = '문서가 길수록 시간이 더 걸릴 수 있습니다. 잠시만 기다려 주세요...';
   }, 25000);
+
+  const form = e.target;
+  fetch(form.action, { method: 'POST', body: new FormData(form) })
+    .then(r => r.text())
+    .then(html => {
+      requestDone = true;
+      clearTimeout(longWaitTimer);
+      finishAllSteps();
+      document.open();
+      document.write(html);
+      document.close();
+    })
+    .catch(() => {
+      clearTimeout(longWaitTimer);
+      alert('서버와 통신 중 오류가 발생했습니다.');
+      document.getElementById('loading').classList.remove('show');
+    });
 });
 </script>
 </body>
