@@ -100,16 +100,13 @@ function renderDocument(text) {
     const item = items[id];
     if (!item) return esc(inner);
     item.count = (item.count || 0) + 1;
-    return `<span class="ent ent-${esc(item.type)}" data-idx="${id}" onclick="selectItem(${id})">`
+    return `<span class="ent ent-${esc(item.grade)}" data-idx="${id}" onclick="selectItem(${id})">`
          + `<span class="ent-mask">${esc(inner)}</span>`
          + `<span class="ent-orig">${esc(item.orig)}</span></span>`;
   });
   return toParas(html);
 }
 
-function typeToLabel(t) {
-  return {person:'개인정보',org:'기업/기관',ip:'지적재산',auth:'인증정보',secret:'금융/기타'}[t]||'기타';
-}
 function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -124,17 +121,16 @@ function renderSingleItem(item, idx) {
   list.innerHTML = `
     <div class="det active" data-idx="${idx}">
       <div class="det-top">
-        <span class="cat-chip cat-${esc(item.type)}">${esc(typeToLabel(item.type))}</span>
         <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
         <span class="det-score">${esc(item.score)}점</span>
       </div>
       <div class="det-compare">
-        <div class="compare-row compare-before">
+        <div class="compare-row compare-before grade-${esc(item.grade)}">
           <span class="compare-label">검열 전</span>
           <span class="compare-val" title="${esc(item.orig)}">${esc(item.orig)}</span>
         </div>
         <div class="compare-arrow">↓</div>
-        <div class="compare-row compare-after">
+        <div class="compare-row compare-after grade-${esc(item.grade)}">
           <span class="compare-label">검열 후</span>
           <span class="compare-val" title="${esc(item.replaced)}">${esc(item.replaced)}</span>
         </div>

@@ -92,16 +92,14 @@ body { height: 100%; overflow: hidden; }
 body.reveal .ent-mask { display: none; }
 body.reveal .ent-orig { display: inline; }
 
-.ent-person .ent-mask { background: var(--person-bg); color: var(--person); }
-.ent-person .ent-orig { color: var(--person); }
-.ent-org    .ent-mask { background: var(--org-bg);    color: var(--org); }
-.ent-org    .ent-orig { color: var(--org); }
-.ent-ip     .ent-mask { background: var(--ip-bg);     color: var(--ip); }
-.ent-ip     .ent-orig { color: var(--ip); }
-.ent-auth   .ent-mask { background: var(--auth-bg);   color: var(--auth); }
-.ent-auth   .ent-orig { color: var(--auth); }
-.ent-secret .ent-mask { background: var(--secret-bg); color: var(--secret); }
-.ent-secret .ent-orig { color: var(--secret); }
+.ent-특급 .ent-mask { background: var(--person-bg); color: var(--person); }
+.ent-특급 .ent-orig { color: var(--person); }
+.ent-1급  .ent-mask { background: var(--ip-bg);     color: var(--ip); }
+.ent-1급  .ent-orig { color: var(--ip); }
+.ent-2급  .ent-mask { background: var(--org-bg);    color: var(--org); }
+.ent-2급  .ent-orig { color: var(--org); }
+.ent-3급  .ent-mask { background: var(--secret-bg); color: var(--secret); }
+.ent-3급  .ent-orig { color: var(--secret); }
 
 /* 선택(클릭)된 토큰 강조 */
 .ent.active .ent-mask, .ent.active .ent-orig { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: var(--r-control); }
@@ -138,15 +136,6 @@ body.reveal .ent-orig { display: inline; }
 .det.allowed { background: var(--surface2); }
 .det.active { background: var(--accent-bg); }
 .det-top { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-.cat-chip {
-  font-size: 11px; font-weight: 600;
-  padding: 2px 8px; border-radius: var(--r-control);
-}
-.cat-person { background: var(--person-bg); color: var(--person); }
-.cat-org    { background: var(--org-bg);    color: var(--org); }
-.cat-ip     { background: var(--ip-bg);     color: var(--ip); }
-.cat-auth   { background: var(--auth-bg);   color: var(--auth); }
-.cat-secret { background: var(--secret-bg); color: var(--secret); }
 .det-score { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--subtle); }
 
 .det-compare {
@@ -158,21 +147,24 @@ body.reveal .ent-orig { display: inline; }
   padding: 8px 10px; border-radius: var(--r-control);
   border: 1px solid var(--border);
 }
-.compare-before { background: var(--person-bg); border-color: var(--person); }
-.compare-after  { background: var(--ip-bg);     border-color: var(--ip); }
+.compare-row.grade-특급 { background: var(--person-bg); border-color: var(--person); }
+.compare-row.grade-1급  { background: var(--ip-bg);     border-color: var(--ip); }
+.compare-row.grade-2급  { background: var(--org-bg);    border-color: var(--org); }
+.compare-row.grade-3급  { background: var(--secret-bg); border-color: var(--secret); }
 .compare-label {
   flex: 0 0 auto;
   font-size: 10px; font-weight: 700;
   padding: 2px 6px; border-radius: 4px;
   background: rgba(0,0,0,.06);
 }
-.compare-before .compare-label { color: var(--person); }
-.compare-after  .compare-label { color: var(--ip); }
+.compare-row.grade-특급 .compare-label { color: var(--person); }
+.compare-row.grade-1급  .compare-label { color: var(--ip); }
+.compare-row.grade-2급  .compare-label { color: var(--org); }
+.compare-row.grade-3급  .compare-label { color: var(--secret); }
 .compare-val {
   font-size: 13px; font-weight: 600; color: var(--text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.compare-before .compare-val { text-decoration: line-through; text-decoration-color: var(--person); opacity: .85; }
 .compare-arrow { font-size: 12px; color: var(--subtle); text-align: center; line-height: 1; margin: -1px 0; }
 .det-loc { font-size: 11px; color: var(--subtle); margin-bottom: 10px; }
 
