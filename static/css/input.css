@@ -15,7 +15,7 @@ body {
 /* ── 업로드 히어로 ── */
 .upload-hero {
   width: 100%;
-  max-width: 760px;
+  max-width: 980px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,15 +40,20 @@ body {
 /* ── 업로드 박스 (대형) ── */
 .upload-box {
   width: 100%;
+  min-height: 420px;
   border: 1px dashed var(--border);
   border-radius: var(--r-card);
-  padding: 110px 48px;
+  padding: 160px 64px;
   text-align: center;
   background: var(--surface);
   cursor: pointer;
   transition: border-color .15s, background .15s, box-shadow .15s;
   position: relative;
   box-shadow: var(--shadow2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 .upload-box:hover,
 .upload-box.dragover {
@@ -63,8 +68,8 @@ body {
 }
 
 .upload-icon {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   margin: 0 auto 22px;
   background: var(--accent-bg);
   border-radius: var(--r-card);

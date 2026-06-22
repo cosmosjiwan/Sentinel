@@ -128,8 +128,18 @@ function renderSingleItem(item, idx) {
         <span class="grade-chip grade-${esc(item.grade)}">${esc(item.grade)}</span>
         <span class="det-score">${esc(item.score)}점</span>
       </div>
-      <div class="det-orig" title="${esc(item.orig)}">${esc(item.orig)}</div>
-      <div class="det-loc">→ ${esc(item.replaced)}${item.count > 1 ? ' · '+item.count+'회 탐지' : ''}</div>
+      <div class="det-compare">
+        <div class="compare-row compare-before">
+          <span class="compare-label">검열 전</span>
+          <span class="compare-val" title="${esc(item.orig)}">${esc(item.orig)}</span>
+        </div>
+        <div class="compare-arrow">↓</div>
+        <div class="compare-row compare-after">
+          <span class="compare-label">검열 후</span>
+          <span class="compare-val" title="${esc(item.replaced)}">${esc(item.replaced)}</span>
+        </div>
+      </div>
+      ${item.count > 1 ? `<div class="det-loc">문서 내 ${item.count}회 탐지</div>` : ''}
       <div class="seg" data-idx="${idx}">
         <button type="button" class="${item.allowed?'':'on-redact'}" data-act="redact" onclick="setAllow(${idx}, false)">검열 유지</button>
         <button type="button" class="${item.allowed?'on-allow':''}" data-act="allow" onclick="setAllow(${idx}, true)">반출 허용</button>
