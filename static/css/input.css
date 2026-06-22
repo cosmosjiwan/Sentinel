@@ -302,12 +302,13 @@ body {
   .upload-hero-title { font-size: 19px; line-height: 25px; }
   .upload-hero-sub { font-size: 13px; margin-top: -6px; }
 
-  /* 폼이 남은 세로 공간을 모두 차지하고, 그 안에서 업로드 박스가 늘어나 버튼을 바닥으로 민다 */
+  /* 폼이 남은 세로 공간을 차지하되, 업로드 박스는 그중 약 3/4만 채우고
+     박스 안 요소는 고르게 분산 배치한다. 남는 공간만큼 검열 버튼이 아래로 내려간다 */
   #uploadForm { flex: 1; display: flex; flex-direction: column; min-height: 0; }
   .upload-box {
-    flex: 1; min-height: 0;
-    padding: 24px 16px; border-radius: 16px;
-    flex-direction: column; text-align: center; gap: 0;
+    flex: 0 1 75%; min-height: 0;
+    padding: 32px 16px; border-radius: 16px;
+    flex-direction: column; justify-content: space-evenly; text-align: center; gap: 0;
   }
   .upload-content { align-items: center; }
   .upload-icon { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 14px; }
@@ -318,7 +319,7 @@ body {
   .fmt-chip { font-size: 11px; padding: 5px 11px; }
   #file-name { margin-top: 12px; font-size: 12px; justify-content: center; }
 
-  .submit-btn { flex-shrink: 0; padding: 15px; font-size: 16px; margin-top: 14px !important; }
+  .submit-btn { flex-shrink: 0; padding: 15px; font-size: 16px; margin-top: auto !important; }
 
   .scan-card { width: 100%; padding: 24px 16px; }
 }

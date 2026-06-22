@@ -17,7 +17,8 @@
   box-shadow: 0 1px 0 var(--border);
   overflow: hidden;
   max-height: 320px; opacity: 1;
-  transition: max-height .32s cubic-bezier(.4,0,.2,1), opacity .2s ease, padding .32s cubic-bezier(.4,0,.2,1);
+  transform: translateY(0);
+  transition: max-height .4s cubic-bezier(.4,0,.2,1), opacity .32s ease, transform .4s cubic-bezier(.4,0,.2,1), padding .4s cubic-bezier(.4,0,.2,1);
 }
 .summary-top { display: flex; align-items: center; gap: 10px; }
 .summary-top::before {
@@ -58,9 +59,11 @@
 .summary-tab:hover { background: var(--surface3); color: var(--text); }
 .summary-tab-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--secret); flex-shrink: 0; }
 
-/* 접힘 상태: 큰 요약 창은 높이 0으로 사라지고, 작은 탭이 부드럽게 내려온다 */
+/* 접힘 상태: 스크롤을 내릴수록 큰 요약 창이 위로 사라지며 fade out 되고,
+   작은 탭이 부드럽게 fade in 되며 내려온다. 탭을 누르면 큰 창이 위에서 다시 내려온다. */
 .summary-wrap.collapsed .summary {
   max-height: 0; opacity: 0;
+  transform: translateY(-16px);
   padding-top: 0; padding-bottom: 0;
   pointer-events: none;
 }
@@ -256,7 +259,7 @@ body.reveal .ent-orig { display: inline; }
   border-bottom: 1.5px dashed currentColor;
 }
 .compare-after .compare-val[readonly] { cursor: default; }
-.compare-arrow { font-size: 13px; color: var(--subtle); text-align: center; line-height: 1; margin: -2px 0; }
+.compare-arrow { font-size: 17px; font-weight: 900; color: var(--muted); text-align: center; line-height: 1; margin: -1px 0; }
 .det-loc { font-size: 11px; color: var(--subtle); margin-bottom: 14px; }
 
 /* HITL 검열 방식 선택 (마스킹/치환/공개) — 세그먼트 컨트롤 */
