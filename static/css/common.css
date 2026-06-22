@@ -72,6 +72,8 @@ body {
   color: var(--text);
   display: flex;
   align-items: center;
+  text-decoration: none;
+  cursor: pointer;
 }
 .brand span { color: var(--accent); }
 .topbar-right {

@@ -11,26 +11,18 @@
 
 <!-- 헤더 -->
 <div class="topbar">
-  <div class="brand">Sentinel</div>
+  <a class="brand" href="/">Sentinel</a>
   <div class="topbar-right">
     <div class="file-chip">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2 1.75C2 .784 2.784 0 3.75 0h6.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v9.586A1.75 1.75 0 0 1 13.25 16h-9.5A1.75 1.75 0 0 1 2 14.25Zm1.75-.25a.25.25 0 0 0-.25.25v12.5c0 .138.112.25.25.25h9.5a.25.25 0 0 0 .25-.25V6h-2.75A1.75 1.75 0 0 1 8.75 4.25V1.5Z"/></svg>
       <span>{{ filename }}</span>
     </div>
     {% if not blocked %}
-    <button class="btn btn-primary btn-sm" type="button" onclick="applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z"/></svg>
-      승인하고 내보내기
-    </button>
-    <a class="btn btn-secondary btn-sm" href="/download/{{ filename }}_redacted.txt">
+    <button class="btn btn-secondary btn-sm" type="button" onclick="applyAndExport()" title="담당자 검토 후 승인됩니다 · Human-in-the-Loop">
       <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
       검열본 다운로드
-    </a>
+    </button>
     {% endif %}
-    <a class="btn btn-secondary btn-sm" href="/">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M6.906.664a1.749 1.749 0 0 1 2.187 0l5.25 4.2c.415.332.657.835.657 1.367v7.019A1.75 1.75 0 0 1 13.25 15h-3.5a.75.75 0 0 1-.75-.75V9H7v5.25a.75.75 0 0 1-.75.75h-3.5A1.75 1.75 0 0 1 1 13.25V6.23c0-.531.242-1.034.657-1.366l5.25-4.2Z"/></svg>
-      새 문서
-    </a>
   </div>
 </div>
 
@@ -91,6 +83,14 @@ const bodyText = JSON.parse(document.getElementById('docBody-src').textContent);
 const items = JSON.parse(document.getElementById('itemsData').textContent);
 const filename = JSON.parse(document.getElementById('reviewMeta').textContent);
 const ITEM_GRADES = ["특급","1급","2급","3급"];
+const MASK_TOKEN = {person:'[개인정보 마스킹]',org:'[기관정보 마스킹]',ip:'[기밀정보 마스킹]',auth:'[인증정보 마스킹]',secret:'[금융정보 마스킹]'};
+
+/* 항목의 현재 치환값으로부터 초기 검열 방식(마스킹/치환/공개)을 추론한다 */
+function inferMethod(item) {
+  if (item.replaced === item.orig) return 'publish';
+  if (Object.values(MASK_TOKEN).includes(item.replaced)) return 'mask';
+  return 'substitute';
+}
 
 /* 본문의 <R번호>치환표현</R번호> 태그를 클릭 가능한 .ent 토큰으로 렌더 (mask=치환표현, orig=원문) */
 const TAG_RE = /<R(\d+)>([\s\S]*?)<\/R\1>/g;
@@ -140,10 +140,16 @@ function renderSingleItem(item, idx) {
         </div>
       </div>
       ${item.count > 1 ? `<div class="det-loc">문서 내 ${item.count}회 탐지</div>` : ''}
-      <div class="seg" data-idx="${idx}">
-        <button type="button" class="${item.allowed?'':'on-redact'}" data-act="redact" onclick="setAllow(${idx}, false)">검열 유지</button>
-        <button type="button" class="${item.allowed?'on-allow':''}" data-act="allow" onclick="setAllow(${idx}, true)">반출 허용</button>
+      <div class="method-seg" data-idx="${idx}">
+        <button type="button" class="${item.method==='mask'?'on-mask':''}" onclick="setMethod(${idx}, 'mask')">마스킹</button>
+        <button type="button" class="${item.method==='substitute'?'on-sub':''}" onclick="setMethod(${idx}, 'substitute')">치환</button>
+        <button type="button" class="${item.method==='publish'?'on-pub':''}" onclick="setMethod(${idx}, 'publish')">공개</button>
       </div>
+      ${item.method === 'substitute' ? `
+      <div class="sub-input-wrap">
+        <input type="text" class="sub-input" value="${esc(item.subText ?? item.replaced)}"
+               placeholder="원하는 치환 표현 입력" oninput="setSubText(${idx}, this.value)">
+      </div>` : ''}
     </div>
   `;
 }
@@ -182,18 +188,40 @@ function closeReviewPanel(){
   document.getElementById('reviewPanel').style.display = 'none';
 }
 
-function setAllow(idx, allow){
+/* 문서 본문 내 해당 항목 토큰의 표시값/공개여부를 현재 상태에 맞게 갱신한다 */
+function applyMethodToToken(idx, item){
+  document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>{
+    e.classList.toggle('allowed', item.method === 'publish');
+    const maskSpan = e.querySelector('.ent-mask');
+    if (maskSpan) maskSpan.textContent = item.replaced;
+  });
+}
+
+/* 검열 방식(마스킹/치환/공개) 변경 */
+function setMethod(idx, method){
   const items = window.__items || {};
-  if (!items[idx]) return;
-  items[idx].allowed = allow;
-  // 세그먼트 버튼 상태
-  const seg = document.querySelector(`.seg[data-idx="${idx}"]`);
-  if (seg) {
-    seg.querySelectorAll('button').forEach(b=>b.classList.remove('on-redact','on-allow'));
-    seg.querySelector(`[data-act="${allow?'allow':'redact'}"]`).classList.add(allow?'on-allow':'on-redact');
-  }
-  // 문서 토큰 상태
-  document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>e.classList.toggle('allowed', allow));
+  const item = items[idx];
+  if (!item) return;
+  if (item.subText === undefined) item.subText = item.replaced;
+  item.method = method;
+  if (method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[마스킹]';
+  else if (method === 'publish') item.replaced = item.orig;
+  else item.replaced = item.subText || item.replaced;
+  applyMethodToToken(idx, item);
+  renderSingleItem(item, idx);
+  syncCount();
+}
+
+/* 치환 방식에서 사용자가 직접 입력한 표현 적용 */
+function setSubText(idx, val){
+  const items = window.__items || {};
+  const item = items[idx];
+  if (!item) return;
+  item.subText = val;
+  item.replaced = val;
+  const afterVal = document.querySelector(`.det[data-idx="${idx}"] .compare-after .compare-val`);
+  if (afterVal) { afterVal.textContent = val; afterVal.title = val; }
+  applyMethodToToken(idx, item);
   syncCount();
 }
 
@@ -203,14 +231,14 @@ function syncCount(){
     `문서 등급 {{ risk.grade_label }} · 점수 {{ risk.score }}/100 · 민감정보 ${Object.keys(items).length}건 탐지`;
 }
 
-/* ── 승인하고 내보내기: 허용 항목은 원문 유지로 저장 후 다운로드 ── */
+/* ── 검열본 다운로드: 항목별 현재 검열 방식을 서버에 반영한 뒤 다운로드 ── */
 function applyAndExport(){
   const items = window.__items || {};
   const ids = Object.keys(items);
   if (!ids.length) { window.location = `/download/${filename}_redacted.txt`; return; }
   const edits = ids.map(id => ({
     id: +id,
-    replacement: items[id].allowed ? items[id].orig : items[id].replaced,
+    replacement: items[id].replaced,
   }));
   fetch(`/apply_review/${encodeURIComponent(filename)}`, {
     method: 'POST',
@@ -234,6 +262,10 @@ document.getElementById('revealToggle').addEventListener('change', e => {
 (function run(){
   const docHtml = renderDocument(bodyText);
   document.getElementById('docBody').innerHTML = docHtml || '<div class="empty-state">문서 내용을 표시할 수 없습니다.</div>';
+  Object.values(items).forEach(item => {
+    item.method = inferMethod(item);
+    item.subText = item.replaced;
+  });
   window.__items = items;
   renderSummaryGrades(items);
   syncCount();
