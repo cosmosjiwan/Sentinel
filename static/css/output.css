@@ -8,7 +8,9 @@
 .app-shell { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: visible; }
 
 /* ── 요약 스트립 ── */
-.summary-wrap { flex-shrink: 0; display: flex; flex-direction: column; z-index: 40; }
+/* overflow-anchor: none — 접힘/펼침으로 높이가 바뀔 때 브라우저가 스크롤 위치를 보정하면서
+   스크롤 이벤트를 다시 발생시켜 깜빡임 루프가 생기는 것을 막는다 */
+.summary-wrap { flex-shrink: 0; display: flex; flex-direction: column; z-index: 40; overflow-anchor: none; }
 .summary {
   width: 100%;
   display: flex; flex-direction: column; gap: 12px;

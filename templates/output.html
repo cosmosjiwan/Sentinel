@@ -190,45 +190,52 @@ function showReviewForItem(idx){
   collapseSummary();
 }
 
-/* 스크롤하거나 탐지 항목을 열어볼 때는 검열 완료 요약 스트립을 화면을 가리지 않는 얇은 탭으로 접는다 */
-function collapseSummary(){
-  document.getElementById('summaryWrap').classList.add('collapsed');
-}
-
-/* 문서 맨 위로 다시 스크롤하거나 탭을 누르면 검열 완료 요약 스트립을 다시 펼친다 */
-function expandSummary(){
-  document.getElementById('summaryWrap').classList.remove('collapsed');
-}
-
-/* 스크롤 방향에 따라 요약 스트립을 접고 편다:
-   - 맨 위에서는 항상 전체 요약 창을 보여준다
-   - 아래로 스크롤하면 얇은 탭으로 접는다 (탭은 화면 상단에 고정되어 떠 있다)
-   - 위로 스크롤하면 전체 요약 창이 다시 나타난다
-   접힘/펼침 애니메이션(max-height 변화)이 sticky 요약 높이를 바꾸면 본문이 reflow되어
-   scrollY가 흔들리고, 그 스크롤 이벤트가 다시 상태를 뒤집어 깜빡거림이 생긴다.
-   → 전환 중에는 잠금(lock)을 걸어 재진입을 막고, 임계값(hysteresis)을 넉넉히 둔다. */
-let lastScrollY = 0;
+/* 스크롤하거나 탐지 항목을 열어볼 때는 검열 완료 요약 스트립을 화면을 가리지 않는 얇은 탭으로 접는다.
+   접고 펼 때마다 짧게 잠금을 걸어, 전환 직후 곧바로 다시 뒤집히는 것을 막는다
+   (특히 탭을 눌러 펼친 직후 약간의 스크롤만으로 즉시 재접힘되는 것을 방지). */
 let summaryLocked = false;
 function lockSummary(){
   summaryLocked = true;
   clearTimeout(lockSummary._t);
-  lockSummary._t = setTimeout(() => {
-    summaryLocked = false;
-    lastScrollY = window.scrollY || document.getElementById('docBody').scrollTop || 0;
-  }, 440);
+  lockSummary._t = setTimeout(() => { summaryLocked = false; }, 420);
 }
-function handleScrollTop(scrollTop){
-  if (summaryLocked) { return; }
-  const wrap = document.getElementById('summaryWrap');
-  const collapsed = wrap.classList.contains('collapsed');
-  if (scrollTop <= 4) {
-    if (collapsed) { expandSummary(); lockSummary(); }
-  } else if (!collapsed && scrollTop > lastScrollY + 24) {
-    collapseSummary(); lockSummary();
-  } else if (collapsed && scrollTop < lastScrollY - 24) {
-    expandSummary(); lockSummary();
-  }
-  lastScrollY = scrollTop;
+function collapseSummary(){
+  document.getElementById('summaryWrap').classList.add('collapsed');
+  lockSummary();
+}
+
+/* 탭을 누르거나 문서 맨 위로 스크롤하면 검열 완료 요약 스트립을 다시 펼친다 */
+function expandSummary(){
+  document.getElementById('summaryWrap').classList.remove('collapsed');
+  lockSummary();
+}
+
+/* ── 모바일(자연 스크롤): 요약 스트립이 sticky로 화면 상단에 고정되므로,
+   스크롤을 내려 원문 대조 영역(.doc-head)이 그 아래로 가려지기 시작하는 지점을 기준으로 접는다.
+   (고정 임계값이 아니라 실제로 가려지기 시작하는 위치를 기준으로 하므로, 느리게 스크롤해도 정확히 그 순간 전환된다) */
+let summaryCollapseThreshold = 0;
+function computeSummaryCollapseThreshold(){
+  const docHead = document.querySelector('.doc-head');
+  const strip = document.getElementById('summaryStrip');
+  if (!docHead || !strip) return 0;
+  const docHeadAbsTop = docHead.getBoundingClientRect().top + window.scrollY;
+  return Math.max(0, docHeadAbsTop - strip.offsetHeight);
+}
+function handleMobileScroll(scrollTop){
+  if (summaryLocked) return;
+  const collapsed = document.getElementById('summaryWrap').classList.contains('collapsed');
+  if (scrollTop <= 4) { if (collapsed) expandSummary(); return; }
+  if (!collapsed && scrollTop > summaryCollapseThreshold) collapseSummary();
+  else if (collapsed && scrollTop < summaryCollapseThreshold - 12) expandSummary();
+}
+
+/* ── 데스크톱(문서 영역 내부 스크롤): 요약 스트립이 sticky가 아니라 가려질 위험이 없으므로
+   단순히 스크롤 시작 여부로 접고 편다 ── */
+function handleDesktopScroll(scrollTop){
+  if (summaryLocked) return;
+  const collapsed = document.getElementById('summaryWrap').classList.contains('collapsed');
+  if (scrollTop <= 4) { if (collapsed) expandSummary(); }
+  else if (!collapsed) collapseSummary();
 }
 
 function closeReviewPanel(){
@@ -313,10 +320,10 @@ document.getElementById('revealToggle').addEventListener('change', e => {
 /* ── 문서 본문(데스크톱: 내부 스크롤) 또는 페이지(모바일: 자연 스크롤)를 스크롤하면
    검열 완료 요약 스트립을 자동으로 숨기고, 맨 위로 돌아오면 다시 보여준다 ── */
 document.getElementById('docBody').addEventListener('scroll', e => {
-  handleScrollTop(e.target.scrollTop);
+  handleDesktopScroll(e.target.scrollTop);
 }, { passive: true });
 window.addEventListener('scroll', () => {
-  handleScrollTop(window.scrollY);
+  handleMobileScroll(window.scrollY);
 }, { passive: true });
 
 /* ══ 메인 실행 ══ */
@@ -334,6 +341,7 @@ window.addEventListener('scroll', () => {
   window.__items = items;
   renderSummaryGrades(items);
   syncCount();
+  summaryCollapseThreshold = computeSummaryCollapseThreshold();
 })();
 
 </script>
