@@ -511,7 +511,8 @@ def redact():
         record = process_file(upload_path, file.filename)
         results.append(record)
 
-    return render_template("batch_result.html", results=results)
+    # 문서별 검열 목록 화면 (단일 파일도 1개짜리 목록으로 표시)
+    return render_template("list.html", results=results)
 
 
 @app.route("/view/<filename>")

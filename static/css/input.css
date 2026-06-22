@@ -168,120 +168,7 @@ body {
 .submit-btn:active:not(:disabled) { transform: scale(.985); }
 .submit-btn:disabled { background: var(--surface2); color: var(--disabled); box-shadow: none; cursor: not-allowed; }
 
-/* ── 로딩 오버레이 (검열 중) ── */
-#loading {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(245,246,250,0.94);
-  backdrop-filter: blur(6px);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  gap: 24px;
-}
-#loading.show { display: flex; }
-
-.scan-card {
-  width: 400px;
-  max-width: calc(100vw - 32px);
-  background: var(--surface);
-  border: none;
-  border-radius: var(--r-card);
-  box-shadow: var(--shadow16);
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 22px;
-}
-
-/* 스캐닝 도큐먼트 비주얼 */
-.scan-visual {
-  position: relative;
-  width: 68px;
-  height: 84px;
-  background: var(--surface);
-  border: 2px solid var(--accent);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: var(--shadow2);
-}
-.scan-visual .line {
-  position: absolute;
-  left: 12px;
-  height: 5px;
-  border-radius: 3px;
-  background: var(--accent-bg-h);
-}
-.scan-visual .line:nth-child(1) { top: 14px; width: 32px; }
-.scan-visual .line:nth-child(2) { top: 26px; width: 44px; }
-.scan-visual .line:nth-child(3) { top: 38px; width: 26px; }
-.scan-visual .line:nth-child(4) { top: 50px; width: 40px; }
-.scan-visual .line:nth-child(5) { top: 62px; width: 34px; }
-.scan-beam {
-  position: absolute;
-  left: 0; right: 0;
-  height: 16px;
-  background: linear-gradient(180deg, transparent, rgba(79,70,229,.30), transparent);
-  border-top: 2px solid var(--accent);
-  box-shadow: 0 0 12px rgba(79,70,229,.45);
-  animation: scanmove 1.8s ease-in-out infinite;
-}
-@keyframes scanmove {
-  0%   { top: -16px; }
-  50%  { top: 84px; }
-  100% { top: -16px; }
-}
-
-.loading-text { text-align: center; }
-.loading-text h3 {
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 4px;
-}
-.loading-text p {
-  font-size: 13px;
-  color: var(--muted);
-}
-.loading-steps {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 100%;
-}
-.step {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  padding: 11px 14px;
-  background: var(--surface3);
-  border: 1px solid transparent;
-  border-radius: var(--r-control);
-  opacity: 0.55;
-  transition: opacity .3s, border-color .3s, color .3s, background .3s;
-}
-.step.active { opacity: 1; border-color: var(--accent); color: var(--accent-h); background: var(--accent-bg); }
-.step.done   { opacity: 1; border-color: transparent; color: var(--secret); background: var(--secret-bg); }
-.step-dot {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid currentColor;
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  position: relative;
-}
-.step.active .step-dot { border-style: dashed; animation: spin 1.2s linear infinite; }
-.step.done .step-dot::after {
-  content: "";
-  width: 8px; height: 8px; border-radius: 50%;
-  background: currentColor;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+/* 로딩(검열 중) 오버레이 스타일은 loading.css로 분리되어 있다. */
 
 /* ── 데스크톱: 스크롤 없이 한 화면에 업로드 흐름 전체가 보이도록 ── */
 @media (min-width: 769px) {
@@ -322,6 +209,4 @@ body {
   #file-name { margin-top: 12px; font-size: 12px; justify-content: center; }
 
   .submit-btn { flex-shrink: 0; padding: 15px; font-size: 16px; margin-top: 16px !important; }
-
-  .scan-card { width: 100%; padding: 24px 16px; }
 }

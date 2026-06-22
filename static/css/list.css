@@ -1,0 +1,38 @@
+/* ════════════════════════════════════════════════════════════════
+   문서별 검열 목록 화면 (일괄 검열 결과)
+   업로드한 문서들의 위험성 평가 결과를 목록으로 보여주고, 각 문서의
+   검열 결과(output)로 이동하는 진입점. 공유 컴포넌트(.summary/.app-shell)는
+   output.css를 재사용하고, 목록 고유 스타일만 여기에 둔다.
+   ════════════════════════════════════════════════════════════════ */
+
+.batch-wrap { flex:1; padding: 24px; overflow-y:auto; }
+.batch-list { display:flex; flex-direction:column; gap:10px; max-width: 760px; margin: 0 auto; }
+.batch-row {
+  display:flex; align-items:center; justify-content:space-between; gap: 14px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+  box-shadow: var(--shadow2);
+  padding:16px 20px;
+  transition: box-shadow .15s, transform .1s;
+}
+.batch-row:hover { box-shadow: var(--shadow8); }
+.batch-row-main { display:flex; align-items:center; gap:14px; min-width: 0; }
+.batch-file-icon {
+  width: 38px; height: 38px; flex-shrink: 0; border-radius: 10px;
+  background: var(--accent-bg); color: var(--accent);
+  display:flex; align-items:center; justify-content:center;
+}
+.batch-filename {
+  font-size:14.5px; font-weight:700; color:var(--text);
+  overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+}
+.batch-row-meta { display:flex; align-items:center; gap:16px; flex-shrink: 0; }
+.batch-score { font-size:13px; color:var(--muted); white-space: nowrap; }
+.batch-score strong { font-size:16px; color: var(--text); font-weight: 800; }
+.batch-blocked { font-size:12px; font-weight:700; color:var(--person); background: var(--person-bg); padding: 6px 12px; border-radius: 999px; }
+
+@media (max-width: 768px) {
+  .batch-wrap { padding: 16px; }
+  .batch-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .batch-row-main { width: 100%; }
+  .batch-row-meta { width: 100%; justify-content: space-between; }
+}

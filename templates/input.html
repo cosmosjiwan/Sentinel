@@ -6,6 +6,7 @@
 <title>Sentinal DLP — AI 문서 보안 검열</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/input.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
 </head>
 <body>
 
@@ -68,25 +69,8 @@
   </div>
 </div>
 
-<!-- 로딩 오버레이 (검열 중) -->
-<div id="loading">
-  <div class="scan-card">
-    <div class="scan-visual">
-      <span class="line"></span><span class="line"></span><span class="line"></span>
-      <span class="line"></span><span class="line"></span>
-      <div class="scan-beam"></div>
-    </div>
-    <div class="loading-text">
-      <h3>문서 검열 중...</h3>
-      <p>AI가 민감정보를 분석하고 있습니다</p>
-    </div>
-    <div class="loading-steps">
-      <div class="step active" id="step1"><span class="step-dot"></span>1단계: 민감정보 탐지</div>
-      <div class="step" id="step2"><span class="step-dot"></span>2단계: 보안 등급 분류</div>
-      <div class="step" id="step3"><span class="step-dot"></span>3단계: 검열 표현 결정</div>
-    </div>
-  </div>
-</div>
+<!-- 검열 결과 산출(로딩) 화면 — 별도 템플릿(loading.html)을 포함 -->
+{% include "loading.html" %}
 
 <script>
 const dropArea  = document.getElementById('dropArea');
