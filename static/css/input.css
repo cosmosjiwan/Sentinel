@@ -119,6 +119,8 @@ body {
 #file-name.show { display: flex; }
 #file-name svg { flex-shrink: 0; }
 
+#lastModified { margin-top: 10px; }
+
 .format-chips {
   display: flex;
   gap: 12px;
