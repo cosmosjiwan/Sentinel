@@ -27,7 +27,7 @@
 </div>
 
 <!-- 요약 스트립 -->
-<div class="summary">
+<div class="summary collapsed" id="summaryStrip" onclick="toggleSummary()">
   <span class="summary-title">검열 완료</span>
   <span class="summary-meta" id="summaryMeta">
     문서 등급 {{ risk.grade_label }} · 민감성 점수 {{ risk.score }}/100
@@ -136,6 +136,9 @@ function renderSingleItem(item, idx) {
         </div>
       </div>
       ${item.count > 1 ? `<div class="det-loc">문서 내 ${item.count}회 탐지</div>` : ''}
+      <div class="grade-seg" data-idx="${idx}">
+        ${ITEM_GRADES.map(g => `<button type="button" class="${item.grade===g?'on-'+g:''}" onclick="setGrade(${idx}, '${g}')">${g}</button>`).join('')}
+      </div>
       <div class="method-seg" data-idx="${idx}">
         <button type="button" class="${item.method==='mask'?'on-mask':''}" onclick="setMethod(${idx}, 'mask')">마스킹</button>
         <button type="button" class="${item.method==='substitute'?'on-sub':''}" onclick="setMethod(${idx}, 'substitute')">치환</button>
@@ -208,6 +211,21 @@ function setMethod(idx, method){
   syncCount();
 }
 
+/* 검열 등급(특급/1급/2급/3급) 변경: 문서 토큰 색상과 요약 등급 집계를 함께 갱신 */
+function setGrade(idx, grade){
+  const items = window.__items || {};
+  const item = items[idx];
+  if (!item) return;
+  item.grade = grade;
+  document.querySelectorAll(`.ent[data-idx="${idx}"]`).forEach(e=>{
+    ITEM_GRADES.forEach(g => e.classList.remove(`ent-${g}`));
+    e.classList.add(`ent-${grade}`);
+  });
+  renderSingleItem(item, idx);
+  renderSummaryGrades(items);
+  syncCount();
+}
+
 /* 치환 방식에서 사용자가 직접 입력한 표현 적용 */
 function setSubText(idx, val){
   const items = window.__items || {};
@@ -247,6 +265,11 @@ function applyAndExport(){
       window.location = `/download/${filename}_redacted.txt`;
     })
     .catch(() => alert('서버와 통신 중 오류가 발생했습니다.'));
+}
+
+/* ── 검열 완료 스트립: 클릭 시 펼침/접힘 ── */
+function toggleSummary(){
+  document.getElementById('summaryStrip').classList.toggle('collapsed');
 }
 
 /* ── 원문 대조 토글 ── */
