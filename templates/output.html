@@ -187,6 +187,16 @@ function collapseSummary(){
   document.getElementById('summaryStrip').classList.add('hidden');
 }
 
+/* 문서 맨 위로 다시 스크롤하면 검열 완료 요약 스트립을 다시 보여준다 */
+function expandSummary(){
+  document.getElementById('summaryStrip').classList.remove('hidden');
+}
+
+function handleScrollTop(scrollTop){
+  if (scrollTop <= 0) expandSummary();
+  else collapseSummary();
+}
+
 function closeReviewPanel(){
   document.querySelectorAll('.ent.active, .det.active').forEach(e=>e.classList.remove('active'));
   selected = -1;
@@ -267,9 +277,13 @@ document.getElementById('revealToggle').addEventListener('change', e => {
   document.body.classList.toggle('reveal', e.target.checked);
 });
 
-/* ── 문서 본문을 스크롤하면 검열 완료 요약 스트립을 자동으로 숨긴다 ── */
-document.getElementById('docBody').addEventListener('scroll', () => {
-  collapseSummary();
+/* ── 문서 본문(데스크톱: 내부 스크롤) 또는 페이지(모바일: 자연 스크롤)를 스크롤하면
+   검열 완료 요약 스트립을 자동으로 숨기고, 맨 위로 돌아오면 다시 보여준다 ── */
+document.getElementById('docBody').addEventListener('scroll', e => {
+  handleScrollTop(e.target.scrollTop);
+}, { passive: true });
+window.addEventListener('scroll', () => {
+  handleScrollTop(window.scrollY);
 }, { passive: true });
 
 /* ══ 메인 실행 ══ */
