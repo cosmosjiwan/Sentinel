@@ -12,6 +12,11 @@
 
 <div class="topbar">
   <a class="brand" href="/">Sentinel</a>
+  <nav class="topnav">
+    <a href="/" class="topnav-link {{ 'active' if nav == 'home' }}">새 검열</a>
+    <a href="/dashboard" class="topnav-link {{ 'active' if nav == 'history' }}">검열 이력</a>
+    <a href="/policy" class="topnav-link {{ 'active' if nav == 'policy' }}">정책 설정</a>
+  </nav>
 </div>
 
 <div class="summary static">
@@ -37,7 +42,7 @@
           {% if r.blocked %}
             <span class="batch-blocked">차단됨 (공개 금지)</span>
           {% else %}
-            <a class="btn btn-primary" href="/view/{{ r.filename }}">결과 보기</a>
+            <a class="btn btn-primary" href="/view/{{ r.doc_id }}">결과 보기</a>
           {% endif %}
         </div>
       </div>

@@ -1,0 +1,114 @@
+/* ════════════════════════════════════════════════════════════════
+   관리 화면 공통 (검열 이력 대시보드 / 정책 설정)
+   ════════════════════════════════════════════════════════════════ */
+
+.page { flex: 1; overflow-y: auto; padding: 32px 24px 64px; }
+.page-narrow { max-width: 820px; margin: 0 auto; width: 100%; }
+.page > * { max-width: 1040px; margin-left: auto; margin-right: auto; }
+.page-narrow > * { max-width: none; }
+
+.page-head { margin-bottom: 24px; }
+.page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.page-sub { font-size: var(--fs-base); color: var(--muted); margin-top: 6px; line-height: 1.6; }
+
+/* ── 통계 카드 ── */
+.stat-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;
+}
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+  box-shadow: var(--shadow2); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.stat-label { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
+.stat-num { font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
+.stat-num small { font-size: var(--fs-base); font-weight: 700; color: var(--subtle); }
+.stat-danger { color: var(--person); }
+.stat-dist .dist-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+
+/* ── 문서 목록 테이블 ── */
+.table-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+  box-shadow: var(--shadow2); overflow: hidden;
+}
+.table-row {
+  display: grid; grid-template-columns: 2.4fr 1.2fr 0.9fr 1fr 1.4fr;
+  align-items: center; gap: 14px; padding: 14px 20px;
+  border-bottom: 1px solid var(--divider);
+}
+.table-row:last-child { border-bottom: none; }
+.table-head { background: var(--surface3); }
+.table-head span { font-size: var(--fs-xs); font-weight: 800; color: var(--subtle); text-transform: uppercase; letter-spacing: .03em; }
+.col-file { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: var(--fs-sm); color: var(--text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.file-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.file-dot.grade-특급 { background: var(--person); }
+.file-dot.grade-1급 { background: var(--ip); }
+.file-dot.grade-2급 { background: var(--org); }
+.file-dot.grade-3급 { background: var(--secret); }
+.col-date { font-size: var(--fs-sm); color: var(--muted); }
+.col-score { font-size: var(--fs-sm); color: var(--muted); }
+.col-score strong { font-size: var(--fs-base); font-weight: 800; color: var(--text); }
+.col-act { display: flex; gap: 6px; justify-content: flex-end; flex-wrap: wrap; }
+.blocked-tag { font-size: var(--fs-xs); font-weight: 700; color: var(--person); background: var(--person-bg); padding: 5px 11px; border-radius: 999px; }
+
+.empty-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+  box-shadow: var(--shadow2); padding: 56px 24px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.empty-card p { color: var(--muted); font-size: var(--fs-base); }
+
+/* ── 정책 설정 카드 ── */
+.policy-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
+  box-shadow: var(--shadow2); padding: 22px 24px; margin-bottom: 18px;
+}
+.policy-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.policy-h { font-size: var(--fs-lg); font-weight: 800; color: var(--text); }
+.policy-desc { font-size: var(--fs-sm); color: var(--muted); margin: 6px 0 16px; line-height: 1.6; }
+.policy-desc code { background: var(--surface2); padding: 2px 6px; border-radius: 6px; font-size: 12px; }
+
+.weight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field span { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
+.field input {
+  font-family: 'Pretendard', sans-serif; font-size: var(--fs-base);
+  padding: 10px 12px; border-radius: var(--r-control); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+}
+
+/* ── 규칙 리스트 (정규식 / 사전) ── */
+.rule-list { display: flex; flex-direction: column; gap: 8px; }
+.rule-row { display: grid; grid-template-columns: 130px 1fr 1.4fr 36px; gap: 8px; align-items: center; }
+.rule-row-2 { grid-template-columns: 130px 1fr 36px; }
+.rule-row select, .rule-row input {
+  font-family: 'Pretendard', sans-serif; font-size: var(--fs-sm);
+  padding: 9px 11px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); width: 100%;
+}
+.rule-del {
+  width: 36px; height: 36px; border: none; background: var(--surface2); color: var(--muted);
+  border-radius: 10px; cursor: pointer; font-size: 13px; transition: background .12s, color .12s;
+}
+.rule-del:hover { background: var(--person-bg); color: var(--person); }
+
+.policy-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 8px; }
+.save-status { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
+.save-status.ok { color: var(--secret); }
+.save-status.err { color: var(--person); }
+
+/* ── 모바일 ── */
+@media (max-width: 768px) {
+  .page { padding: 20px 14px 48px; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .weight-grid { grid-template-columns: 1fr; }
+  .table-head { display: none; }
+  .table-row { grid-template-columns: 1fr auto; gap: 8px 12px; }
+  .col-date { grid-column: 1; font-size: var(--fs-xs); }
+  .col-grade { grid-column: 2; grid-row: 1; justify-self: end; }
+  .col-score { grid-column: 1; }
+  .col-act { grid-column: 2; grid-row: 2 / span 2; align-self: center; }
+  .rule-row { grid-template-columns: 1fr 1fr 36px; }
+  .rule-row .r-pattern { grid-column: 1 / span 2; }
+  .rule-row-2 { grid-template-columns: 1fr 36px; }
+}

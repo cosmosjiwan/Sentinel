@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>검열 이력 — Sentinel</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/manage.css') }}">
+</head>
+<body>
+
+<div class="topbar">
+  <a class="brand" href="/">Sentinel</a>
+  <nav class="topnav">
+    <a href="/" class="topnav-link {{ 'active' if nav == 'home' }}">새 검열</a>
+    <a href="/dashboard" class="topnav-link {{ 'active' if nav == 'history' }}">검열 이력</a>
+    <a href="/policy" class="topnav-link {{ 'active' if nav == 'policy' }}">정책 설정</a>
+  </nav>
+  <div class="topbar-right">
+    <a class="btn btn-primary btn-sm" href="/">＋ 새 검열</a>
+  </div>
+</div>
+
+<div class="page">
+  <div class="page-head">
+    <h1 class="page-title">검열 이력 &amp; 대시보드</h1>
+    <p class="page-sub">지금까지 검열된 문서의 위험 현황을 한눈에 보고, 결과로 다시 들어갈 수 있습니다.</p>
+  </div>
+
+  <!-- 통계 카드 -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <span class="stat-label">총 검열 문서</span>
+      <span class="stat-num">{{ stats.total }}</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">평균 민감성 점수</span>
+      <span class="stat-num">{{ stats.avg_score }}<small>/100</small></span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">차단(공개금지) 문서</span>
+      <span class="stat-num stat-danger">{{ stats.blocked }}</span>
+    </div>
+    <div class="stat-card stat-dist">
+      <span class="stat-label">등급 분포</span>
+      <div class="dist-chips">
+        <span class="grade-chip grade-특급">특급 {{ stats.grade_counts['특급'] }}</span>
+        <span class="grade-chip grade-1급">1급 {{ stats.grade_counts['1급'] }}</span>
+        <span class="grade-chip grade-2급">2급 {{ stats.grade_counts['2급'] }}</span>
+        <span class="grade-chip grade-3급">3급 {{ stats.grade_counts['3급'] }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 문서 목록 -->
+  {% if records %}
+  <div class="table-card">
+    <div class="table-row table-head">
+      <span class="col-file">문서</span>
+      <span class="col-date">검열 시각</span>
+      <span class="col-grade">등급</span>
+      <span class="col-score">민감성 점수</span>
+      <span class="col-act">작업</span>
+    </div>
+    {% for r in records %}
+    <div class="table-row">
+      <span class="col-file" title="{{ r.filename }}">
+        <span class="file-dot grade-{{ r.risk.grade }}"></span>{{ r.filename }}
+      </span>
+      <span class="col-date">{{ r.created_at }}</span>
+      <span class="col-grade"><span class="grade-chip grade-{{ r.risk.grade }}">{{ r.risk.grade }}</span></span>
+      <span class="col-score"><strong>{{ r.risk.score | round | int }}</strong>/100</span>
+      <span class="col-act">
+        {% if r.blocked %}
+          <span class="blocked-tag">차단됨</span>
+        {% else %}
+          <a class="btn btn-secondary btn-sm" href="/view/{{ r.doc_id }}">검토</a>
+          {% if r.formats and 'pdf' in r.formats %}<a class="btn btn-primary btn-sm" href="/download/{{ r.doc_id }}/pdf">PDF</a>{% endif %}
+        {% endif %}
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-card">
+    <p>아직 검열된 문서가 없습니다.</p>
+    <a class="btn btn-primary" href="/">첫 문서 검열하기</a>
+  </div>
+  {% endif %}
+</div>
+
+</body>
+</html>

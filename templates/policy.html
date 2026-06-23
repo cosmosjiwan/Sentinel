@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>정책 설정 — Sentinel</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/manage.css') }}">
+</head>
+<body>
+
+<div class="topbar">
+  <a class="brand" href="/">Sentinel</a>
+  <nav class="topnav">
+    <a href="/" class="topnav-link {{ 'active' if nav == 'home' }}">새 검열</a>
+    <a href="/dashboard" class="topnav-link {{ 'active' if nav == 'history' }}">검열 이력</a>
+    <a href="/policy" class="topnav-link {{ 'active' if nav == 'policy' }}">정책 설정</a>
+  </nav>
+  <div class="topbar-right">
+    <button class="btn btn-primary btn-sm" type="button" onclick="savePolicy()">정책 저장</button>
+  </div>
+</div>
+
+<div class="page page-narrow">
+  <div class="page-head">
+    <h1 class="page-title">정책 설정</h1>
+    <p class="page-sub">위험성 평가 기준과 탐지 규칙을 코드 수정 없이 조정합니다. 저장 시 이후 검열부터 즉시 적용됩니다.</p>
+  </div>
+
+  <!-- 가중치 -->
+  <section class="policy-card">
+    <h2 class="policy-h">위험성 점수 가중치 (ISO 27005)</h2>
+    <p class="policy-desc">기밀성·무결성·가용성을 어떤 비율로 합산해 민감성 점수를 낼지 정합니다. 저장 시 합이 1이 되도록 자동 정규화됩니다.</p>
+    <div class="weight-grid">
+      <label class="field"><span>기밀성 (C)</span><input type="number" id="wC" step="0.05" min="0" max="1" value="{{ policy.weights.confidentiality }}"></label>
+      <label class="field"><span>무결성 (I)</span><input type="number" id="wI" step="0.05" min="0" max="1" value="{{ policy.weights.integrity }}"></label>
+      <label class="field"><span>가용성 (A)</span><input type="number" id="wA" step="0.05" min="0" max="1" value="{{ policy.weights.availability }}"></label>
+    </div>
+  </section>
+
+  <!-- 임계값 -->
+  <section class="policy-card">
+    <h2 class="policy-h">등급 임계값</h2>
+    <p class="policy-desc">민감성 점수가 해당 값 이상이면 그 등급으로 분류됩니다. (특급=공개금지, 1급=마스킹, 2급=치환, 그 미만=3급 공개)</p>
+    <div class="weight-grid">
+      <label class="field"><span>특급 ≥</span><input type="number" id="tA" min="0" max="100" value="{{ policy.thresholds['특급'] }}"></label>
+      <label class="field"><span>1급 ≥</span><input type="number" id="t1" min="0" max="100" value="{{ policy.thresholds['1급'] }}"></label>
+      <label class="field"><span>2급 ≥</span><input type="number" id="t2" min="0" max="100" value="{{ policy.thresholds['2급'] }}"></label>
+    </div>
+  </section>
+
+  <!-- 커스텀 정규식 -->
+  <section class="policy-card">
+    <div class="policy-card-head">
+      <h2 class="policy-h">커스텀 탐지 정규식</h2>
+      <button class="btn btn-secondary btn-sm" type="button" onclick="addPatternRow()">＋ 규칙 추가</button>
+    </div>
+    <p class="policy-desc">정규식과 일치하는 문자열을 항상 탐지합니다. (예: 사번 <code>EMP-\d{6}</code>)</p>
+    <div class="rule-list" id="patternList"></div>
+  </section>
+
+  <!-- 키워드 사전 -->
+  <section class="policy-card">
+    <div class="policy-card-head">
+      <h2 class="policy-h">민감 키워드 사전</h2>
+      <button class="btn btn-secondary btn-sm" type="button" onclick="addDictRow()">＋ 키워드 추가</button>
+    </div>
+    <p class="policy-desc">문맥과 무관하게 항상 민감정보로 취급할 단어를 등록합니다. (예: 프로젝트 코드명, 신약명)</p>
+    <div class="rule-list" id="dictList"></div>
+  </section>
+
+  <div class="policy-foot">
+    <span class="save-status" id="saveStatus"></span>
+    <button class="btn btn-primary" type="button" onclick="savePolicy()">정책 저장</button>
+  </div>
+</div>
+
+<script id="policyData" type="application/json">{{ policy | tojson }}</script>
+<script>
+const POLICY = JSON.parse(document.getElementById('policyData').textContent);
+const TYPES = [
+  ['person','개인정보'], ['org','기업/기관'], ['ip','지적재산'], ['auth','인증정보'], ['secret','금융/기타']
+];
+function typeOptions(sel) {
+  return TYPES.map(([v,l]) => `<option value="${v}" ${v===sel?'selected':''}>${l}</option>`).join('');
+}
+
+function patternRow(p) {
+  p = p || { type: 'person', label: '', pattern: '' };
+  const div = document.createElement('div');
+  div.className = 'rule-row';
+  div.innerHTML =
+    `<select class="r-type">${typeOptions(p.type)}</select>` +
+    `<input class="r-label" placeholder="규칙 이름" value="${(p.label||'').replace(/"/g,'&quot;')}">` +
+    `<input class="r-pattern" placeholder="정규식" value="${(p.pattern||'').replace(/"/g,'&quot;')}">` +
+    `<button type="button" class="rule-del" onclick="this.parentNode.remove()">✕</button>`;
+  return div;
+}
+function dictRow(d) {
+  d = d || { type: 'ip', term: '' };
+  const div = document.createElement('div');
+  div.className = 'rule-row rule-row-2';
+  div.innerHTML =
+    `<select class="r-type">${typeOptions(d.type)}</select>` +
+    `<input class="r-term" placeholder="키워드" value="${(d.term||'').replace(/"/g,'&quot;')}">` +
+    `<button type="button" class="rule-del" onclick="this.parentNode.remove()">✕</button>`;
+  return div;
+}
+function addPatternRow(p) { document.getElementById('patternList').appendChild(patternRow(p)); }
+function addDictRow(d) { document.getElementById('dictList').appendChild(dictRow(d)); }
+
+function savePolicy() {
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const intval = (id) => parseInt(document.getElementById(id).value, 10) || 0;
+  const patterns = [...document.querySelectorAll('#patternList .rule-row')].map(r => ({
+    type: r.querySelector('.r-type').value,
+    label: r.querySelector('.r-label').value.trim(),
+    pattern: r.querySelector('.r-pattern').value.trim(),
+  })).filter(p => p.pattern);
+  const dictionary = [...document.querySelectorAll('#dictList .rule-row')].map(r => ({
+    type: r.querySelector('.r-type').value,
+    term: r.querySelector('.r-term').value.trim(),
+  })).filter(d => d.term);
+  const payload = {
+    weights: { confidentiality: num('wC'), integrity: num('wI'), availability: num('wA') },
+    thresholds: { '특급': intval('tA'), '1급': intval('t1'), '2급': intval('t2') },
+    custom_patterns: patterns,
+    dictionary: dictionary,
+  };
+  const status = document.getElementById('saveStatus');
+  status.textContent = '저장 중...';
+  status.className = 'save-status';
+  fetch('/policy', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) { status.textContent = '저장 실패'; status.classList.add('err'); return; }
+      const w = data.policy.weights;
+      document.getElementById('wC').value = w.confidentiality;
+      document.getElementById('wI').value = w.integrity;
+      document.getElementById('wA').value = w.availability;
+      status.textContent = '저장됨 ✓ (이후 검열부터 적용)';
+      status.classList.add('ok');
+    })
+    .catch(() => { status.textContent = '서버 오류'; status.classList.add('err'); });
+}
+
+(function init(){
+  (POLICY.custom_patterns || []).forEach(addPatternRow);
+  (POLICY.dictionary || []).forEach(addDictRow);
+})();
+</script>
+</body>
+</html>

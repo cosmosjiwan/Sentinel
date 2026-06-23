@@ -1,19 +1,12 @@
 """ISO 27005 기반 위험성 평가 등급 체계.
 기밀성(Confidentiality) / 무결성(Integrity) / 가용성(Availability) 점수를 가중 합산하여
-0~100점의 민감성 점수를 산출하고, 점수에 따라 4단계 등급으로 분류한다."""
+0~100점의 민감성 점수를 산출하고, 점수에 따라 4단계 등급으로 분류한다.
 
-# 가중치: DLP 맥락에서는 기밀성(노출 시 피해)이 가장 중요하므로 60%를 부여
-CIA_WEIGHTS = {"confidentiality": 0.6, "integrity": 0.2, "availability": 0.2}
+가중치와 등급 임계값은 정책(policy.json)에서 런타임에 읽어오므로, 관리자가
+'정책 설정' 화면에서 코드 수정 없이 조정할 수 있다."""
+from policy import load_policy
 
-# 점수 임계값 (이상일 때 해당 등급) — 내림차순으로 평가
-GRADE_THRESHOLDS = [
-    ("특급", 90),
-    ("1급", 70),
-    ("2급", 40),
-    ("3급", 0),
-]
-
-# 등급별 처리 방침
+# 등급별 처리 방침 (고정)
 GRADE_ACTION = {
     "특급": "block",       # 자료 자체 공개 금지
     "1급": "mask",         # 완전 마스킹
@@ -29,17 +22,29 @@ GRADE_LABEL = {
 }
 
 
+def current_thresholds():
+    """정책의 임계값을 (등급, 임계값) 내림차순 리스트로 반환한다 (3급=0 고정)."""
+    t = load_policy()["thresholds"]
+    return [
+        ("특급", t["특급"]),
+        ("1급", t["1급"]),
+        ("2급", t["2급"]),
+        ("3급", 0),
+    ]
+
+
 def compute_score(confidentiality, integrity, availability):
+    w = load_policy()["weights"]
     score = (
-        confidentiality * CIA_WEIGHTS["confidentiality"]
-        + integrity * CIA_WEIGHTS["integrity"]
-        + availability * CIA_WEIGHTS["availability"]
+        confidentiality * w["confidentiality"]
+        + integrity * w["integrity"]
+        + availability * w["availability"]
     )
     return round(max(0, min(100, score)), 1)
 
 
 def grade_for_score(score):
-    for grade, threshold in GRADE_THRESHOLDS:
+    for grade, threshold in current_thresholds():
         if score >= threshold:
             return grade
     return "3급"

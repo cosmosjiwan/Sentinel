@@ -9,6 +9,9 @@ venv/
 uploads/
 results/
 
+# 정책 설정 (런타임에 정책 설정 화면에서 생성/수정)
+policy.json
+
 # IDE
 .vscode/
 .idea/

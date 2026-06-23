@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sentinal DLP — AI 문서 보안 검열</title>
+<title>Sentinel DLP — AI 문서 보안 검열</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/input.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/loading.css') }}">
@@ -13,6 +13,11 @@
 <!-- 헤더 -->
 <div class="topbar">
   <a class="brand" href="/">Sentinel</a>
+  <nav class="topnav">
+    <a href="/" class="topnav-link {{ 'active' if nav == 'home' }}">새 검열</a>
+    <a href="/dashboard" class="topnav-link {{ 'active' if nav == 'history' }}">검열 이력</a>
+    <a href="/policy" class="topnav-link {{ 'active' if nav == 'policy' }}">정책 설정</a>
+  </nav>
   {% if deploy_time %}
   <div class="topbar-right">
     <span class="deploy-badge" title="현재 배포된 버전이 main에 푸시된 시각 (KST)"><span class="deploy-label">최종 배포</span><span class="deploy-time">{{ deploy_time }}</span></span>

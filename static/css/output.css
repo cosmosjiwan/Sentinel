@@ -272,6 +272,111 @@ body.reveal .ent-tip,
 .method-seg button.on-sub  { background: var(--org); color: #fff; }
 .method-seg button.on-pub  { background: var(--secret); color: #fff; }
 
+/* ── ISO 27005 C/I/A 분해 막대 ── */
+.cia-block { display: flex; flex-direction: column; gap: 9px; }
+.cia-row { display: flex; align-items: center; gap: 10px; }
+.cia-name { flex: 0 0 42px; font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
+.cia-bar { flex: 1; height: 8px; border-radius: 999px; background: var(--surface2); overflow: hidden; }
+.cia-bar i { display: block; height: 100%; border-radius: 999px; background: var(--ip); transition: width .4s cubic-bezier(.4,0,.2,1); }
+.cia-row b { flex: 0 0 26px; text-align: right; font-size: var(--fs-sm); font-weight: 800; color: var(--text); }
+
+/* ── 검열본 다운로드 메뉴 ── */
+.export-wrap { position: relative; }
+.export-menu {
+  position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control);
+  box-shadow: var(--shadow16); padding: 6px; z-index: 30;
+  display: none; flex-direction: column; gap: 2px;
+}
+.export-menu.open { display: flex; }
+.export-menu button {
+  text-align: left; font-family: 'Pretendard', sans-serif;
+  font-size: var(--fs-sm); font-weight: 600; color: var(--text);
+  background: transparent; border: none; padding: 10px 12px; border-radius: 8px; cursor: pointer;
+}
+.export-menu button:hover { background: var(--accent-bg); color: var(--accent); }
+
+/* ── 검토 도구: 필터 / 정렬 / 일괄 ── */
+.review-toolbar {
+  padding: 14px 22px 6px; border-bottom: 1px solid var(--divider);
+  display: flex; flex-direction: column; gap: 10px; flex-shrink: 0;
+}
+.filter-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.fchip {
+  font-family: 'Pretendard', sans-serif; font-size: var(--fs-xs); font-weight: 700;
+  padding: 5px 11px; border-radius: 999px; cursor: pointer;
+  background: var(--surface2); color: var(--muted); border: 1px solid transparent;
+  transition: background .12s, color .12s;
+}
+.fchip:hover { background: var(--border); }
+.fchip.active { background: var(--accent); color: #fff; }
+.toolbar-row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+.sort-sel {
+  font-family: 'Pretendard', sans-serif; font-size: var(--fs-xs); font-weight: 600;
+  padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer;
+}
+.bulk { display: flex; align-items: center; gap: 4px; }
+.bulk-label { font-size: var(--fs-xs); font-weight: 700; color: var(--subtle); margin-right: 2px; }
+.bulk button {
+  font-family: 'Pretendard', sans-serif; font-size: var(--fs-xs); font-weight: 700;
+  padding: 6px 9px; border-radius: 8px; cursor: pointer;
+  background: var(--surface2); color: var(--muted); border: none;
+  transition: background .12s, color .12s;
+}
+.bulk button:hover { background: var(--accent-bg); color: var(--accent); }
+
+/* ── 카드: 판단 근거 + 삭제 버튼 ── */
+.det-top { position: relative; }
+.det-del {
+  margin-left: auto; flex-shrink: 0; width: 22px; height: 22px;
+  border: none; background: transparent; color: var(--subtle); cursor: pointer;
+  border-radius: 6px; font-size: 12px; line-height: 1;
+  transition: background .12s, color .12s;
+}
+.det-del:hover { background: var(--person-bg); color: var(--person); }
+.det-reason {
+  font-size: var(--fs-sm); color: var(--muted); line-height: 1.6;
+  background: var(--surface3); border-radius: 10px; padding: 9px 11px; margin-bottom: 12px;
+}
+.det-reason-label {
+  display: inline-block; font-size: var(--fs-xs); font-weight: 800; color: var(--subtle);
+  margin-right: 6px;
+}
+
+/* ── 수동 추가: 트리거 버튼 + 팝업 폼 ── */
+.doc-head-right { display: flex; align-items: center; gap: 14px; }
+.doc-hint { font-size: var(--fs-xs); color: var(--subtle); font-weight: 600; }
+.add-trigger {
+  position: absolute; z-index: 70; display: none;
+  font-family: 'Pretendard', sans-serif; font-size: var(--fs-sm); font-weight: 700;
+  padding: 8px 13px; border-radius: 999px; border: none; cursor: pointer;
+  background: var(--accent); color: #fff; box-shadow: var(--shadow8);
+}
+.add-trigger.show { display: block; }
+.add-trigger:hover { background: var(--accent-h); }
+.add-form {
+  position: absolute; z-index: 71; display: none;
+  width: 280px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-card); box-shadow: var(--shadow16);
+  padding: 16px;
+}
+.add-form.show { display: block; }
+.add-form-head { font-size: var(--fs-base); font-weight: 800; color: var(--text); margin-bottom: 10px; }
+.add-sel {
+  font-size: var(--fs-sm); font-weight: 700; color: var(--accent);
+  background: var(--accent-bg); border-radius: 8px; padding: 8px 10px; margin-bottom: 12px;
+  word-break: break-all; max-height: 64px; overflow: auto;
+}
+.add-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+.add-field label { font-size: var(--fs-xs); font-weight: 700; color: var(--muted); }
+.add-field select, .add-field input {
+  font-family: 'Pretendard', sans-serif; font-size: var(--fs-sm);
+  padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); width: 100%;
+}
+.add-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+
 /* ───────────────────────── 모바일 상단 요약 스트립 ───────────────────────── */
 /* overflow-anchor: none — 접힘/펼침으로 높이가 바뀔 때 스크롤 보정으로 깜빡임 루프가 생기는 것을 막는다 */
 .summary-wrap { display: none; flex-direction: column; z-index: 40; overflow-anchor: none; }

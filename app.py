@@ -3,6 +3,7 @@ from openai import OpenAI
 import os
 import re
 import json
+import uuid
 import subprocess
 import datetime
 
@@ -28,7 +29,11 @@ def get_deploy_time():
     return datetime.datetime.fromtimestamp(epoch, KST).strftime("%Y.%m.%d %H:%M")
 
 from patterns import scan_regex, force_mask_residual, MASK_TOKEN
-from risk import compute_score, grade_for_score, action_for_grade, GRADE_LABEL, GRADE_THRESHOLDS
+from risk import compute_score, grade_for_score, action_for_grade, GRADE_LABEL
+from policy import load_policy, save_policy, VALID_TYPES
+from export import build_exports
+
+RESULTS_DIR = "results"
 
 app = Flask(__name__)
 
@@ -224,6 +229,24 @@ RISK_JSON: {"confidentiality": <0-100 정수>, "integrity": <0-100 정수>, "ava
 RISK_JSON: {"confidentiality": 0, "integrity": 0, "availability": 0}
 """
 
+def build_policy_hint():
+    """현재 정책의 등급 임계값과 민감 키워드 사전을 LLM 프롬프트에 주입할 안내문으로 만든다.
+    관리자가 정책 설정 화면에서 바꾼 기준이 탐지·등급 판단에 즉시 반영되도록 한다."""
+    pol = load_policy()
+    t = pol["thresholds"]
+    parts = [
+        "\n\n## 적용 정책 (관리자 설정 — 반드시 우선 반영)",
+        f"- 등급 임계값: 특급 {t['특급']}점 이상, 1급 {t['1급']}점 이상, "
+        f"2급 {t['2급']}점 이상, 그 미만은 3급.",
+    ]
+    if pol["dictionary"]:
+        terms = ", ".join(f"{d['term']}({d['type']})" for d in pol["dictionary"])
+        parts.append(
+            f"- 다음 키워드는 문맥과 무관하게 반드시 민감정보로 탐지·태그한다: {terms}"
+        )
+    return "\n".join(parts) + "\n"
+
+
 RISK_RE = re.compile(r'RISK_JSON:\s*(\{[^\n]*\})')
 TAG_RE = re.compile(r'<R(\d+)>(.*?)</R\1>', re.DOTALL)
 ITEM_GRADES = ("특급", "1급", "2급", "3급")
@@ -281,6 +304,7 @@ def extract_text(path, filename):
 
 def run_detection(upload_path, filename, raw_text):
     """OpenAI에 탐지+위험성평가를 요청하고 원본 응답 텍스트를 반환한다."""
+    policy_hint = build_policy_hint()
     if raw_text is not None:
         regex_hits = scan_regex(raw_text)
         hint = ""
@@ -293,7 +317,7 @@ def run_detection(upload_path, filename, raw_text):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "input_text", "text": PROMPT + hint + "\n\n## 검열 대상 문서\n" + raw_text},
+                        {"type": "input_text", "text": PROMPT + policy_hint + hint + "\n\n## 검열 대상 문서\n" + raw_text},
                     ],
                 }
             ],
@@ -309,7 +333,7 @@ def run_detection(upload_path, filename, raw_text):
             {
                 "role": "user",
                 "content": [
-                    {"type": "input_text", "text": PROMPT},
+                    {"type": "input_text", "text": PROMPT + policy_hint},
                     {"type": "input_file", "file_id": uploaded_file.id},
                 ],
             }
@@ -442,6 +466,30 @@ def disambiguate_duplicate_labels(body, items):
     return body
 
 
+def write_outputs(record):
+    """record 의 clean_text 를 기반으로 txt/pdf/docx 검열본을 생성하고, record 에
+    내보내기 가능한 포맷 목록(formats)을 기록한다. (차단 문서는 txt 만 생성)"""
+    doc_id = record["doc_id"]
+    title = record["filename"]
+    clean_text = record["clean_text"]
+    formats = ["txt"]
+    txt_path = os.path.join(RESULTS_DIR, doc_id + "_redacted.txt")
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write(clean_text)
+    if not record["blocked"]:
+        exports = build_exports(RESULTS_DIR, doc_id, title, clean_text, record["risk"])
+        if exports.get("pdf"):
+            formats.append("pdf")
+        if exports.get("docx"):
+            formats.append("docx")
+    record["formats"] = formats
+
+
+def save_record(record):
+    with open(os.path.join(RESULTS_DIR, record["doc_id"] + ".json"), "w", encoding="utf-8") as f:
+        json.dump(record, f, ensure_ascii=False, indent=2)
+
+
 def process_file(upload_path, filename):
     """단일 파일에 대해 탐지 → 위험성평가 → 등급별 처리까지 전체 파이프라인을 수행하고
     결과를 results/ 에 저장한 뒤 요약 dict를 반환한다."""
@@ -467,33 +515,58 @@ def process_file(upload_path, filename):
         display_body = disambiguate_duplicate_labels(display_body, items)
         clean_text = clean_markers(display_body)
 
-    base = os.path.basename(filename)
-    txt_path = os.path.join("results", base + "_redacted.txt")
-    json_path = os.path.join("results", base + ".json")
-
-    with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(clean_text)
-
+    # 같은 이름의 파일을 반복 업로드해도 이력이 덮어쓰이지 않도록 고유 doc_id 부여
+    doc_id = uuid.uuid4().hex[:12]
     record = {
-        "filename": base,
+        "doc_id": doc_id,
+        "filename": os.path.basename(filename),
+        "created_at": datetime.datetime.now(KST).strftime("%Y.%m.%d %H:%M"),
+        "created_ts": datetime.datetime.now(KST).timestamp(),
         "body": display_body,
         "items": items,
         "clean_text": clean_text,
         "risk": risk,
         "blocked": blocked,
-        "txt_name": base + "_redacted.txt",
     }
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(record, f, ensure_ascii=False, indent=2)
-
+    write_outputs(record)
+    save_record(record)
     return record
+
+
+def load_record(doc_id):
+    """doc_id 에 해당하는 검열 결과 record 를 로드한다. 없으면 None."""
+    json_path = os.path.join(RESULTS_DIR, os.path.basename(doc_id) + ".json")
+    if not os.path.exists(json_path):
+        return None
+    with open(json_path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def list_records():
+    """results/ 의 모든 검열 결과를 최신순으로 반환한다 (이력/대시보드용)."""
+    records = []
+    for name in os.listdir(RESULTS_DIR):
+        if not name.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(RESULTS_DIR, name), "r", encoding="utf-8") as f:
+                records.append(json.load(f))
+        except (OSError, json.JSONDecodeError):
+            continue
+    records.sort(key=lambda r: r.get("created_ts", 0), reverse=True)
+    return records
+
+
+def _no_store(resp):
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return resp
 
 
 @app.route("/")
 def home():
-    resp = app.make_response(render_template("input.html", deploy_time=get_deploy_time()))
-    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    return resp
+    return _no_store(app.make_response(
+        render_template("input.html", deploy_time=get_deploy_time(), nav="home")
+    ))
 
 
 @app.route("/redact", methods=["POST"])
@@ -512,81 +585,110 @@ def redact():
         results.append(record)
 
     # 문서별 검열 목록 화면 (단일 파일도 1개짜리 목록으로 표시)
-    return render_template("list.html", results=results)
+    return render_template("list.html", results=results, nav="home")
 
 
-@app.route("/view/<filename>")
-def view_result(filename):
-    json_path = os.path.join("results", os.path.basename(filename) + ".json")
-    if not os.path.exists(json_path):
+@app.route("/view/<doc_id>")
+def view_result(doc_id):
+    record = load_record(doc_id)
+    if record is None:
         abort(404)
-    with open(json_path, "r", encoding="utf-8") as f:
-        record = json.load(f)
-
-    resp = app.make_response(render_template(
+    return _no_store(app.make_response(render_template(
         "output.html",
+        doc_id=record["doc_id"],
         filename=record["filename"],
         body=record["body"],
         items=record["items"],
         risk=record["risk"],
         blocked=record["blocked"],
-    ))
-    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    return resp
+        formats=record.get("formats", ["txt"]),
+        nav="history",
+    )))
 
 
-@app.route("/apply_review/<filename>", methods=["POST"])
-def apply_review(filename):
-    """검토자가 항목별 치환 표현을 번호(id) 기준으로 직접 수정한 결과를 저장한다.
-    accept/reject 뿐 아니라 자유 텍스트 수정을 허용한다."""
-    json_path = os.path.join("results", os.path.basename(filename) + ".json")
-    if not os.path.exists(json_path):
+@app.route("/apply_review/<doc_id>", methods=["POST"])
+def apply_review(doc_id):
+    """검토자가 수정한 검열 결과(본문 + 항목 전체 상태)를 저장하고 검열본을 재생성한다.
+    항목별 치환 표현 수정·검열 방식 변경·수동 추가 항목이 모두 body/items 에 반영된 채로 들어온다."""
+    record = load_record(doc_id)
+    if record is None:
         abort(404)
-    with open(json_path, "r", encoding="utf-8") as f:
-        record = json.load(f)
-
     if record["blocked"]:
         return jsonify({"ok": False, "error": "blocked 문서는 검토를 적용할 수 없습니다."}), 400
 
-    edits = request.get_json(silent=True) or {}
-    edits = edits.get("edits", [])
+    payload = request.get_json(silent=True) or {}
+    body = payload.get("body")
+    items = payload.get("items")
+    if not isinstance(body, str) or not isinstance(items, dict):
+        return jsonify({"ok": False, "error": "잘못된 요청 형식입니다."}), 400
 
-    body = record["body"]
-    items = record["items"]
-    for edit in edits:
-        id_str = str(edit.get("id", ""))
-        replacement = edit.get("replacement", "")
-        if id_str not in items:
-            continue
-        items[id_str]["replaced"] = replacement
-        body = re.sub(
-            rf'<R{id_str}>.*?</R{id_str}>',
-            lambda m, r=replacement: f"<R{id_str}>{r}</R{id_str}>",
-            body,
-            flags=re.DOTALL,
-        )
+    # 본문 태그의 표시값을 항목의 최종 치환 표현으로 정규화한 뒤 평문 검열본을 만든다.
+    def normalize(m):
+        id_str = m.group(1)
+        item = items.get(id_str)
+        return f"<R{id_str}>{item['replaced']}</R{id_str}>" if item else m.group(0)
 
+    body = TAG_RE.sub(normalize, body)
     clean_text = clean_markers(body)
+
     record["body"] = body
     record["items"] = items
     record["clean_text"] = clean_text
-
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(record, f, ensure_ascii=False, indent=2)
-    with open(os.path.join("results", record["txt_name"]), "w", encoding="utf-8") as f:
-        f.write(clean_text)
-
-    return jsonify({"ok": True})
+    write_outputs(record)
+    save_record(record)
+    return jsonify({"ok": True, "formats": record["formats"]})
 
 
-@app.route("/download/<filename>")
-def download(filename):
-    resp = send_file(
-        os.path.join("results", filename),
-        as_attachment=True
-    )
-    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
-    return resp
+@app.route("/download/<doc_id>/<fmt>")
+def download(doc_id, fmt):
+    if fmt not in ("txt", "pdf", "docx"):
+        abort(404)
+    record = load_record(doc_id)
+    if record is None:
+        abort(404)
+    path = os.path.join(RESULTS_DIR, record["doc_id"] + "_redacted." + fmt)
+    if not os.path.exists(path):
+        abort(404)
+    download_name = os.path.splitext(record["filename"])[0] + "_검열본." + fmt
+    return _no_store(send_file(path, as_attachment=True, download_name=download_name))
+
+
+@app.route("/dashboard")
+def dashboard():
+    records = list_records()
+    grade_counts = {"특급": 0, "1급": 0, "2급": 0, "3급": 0}
+    score_sum = 0.0
+    blocked = 0
+    for r in records:
+        g = r.get("risk", {}).get("grade")
+        if g in grade_counts:
+            grade_counts[g] += 1
+        score_sum += r.get("risk", {}).get("score", 0)
+        if r.get("blocked"):
+            blocked += 1
+    stats = {
+        "total": len(records),
+        "avg_score": round(score_sum / len(records)) if records else 0,
+        "blocked": blocked,
+        "grade_counts": grade_counts,
+    }
+    return _no_store(app.make_response(
+        render_template("dashboard.html", records=records, stats=stats, nav="history")
+    ))
+
+
+@app.route("/policy")
+def policy_page():
+    return _no_store(app.make_response(
+        render_template("policy.html", policy=load_policy(), types=VALID_TYPES, nav="policy")
+    ))
+
+
+@app.route("/policy", methods=["POST"])
+def policy_save():
+    data = request.get_json(silent=True) or {}
+    saved = save_policy(data)
+    return jsonify({"ok": True, "policy": saved})
 
 
 if __name__ == "__main__":

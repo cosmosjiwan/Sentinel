@@ -99,6 +99,16 @@ body {
   align-items: center;
   gap: 8px;
 }
+
+/* ── 상단 내비게이션 (검열/이력/정책) ── */
+.topnav { display: flex; align-items: center; gap: 4px; margin-left: 18px; flex: 1; }
+.topnav-link {
+  font-size: var(--fs-sm); font-weight: 700; color: var(--muted);
+  text-decoration: none; padding: 7px 13px; border-radius: var(--r-control);
+  transition: background .12s, color .12s; white-space: nowrap;
+}
+.topnav-link:hover { background: var(--surface2); color: var(--text); }
+.topnav-link.active { background: var(--accent-bg); color: var(--accent); }
 .chip {
   font-size: 11px;
   padding: 4px 10px;

@@ -3,7 +3,8 @@ services:
     name: sentinel-dlp
     runtime: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
+    # LLM 검열 + 검열본(PDF/DOCX) 생성에 시간이 걸릴 수 있어 워커 타임아웃을 넉넉히 둔다
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120
     envVars:
       - key: OPENAI_API_KEY
         sync: false  # Render 대시보드에서 직접 입력
