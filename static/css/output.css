@@ -280,10 +280,14 @@ body.reveal .ent-tip,
 .cia-bar i { display: block; height: 100%; border-radius: 999px; background: var(--ip); transition: width .4s cubic-bezier(.4,0,.2,1); }
 .cia-row b { flex: 0 0 26px; text-align: right; font-size: var(--fs-sm); font-weight: 800; color: var(--text); }
 
-/* ── 검열본 다운로드 메뉴 (문서 헤더 우측에 드롭다운) ── */
+/* ── 문서 헤더: 좌측(제목+다운로드) / 우측(안내+토글) ── */
+.doc-head-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.doc-head-left .doc-filename { min-width: 0; flex-shrink: 1; }
+
+/* ── 검열본 다운로드 메뉴 (제목 옆, 아래로 펼침) ── */
 .export-wrap { position: relative; flex-shrink: 0; }
 .export-menu {
-  position: absolute; right: 0; left: auto; top: calc(100% + 6px);
+  position: absolute; left: 0; right: auto; top: calc(100% + 6px);
   min-width: 180px;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control);
   box-shadow: var(--shadow16); padding: 6px; z-index: 60;
@@ -357,8 +361,8 @@ body.reveal .ent-tip,
 }
 
 /* ── 수동 추가: 트리거 버튼 + 팝업 폼 ── */
-.doc-head-right { display: flex; align-items: center; gap: 14px; }
-.doc-hint { font-size: var(--fs-xs); color: var(--subtle); font-weight: 600; }
+.doc-head-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.doc-hint { font-size: var(--fs-base); color: var(--text); font-weight: 700; }
 .add-trigger {
   position: absolute; z-index: 70; display: none;
   font-family: 'Pretendard', sans-serif; font-size: var(--fs-sm); font-weight: 700;

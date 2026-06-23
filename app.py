@@ -679,8 +679,24 @@ def dashboard():
 
 @app.route("/policy")
 def policy_page():
-    # 항상 적용되는 기본 내장 탐지 규칙 (읽기 전용으로 화면에 표시)
-    builtin = [{"type": t, "label": l, "pattern": p.pattern} for (t, l, p) in BUILTIN_PATTERNS]
+    # 항상 적용되는 기본 내장 탐지 규칙 — 정규식 대신 이해하기 쉬운 한글 이름과 예시로 보여준다.
+    builtin_names = {
+        "email": "이메일", "phone_kr": "전화번호", "rrn_kr": "주민등록번호",
+        "api_key_openai": "OpenAI API 키", "api_key_aws": "AWS 액세스 키",
+        "api_key_github": "GitHub 토큰", "credential_kv": "비밀번호/토큰",
+        "card_number": "카드번호", "account_number_kr": "계좌번호", "ipv4": "IP 주소",
+    }
+    builtin_examples = {
+        "email": "hong@example.com", "phone_kr": "010-1234-5678", "rrn_kr": "900101-1234567",
+        "api_key_openai": "sk-abcd1234efgh5678ijkl", "api_key_aws": "AKIA1234567890ABCDEF",
+        "api_key_github": "ghp_AbCd1234EfGh5678IjKl90", "credential_kv": "password: p@ssw0rd!",
+        "card_number": "1234-5678-9012-3456", "account_number_kr": "110-234-567890",
+        "ipv4": "192.168.0.1",
+    }
+    builtin = [
+        {"type": t, "name": builtin_names.get(l, l), "example": builtin_examples.get(l, "")}
+        for (t, l, p) in BUILTIN_PATTERNS
+    ]
     return _no_store(app.make_response(
         render_template("policy.html", policy=load_policy(), types=VALID_TYPES,
                         builtin=builtin, nav="policy")
