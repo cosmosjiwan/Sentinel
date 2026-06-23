@@ -148,11 +148,11 @@
     <!-- 검토 도구: 필터 / 정렬 / 일괄 적용 -->
     <div class="review-toolbar">
       <div class="filter-chips" id="filterChips">
-        <button type="button" class="fchip active" data-g="all" onclick="setFilter('all')">전체</button>
-        <button type="button" class="fchip" data-g="특급" onclick="setFilter('특급')">특급</button>
-        <button type="button" class="fchip" data-g="1급" onclick="setFilter('1급')">1급</button>
-        <button type="button" class="fchip" data-g="2급" onclick="setFilter('2급')">2급</button>
-        <button type="button" class="fchip" data-g="3급" onclick="setFilter('3급')">3급</button>
+        <button type="button" class="fchip fchip-all active" data-g="all" onclick="setFilter('all')">전체</button>
+        <button type="button" class="fchip fchip-특급" data-g="특급" onclick="setFilter('특급')">특급 <span class="fchip-cnt" data-cnt="특급">0</span></button>
+        <button type="button" class="fchip fchip-1급" data-g="1급" onclick="setFilter('1급')">1급 <span class="fchip-cnt" data-cnt="1급">0</span></button>
+        <button type="button" class="fchip fchip-2급" data-g="2급" onclick="setFilter('2급')">2급 <span class="fchip-cnt" data-cnt="2급">0</span></button>
+        <button type="button" class="fchip fchip-3급" data-g="3급" onclick="setFilter('3급')">3급 <span class="fchip-cnt" data-cnt="3급">0</span></button>
       </div>
       <div class="toolbar-row">
         <select id="sortSel" class="sort-sel" onchange="setSort(this.value)">
@@ -188,8 +188,9 @@ const items = JSON.parse(document.getElementById('itemsData').textContent);
 const RISK = JSON.parse(document.getElementById('riskData').textContent);
 const docId = JSON.parse(document.getElementById('docIdData').textContent);
 const ITEM_GRADES = ["특급","1급","2급","3급"];
-const MASK_TOKEN = {person:'[개인정보 마스킹]',org:'[기관정보 마스킹]',ip:'[기밀정보 마스킹]',auth:'[인증정보 마스킹]',secret:'[금융정보 마스킹]'};
-const SUB_FALLBACK = {person:'[개인 비식별화]',org:'[기관명 비공개]',ip:'[기밀정보 비공개]',auth:'[인증정보 비공개]',secret:'[금융정보 비공개]'};
+/* 마스킹/치환 토큰은 유형(개인정보·기관·기밀 등)이 드러나지 않도록 통일한다 */
+const MASK_TOKEN = {person:'[비공개]',org:'[비공개]',ip:'[비공개]',auth:'[비공개]',secret:'[비공개]'};
+const SUB_FALLBACK = {person:'[비공개]',org:'[비공개]',ip:'[비공개]',auth:'[비공개]',secret:'[비공개]'};
 const DEFAULT_SCORE = {mask:75, substitute:50, publish:20};
 
 function isMobile(){ return window.matchMedia('(max-width: 900px)').matches; }
@@ -292,15 +293,31 @@ function getVisibleEntries() {
   return entries.sort(cmps[sortBy] || cmps.id);
 }
 
+/* 등급별 항목(카드) 개수 — 필터 칩과 목록 건수에 함께 사용 */
+function gradeCounts() {
+  const c = {"특급":0,"1급":0,"2급":0,"3급":0};
+  Object.values(window.__items || {}).forEach(i => { if (c[i.grade] !== undefined) c[i.grade]++; });
+  return c;
+}
+function updateFilterCounts() {
+  const c = gradeCounts();
+  ITEM_GRADES.forEach(g => {
+    const el = document.querySelector(`.fchip-cnt[data-cnt="${g}"]`);
+    if (el) el.textContent = c[g];
+  });
+}
+
 function renderAllCards() {
   const list = document.getElementById('detList');
   const total = Object.keys(window.__items || {}).length;
   const visible = getVisibleEntries();
+  // 전체 건수는 '전체' 탭에서만 표시하고, 특정 등급 탭에서는 그 등급 건수만 표시
   document.getElementById('detCount').textContent =
-    filterGrade === 'all' ? `탐지 항목 ${total}건` : `${filterGrade} ${visible.length}건 / 전체 ${total}건`;
+    filterGrade === 'all' ? `탐지 항목 ${total}건` : `${filterGrade} ${visible.length}건`;
   list.innerHTML = visible.length
     ? visible.map(([idx, item]) => cardHTML(item, idx)).join('')
     : '<div class="empty-state">해당 조건의 항목이 없습니다.</div>';
+  updateFilterCounts();
 }
 
 function setFilter(g) {
@@ -372,6 +389,9 @@ function setActive(idx) {
 
 function selectItem(idx) {
   if (selected === +idx && isMobile()) { closeSheet(); return; }
+  // 클릭한 단어가 속한 등급 탭으로 자동 전환 (현재 탭과 다를 때)
+  const item = (window.__items || {})[idx];
+  if (item && filterGrade !== item.grade) setFilter(item.grade);
   setActive(idx);
   if (isMobile()) openSheet();
   const card = document.getElementById('det-' + idx);
@@ -449,10 +469,13 @@ function applyMethod(idx, method) {
   applyMethodToToken(idx, item);
 }
 
-/* 단일 항목 방식 변경 (카드/요약 즉시 갱신) */
+/* 단일 항목 방식 변경 (카드/요약/탭 개수 즉시 갱신) */
 function setMethod(idx, method) {
   applyMethod(idx, method);
-  updateCard(idx);
+  const item = (window.__items || {})[idx];
+  // 방식 변경으로 등급이 바뀌어 현재 탭 조건을 벗어나면 목록을 다시 그린다
+  if (filterGrade !== 'all' && item && item.grade !== filterGrade) renderAllCards();
+  else { updateCard(idx); updateFilterCounts(); }
   renderSummaryGrades(window.__items);
 }
 
