@@ -49,14 +49,31 @@
     </div>
   </section>
 
+  <!-- 기본 내장 탐지 규칙 (읽기 전용) -->
+  {% set tlabels = {'person':'개인정보','org':'기업/기관','ip':'지적재산','auth':'인증정보','secret':'금융/기타'} %}
+  <section class="policy-card">
+    <h2 class="policy-h">현재 적용 중인 기본 탐지 규칙 <span class="ro-tag">읽기 전용</span></h2>
+    <p class="policy-desc">아래 정규식은 항상 적용되는 기본 탐지 패턴입니다. (이메일·전화번호·주민번호·API 키·카드/계좌번호 등)</p>
+    <div class="rule-list">
+      {% for b in builtin %}
+      <div class="rule-row-ro">
+        <span class="grade-chip ro-type">{{ tlabels.get(b.type, b.type) }}</span>
+        <span class="ro-label">{{ b.label }}</span>
+        <code class="ro-pattern">{{ b.pattern }}</code>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
   <!-- 커스텀 정규식 -->
   <section class="policy-card">
     <div class="policy-card-head">
       <h2 class="policy-h">커스텀 탐지 정규식</h2>
       <button class="btn btn-secondary btn-sm" type="button" onclick="addPatternRow()">＋ 규칙 추가</button>
     </div>
-    <p class="policy-desc">정규식과 일치하는 문자열을 항상 탐지합니다. (예: 사번 <code>EMP-\d{6}</code>)</p>
+    <p class="policy-desc">기본 규칙에 더해 추가로 탐지할 정규식을 등록합니다. (예: 사번 <code>EMP-\d{6}</code>) 등록된 규칙은 아래 목록에 표시됩니다.</p>
     <div class="rule-list" id="patternList"></div>
+    <div class="rule-empty" id="patternEmpty">아직 등록된 커스텀 정규식이 없습니다.</div>
   </section>
 
   <!-- 키워드 사전 -->
@@ -65,8 +82,9 @@
       <h2 class="policy-h">민감 키워드 사전</h2>
       <button class="btn btn-secondary btn-sm" type="button" onclick="addDictRow()">＋ 키워드 추가</button>
     </div>
-    <p class="policy-desc">문맥과 무관하게 항상 민감정보로 취급할 단어를 등록합니다. (예: 프로젝트 코드명, 신약명)</p>
+    <p class="policy-desc">문맥과 무관하게 항상 민감정보로 취급할 단어를 등록합니다. (예: 프로젝트 코드명, 신약명) 등록된 키워드는 아래 목록에 표시됩니다.</p>
     <div class="rule-list" id="dictList"></div>
+    <div class="rule-empty" id="dictEmpty">아직 등록된 민감 키워드가 없습니다.</div>
   </section>
 
   <div class="policy-foot">
@@ -93,7 +111,7 @@ function patternRow(p) {
     `<select class="r-type">${typeOptions(p.type)}</select>` +
     `<input class="r-label" placeholder="규칙 이름" value="${(p.label||'').replace(/"/g,'&quot;')}">` +
     `<input class="r-pattern" placeholder="정규식" value="${(p.pattern||'').replace(/"/g,'&quot;')}">` +
-    `<button type="button" class="rule-del" onclick="this.parentNode.remove()">✕</button>`;
+    `<button type="button" class="rule-del" onclick="delRule(this)">✕</button>`;
   return div;
 }
 function dictRow(d) {
@@ -103,11 +121,18 @@ function dictRow(d) {
   div.innerHTML =
     `<select class="r-type">${typeOptions(d.type)}</select>` +
     `<input class="r-term" placeholder="키워드" value="${(d.term||'').replace(/"/g,'&quot;')}">` +
-    `<button type="button" class="rule-del" onclick="this.parentNode.remove()">✕</button>`;
+    `<button type="button" class="rule-del" onclick="delRule(this)">✕</button>`;
   return div;
 }
-function addPatternRow(p) { document.getElementById('patternList').appendChild(patternRow(p)); }
-function addDictRow(d) { document.getElementById('dictList').appendChild(dictRow(d)); }
+function refreshEmpty() {
+  document.getElementById('patternEmpty').style.display =
+    document.querySelectorAll('#patternList .rule-row').length ? 'none' : 'block';
+  document.getElementById('dictEmpty').style.display =
+    document.querySelectorAll('#dictList .rule-row').length ? 'none' : 'block';
+}
+function delRule(btn) { btn.parentNode.remove(); refreshEmpty(); }
+function addPatternRow(p) { document.getElementById('patternList').appendChild(patternRow(p)); refreshEmpty(); }
+function addDictRow(d) { document.getElementById('dictList').appendChild(dictRow(d)); refreshEmpty(); }
 
 function savePolicy() {
   const num = (id) => parseFloat(document.getElementById(id).value) || 0;
@@ -147,6 +172,7 @@ function savePolicy() {
 (function init(){
   (POLICY.custom_patterns || []).forEach(addPatternRow);
   (POLICY.dictionary || []).forEach(addDictRow);
+  refreshEmpty();
 })();
 </script>
 </body>

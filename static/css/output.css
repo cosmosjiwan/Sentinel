@@ -280,12 +280,13 @@ body.reveal .ent-tip,
 .cia-bar i { display: block; height: 100%; border-radius: 999px; background: var(--ip); transition: width .4s cubic-bezier(.4,0,.2,1); }
 .cia-row b { flex: 0 0 26px; text-align: right; font-size: var(--fs-sm); font-weight: 800; color: var(--text); }
 
-/* ── 검열본 다운로드 메뉴 ── */
-.export-wrap { position: relative; }
+/* ── 검열본 다운로드 메뉴 (문서 헤더 우측에 드롭다운) ── */
+.export-wrap { position: relative; flex-shrink: 0; }
 .export-menu {
-  position: absolute; left: 0; right: 0; top: calc(100% + 6px);
+  position: absolute; right: 0; left: auto; top: calc(100% + 6px);
+  min-width: 180px;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-control);
-  box-shadow: var(--shadow16); padding: 6px; z-index: 30;
+  box-shadow: var(--shadow16); padding: 6px; z-index: 60;
   display: none; flex-direction: column; gap: 2px;
 }
 .export-menu.open { display: flex; }
@@ -478,6 +479,8 @@ body.reveal .ent-tip,
   .output-shell { display: flex; flex-direction: column; overflow: visible; }
   .doc-card { overflow: visible; }
   .doc-head { padding: 14px 16px; }
+  /* 모바일은 상단 요약 스트립의 다운로드 버튼을 쓰므로 문서 헤더 다운로드는 숨김 */
+  .doc-head .export-wrap { display: none; }
   .doc-body {
     overflow-y: visible; flex: none;
     padding: 18px;

@@ -68,6 +68,17 @@
           <input type="checkbox" id="revealToggle">
           <span class="toggle-track"></span>
         </label>
+        <div class="export-wrap">
+          <button class="btn btn-primary btn-sm" type="button" onclick="toggleExportMenu(event)">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
+            검열본 다운로드
+          </button>
+          <div class="export-menu" id="exportMenu">
+            {% if 'pdf' in formats %}<button type="button" onclick="applyAndExport('pdf')">PDF 문서 (.pdf)</button>{% endif %}
+            {% if 'docx' in formats %}<button type="button" onclick="applyAndExport('docx')">Word 문서 (.docx)</button>{% endif %}
+            <button type="button" onclick="applyAndExport('txt')">텍스트 (.txt)</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="doc-body" id="docBody"><div class="empty-state">파싱 중...</div></div>
@@ -79,16 +90,6 @@
     <div class="add-form-head">민감정보 수동 추가</div>
     <div class="add-sel" id="addSelText"></div>
     <div class="add-field">
-      <label>유형</label>
-      <select id="addType">
-        <option value="person">개인정보</option>
-        <option value="org">기업/기관</option>
-        <option value="ip">지적재산</option>
-        <option value="auth">인증정보</option>
-        <option value="secret">금융/기타</option>
-      </select>
-    </div>
-    <div class="add-field">
       <label>검열 방식</label>
       <select id="addMethod" onchange="onAddMethodChange()">
         <option value="mask">마스킹</option>
@@ -99,6 +100,10 @@
     <div class="add-field" id="addReplaceField">
       <label>치환 표현</label>
       <input type="text" id="addReplace" placeholder="예: 국내 기업 연구소">
+    </div>
+    <div class="add-field">
+      <label>판단 근거</label>
+      <input type="text" id="addReason" placeholder="예: 내부 프로젝트 코드명">
     </div>
     <div class="add-actions">
       <button type="button" class="btn btn-secondary btn-sm" onclick="closeAdd()">취소</button>
@@ -130,18 +135,6 @@
         <div class="cia-row"><span class="cia-name">기밀성</span><span class="cia-bar"><i id="ciaC"></i></span><b id="ciaCv">0</b></div>
         <div class="cia-row"><span class="cia-name">무결성</span><span class="cia-bar"><i id="ciaI"></i></span><b id="ciaIv">0</b></div>
         <div class="cia-row"><span class="cia-name">가용성</span><span class="cia-bar"><i id="ciaA"></i></span><b id="ciaAv">0</b></div>
-      </div>
-
-      <div class="export-wrap">
-        <button class="btn-export" type="button" onclick="toggleExportMenu(event)">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M2.75 14A1.75 1.75 0 0 1 1 12.25v-2.5a.75.75 0 0 1 1.5 0v2.5c0 .138.112.25.25.25h10.5a.25.25 0 0 0 .25-.25v-2.5a.75.75 0 0 1 1.5 0v2.5A1.75 1.75 0 0 1 13.25 14Z"/><path d="M7.25 7.689V2a.75.75 0 0 1 1.5 0v5.689l1.97-1.969a.749.749 0 1 1 1.06 1.06l-3.25 3.25a.749.749 0 0 1-1.06 0L4.22 6.78a.749.749 0 1 1 1.06-1.06l1.97 1.969Z"/></svg>
-          검열본 다운로드
-        </button>
-        <div class="export-menu" id="exportMenu">
-          {% if 'pdf' in formats %}<button type="button" onclick="applyAndExport('pdf')">PDF 문서 (.pdf)</button>{% endif %}
-          {% if 'docx' in formats %}<button type="button" onclick="applyAndExport('docx')">Word 문서 (.docx)</button>{% endif %}
-          <button type="button" onclick="applyAndExport('txt')">텍스트 (.txt)</button>
-        </div>
       </div>
     </div>
 
@@ -463,19 +456,26 @@ function applyMethod(idx, method) {
   if (item.subText === undefined) item.subText = item.replaced;
   item.method = method;
   item.grade = METHOD_GRADE[method] || item.grade;
-  if (method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[마스킹]';
+  if (method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[비공개]';
   else if (method === 'publish') item.replaced = item.orig;
   else item.replaced = effectiveSubText(item);
   applyMethodToToken(idx, item);
 }
 
-/* 단일 항목 방식 변경 (카드/요약/탭 개수 즉시 갱신) */
+/* 단일 항목 방식 변경 — 등급이 재분류되면 표시 중인 탭도 새 등급 탭으로 따라 이동시켜,
+   방식만 바꿨는데 항목이 사라진 것처럼 보이지 않도록 한다. */
 function setMethod(idx, method) {
   applyMethod(idx, method);
   const item = (window.__items || {})[idx];
-  // 방식 변경으로 등급이 바뀌어 현재 탭 조건을 벗어나면 목록을 다시 그린다
-  if (filterGrade !== 'all' && item && item.grade !== filterGrade) renderAllCards();
-  else { updateCard(idx); updateFilterCounts(); }
+  if (filterGrade !== 'all' && item && item.grade !== filterGrade) {
+    setFilter(item.grade);          // 새 등급 탭으로 전환 (목록 재렌더 포함)
+    setActive(idx);                 // 이동한 탭에서 해당 카드를 계속 강조
+    const card = document.getElementById('det-' + idx);
+    if (card) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  } else {
+    updateCard(idx);
+    updateFilterCounts();
+  }
   renderSummaryGrades(window.__items);
 }
 
@@ -534,9 +534,9 @@ function openAddForm() {
   const form = document.getElementById('addForm');
   const trigger = document.getElementById('addTrigger');
   document.getElementById('addSelText').textContent = pendingSel;
-  document.getElementById('addType').value = 'person';
   document.getElementById('addMethod').value = 'mask';
   document.getElementById('addReplace').value = '';
+  document.getElementById('addReason').value = '';
   onAddMethodChange();
   form.style.top = trigger.style.top;
   form.style.left = trigger.style.left;
@@ -571,13 +571,14 @@ function wrapFirstPlain(text, needle, id, replaced) {
 }
 
 function confirmAdd() {
-  const type = document.getElementById('addType').value;
+  const type = 'manual';  // 유형 구분 없이 추가 (마커는 유형 비노출 통일)
   const method = document.getElementById('addMethod').value;
   const grade = METHOD_GRADE[method] || '2급';
+  const reason = document.getElementById('addReason').value.trim() || '검토자 수동 추가';
   let replaced;
-  if (method === 'mask') replaced = MASK_TOKEN[type] || '[마스킹]';
+  if (method === 'mask') replaced = '[비공개]';
   else if (method === 'publish') replaced = pendingSel;
-  else replaced = (document.getElementById('addReplace').value.trim()) || SUB_FALLBACK[type] || '[치환됨]';
+  else replaced = (document.getElementById('addReplace').value.trim()) || '[비공개]';
 
   const id = nextId();
   const wrapped = wrapFirstPlain(bodyText, pendingSel, id, replaced);
@@ -585,7 +586,7 @@ function confirmAdd() {
   bodyText = wrapped.text;
   window.__items[id] = {
     id, type, grade, score: DEFAULT_SCORE[method] || 50,
-    orig: pendingSel, replaced, reason: '검토자 수동 추가',
+    orig: pendingSel, replaced, reason,
     method, subText: replaced, count: 0,
   };
   rerenderDoc();
@@ -652,7 +653,7 @@ window.addEventListener('scroll', () => { handleMobileScroll(window.scrollY); },
   Object.entries(items).forEach(([idx, item]) => {
     item.method = inferMethod(item);
     item.subText = item.replaced;
-    if (item.method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[마스킹]';
+    if (item.method === 'mask') item.replaced = MASK_TOKEN[item.type] || '[비공개]';
     else if (item.method === 'publish') item.replaced = item.orig;
     else item.replaced = effectiveSubText(item);
     applyMethodToToken(idx, item);

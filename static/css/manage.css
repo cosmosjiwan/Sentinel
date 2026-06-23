@@ -92,6 +92,26 @@
 }
 .rule-del:hover { background: var(--person-bg); color: var(--person); }
 
+/* 읽기 전용 기본 규칙 */
+.ro-tag {
+  font-size: var(--fs-xs); font-weight: 700; color: var(--muted);
+  background: var(--surface2); padding: 3px 9px; border-radius: 999px; margin-left: 8px;
+  vertical-align: middle;
+}
+.rule-row-ro {
+  display: grid; grid-template-columns: 92px 110px 1fr; gap: 10px; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid var(--divider);
+}
+.rule-row-ro:last-child { border-bottom: none; }
+.ro-type { justify-self: start; background: var(--surface2); color: var(--muted); }
+.ro-label { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
+.ro-pattern {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
+  color: var(--text); background: var(--surface3);
+  padding: 5px 9px; border-radius: 8px; overflow-x: auto; white-space: nowrap;
+}
+.rule-empty { font-size: var(--fs-sm); color: var(--subtle); padding: 4px 2px; }
+
 .policy-foot { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 8px; }
 .save-status { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
 .save-status.ok { color: var(--secret); }

@@ -28,7 +28,7 @@ def get_deploy_time():
             return ""
     return datetime.datetime.fromtimestamp(epoch, KST).strftime("%Y.%m.%d %H:%M")
 
-from patterns import scan_regex, force_mask_residual, MASK_TOKEN
+from patterns import scan_regex, force_mask_residual, MASK_TOKEN, BUILTIN_PATTERNS
 from risk import compute_score, grade_for_score, action_for_grade, GRADE_LABEL
 from policy import load_policy, save_policy, VALID_TYPES
 from export import build_exports
@@ -679,8 +679,11 @@ def dashboard():
 
 @app.route("/policy")
 def policy_page():
+    # 항상 적용되는 기본 내장 탐지 규칙 (읽기 전용으로 화면에 표시)
+    builtin = [{"type": t, "label": l, "pattern": p.pattern} for (t, l, p) in BUILTIN_PATTERNS]
     return _no_store(app.make_response(
-        render_template("policy.html", policy=load_policy(), types=VALID_TYPES, nav="policy")
+        render_template("policy.html", policy=load_policy(), types=VALID_TYPES,
+                        builtin=builtin, nav="policy")
     ))
 
 
