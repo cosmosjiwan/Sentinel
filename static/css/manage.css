@@ -7,9 +7,14 @@
 .page > * { max-width: 1040px; margin-left: auto; margin-right: auto; }
 .page-narrow > * { max-width: none; }
 
-.page-head { margin-bottom: 24px; }
+/* PPT 편집 스타일 헤더 — 아이브로우 + 볼드 타이틀 + 굵은 잉크 룰 */
+.page-head { margin-bottom: 28px; padding-bottom: 16px; border-bottom: 2.5px solid var(--text); }
+.page-eyebrow {
+  display: block; font-size: var(--fs-sm); font-weight: 800; color: var(--accent);
+  letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px;
+}
 .page-title { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
-.page-sub { font-size: var(--fs-base); color: var(--muted); margin-top: 6px; line-height: 1.6; }
+.page-sub { font-size: var(--fs-base); color: var(--muted); margin-top: 8px; line-height: 1.6; }
 
 /* ── 통계 카드 ── */
 .stat-grid {
@@ -19,7 +24,13 @@
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-card);
   box-shadow: var(--shadow2); padding: 18px 20px;
   display: flex; flex-direction: column; gap: 8px;
+  border-top: 3px solid var(--accent);  /* 상단 컬러 액센트로 회색 단조로움 완화 */
 }
+/* PPT 데이터 팔레트를 카드별로 매핑 — 레드/오렌지/앰버/그레이 */
+.stat-grid .stat-card:nth-child(1) { border-top-color: var(--accent); }
+.stat-grid .stat-card:nth-child(2) { border-top-color: var(--accent-2); }
+.stat-grid .stat-card:nth-child(3) { border-top-color: var(--accent-3); }
+.stat-grid .stat-card:nth-child(4) { border-top-color: var(--accent-4); }
 .stat-label { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
 .stat-num { font-size: 36px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
 .stat-num small { font-size: var(--fs-base); font-weight: 700; color: var(--subtle); }

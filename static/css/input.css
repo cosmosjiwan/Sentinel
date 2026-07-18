@@ -22,6 +22,13 @@ body {
   gap: 28px;
 }
 
+.upload-hero-eyebrow {
+  font-size: var(--fs-sm);
+  font-weight: 800;
+  letter-spacing: .12em;
+  color: var(--accent);
+  text-align: center;
+}
 .upload-hero-title {
   font-size: 36px;
   font-weight: 800;
@@ -30,6 +37,7 @@ body {
   color: var(--text);
   text-align: center;
 }
+.hero-accent { color: var(--accent); font-weight: 800; }
 .upload-hero-sub {
   font-size: 17px;
   line-height: 26px;
@@ -65,8 +73,8 @@ body {
 }
 .upload-box.has-file {
   border-style: solid;
-  border-color: var(--secret);
-  background: var(--secret-bg);
+  border-color: var(--accent);
+  background: var(--accent-bg);
 }
 
 .upload-content {
@@ -89,8 +97,8 @@ body {
   justify-content: center;
 }
 .upload-icon svg { color: var(--accent); width: 32px; height: 32px; }
-.upload-box.has-file .upload-icon { background: rgba(184,184,184,.25); }
-.upload-box.has-file .upload-icon svg { color: var(--secret); }
+.upload-box.has-file .upload-icon { background: var(--accent-bg-h); }
+.upload-box.has-file .upload-icon svg { color: var(--accent); }
 
 .upload-title {
   font-size: 20px;
@@ -119,7 +127,7 @@ body {
 #file-name {
   margin-top: 18px;
   font-size: var(--fs-base);
-  color: var(--secret);
+  color: var(--accent);
   display: none;
   align-items: center;
   justify-content: flex-start;
