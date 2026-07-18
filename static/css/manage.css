@@ -13,7 +13,7 @@
   display: block; font-size: var(--fs-sm); font-weight: 800; color: var(--accent);
   letter-spacing: .1em; text-transform: uppercase; margin-bottom: 6px;
 }
-.page-title { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.page-title { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
 .page-sub { font-size: var(--fs-base); color: var(--muted); margin-top: 8px; line-height: 1.6; }
 
 /* ── 통계 카드 ── */
@@ -32,7 +32,7 @@
 .stat-grid .stat-card:nth-child(3) { border-top-color: var(--accent-3); }
 .stat-grid .stat-card:nth-child(4) { border-top-color: var(--accent-4); }
 .stat-label { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
-.stat-num { font-size: 36px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
+.stat-num { font-size: 40px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
 .stat-num small { font-size: var(--fs-base); font-weight: 700; color: var(--subtle); }
 .stat-danger { color: var(--person); }
 .stat-dist .dist-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
@@ -76,8 +76,9 @@
 }
 .policy-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .policy-h { font-size: var(--fs-lg); font-weight: 800; color: var(--text); }
-.policy-desc { font-size: var(--fs-sm); color: var(--muted); margin: 6px 0 16px; line-height: 1.6; }
-.policy-desc code { background: var(--surface2); padding: 2px 6px; border-radius: 6px; font-size: 12px; }
+/* 설명문(description)은 페이지 부제(.page-sub) 등과 동일하게 --fs-base 로 통일 */
+.policy-desc { font-size: var(--fs-base); color: var(--muted); margin: 6px 0 16px; line-height: 1.6; }
+.policy-desc code { background: var(--surface2); padding: 2px 6px; border-radius: 6px; font-size: var(--fs-xs); }
 
 .weight-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .field { display: flex; flex-direction: column; gap: 6px; }

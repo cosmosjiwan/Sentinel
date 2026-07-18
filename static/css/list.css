@@ -22,13 +22,13 @@
   display:flex; align-items:center; justify-content:center;
 }
 .batch-filename {
-  font-size:14.5px; font-weight:700; color:var(--text);
+  font-size: var(--fs-base); font-weight:700; color:var(--text);
   overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
 }
 .batch-row-meta { display:flex; align-items:center; gap:16px; flex-shrink: 0; }
-.batch-score { font-size:13px; color:var(--muted); white-space: nowrap; }
-.batch-score strong { font-size:16px; color: var(--text); font-weight: 800; }
-.batch-blocked { font-size:12px; font-weight:700; color:var(--person); background: var(--person-bg); padding: 6px 12px; border-radius: 999px; }
+.batch-score { font-size: var(--fs-sm); color:var(--muted); white-space: nowrap; }
+.batch-score strong { font-size: var(--fs-base); color: var(--text); font-weight: 800; }
+.batch-blocked { font-size: var(--fs-xs); font-weight:700; color:var(--person); background: var(--person-bg); padding: 6px 12px; border-radius: 999px; }
 
 @media (max-width: 768px) {
   .batch-wrap { padding: 16px; }
