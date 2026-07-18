@@ -66,6 +66,13 @@ def scan_regex(text):
     return hits
 
 
+def residual_mask_patterns():
+    """force_mask_residual 이 사용하는 (컴파일된 정규식, 마스킹 토큰) 목록을 반환한다.
+    DOCX 서식 보존 검열처럼 텍스트를 조각(run) 단위로 처리할 때, 정책을 매번
+    다시 읽지 않고 한 번만 패턴을 구성해 재사용하기 위한 헬퍼다."""
+    return [(pat, MASK_TOKEN.get(t, "[마스킹]")) for t, _label, pat in _effective_patterns()]
+
+
 def force_mask_residual(text, allow_publish=False):
     """LLM이 마커로 감싸지 못해 평문으로 남은 정규식 패턴 매칭값을 강제로 마스킹한다.
     (예: '@'가 포함된 이메일이 마커 파싱에서 빠지는 경우의 안전망)"""
