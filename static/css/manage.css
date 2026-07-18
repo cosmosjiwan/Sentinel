@@ -8,7 +8,7 @@
 .page-narrow > * { max-width: none; }
 
 .page-head { margin-bottom: 24px; }
-.page-title { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
+.page-title { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; color: var(--text); }
 .page-sub { font-size: var(--fs-base); color: var(--muted); margin-top: 6px; line-height: 1.6; }
 
 /* ── 통계 카드 ── */
@@ -21,7 +21,7 @@
   display: flex; flex-direction: column; gap: 8px;
 }
 .stat-label { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
-.stat-num { font-size: 32px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
+.stat-num { font-size: 36px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; line-height: 1; }
 .stat-num small { font-size: var(--fs-base); font-weight: 700; color: var(--subtle); }
 .stat-danger { color: var(--person); }
 .stat-dist .dist-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
@@ -73,9 +73,49 @@
 .field span { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
 .field input {
   font-family: 'Pretendard', sans-serif; font-size: var(--fs-base);
-  padding: 10px 12px; border-radius: var(--r-control); border: 1px solid var(--border);
+  padding: 12px 14px; border-radius: var(--r-control); border: 1px solid var(--border);
   background: var(--surface); color: var(--text);
 }
+
+/* ── 분야별 적용 법령 토글 ── */
+.reg-sectors {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+}
+.reg-sector {
+  border: 1px solid var(--border); border-radius: var(--r-control);
+  background: var(--surface3); padding: 14px 16px;
+}
+.reg-sector-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--divider);
+}
+.reg-sector-name { font-size: var(--fs-base); font-weight: 800; color: var(--text); }
+.reg-all {
+  font-family: 'Pretendard', sans-serif; font-size: var(--fs-xs); font-weight: 700;
+  color: var(--accent); background: var(--accent-bg); border: none;
+  padding: 5px 11px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  transition: background .12s;
+}
+.reg-all:hover { background: var(--accent-bg-h); }
+.reg-laws { display: flex; flex-direction: column; gap: 4px; }
+.reg-law {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 4px; cursor: pointer; user-select: none;
+}
+.reg-law-name { flex: 1; font-size: var(--fs-sm); font-weight: 600; color: var(--text); line-height: 1.4; }
+.reg-law input { display: none; }
+.reg-switch {
+  flex-shrink: 0; position: relative;
+  width: 40px; height: 22px; border-radius: 999px;
+  background: var(--disabled); transition: background .15s;
+}
+.reg-switch::after {
+  content: ""; position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px; border-radius: 50%; background: #fff;
+  box-shadow: var(--shadow2); transition: transform .15s;
+}
+.reg-law input:checked ~ .reg-switch { background: var(--accent); }
+.reg-law input:checked ~ .reg-switch::after { transform: translateX(18px); }
 
 /* ── 규칙 리스트 (정규식 / 사전) ── */
 .rule-list { display: flex; flex-direction: column; gap: 8px; }
@@ -122,6 +162,7 @@
   .page { padding: 20px 14px 48px; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .weight-grid { grid-template-columns: 1fr; }
+  .reg-sectors { grid-template-columns: 1fr; }
   .table-head { display: none; }
   .table-row { grid-template-columns: 1fr auto; gap: 8px 12px; }
   .col-date { grid-column: 1; font-size: var(--fs-xs); }
