@@ -83,7 +83,7 @@
     <div class="rule-list">
       {% for b in builtin %}
       <div class="rule-row-ro">
-        <span class="grade-chip ro-type">{{ tlabels.get(b.type, b.type) }}</span>
+        <span class="grade-chip ro-type ro-type-{{ b.type }}">{{ tlabels.get(b.type, b.type) }}</span>
         <span class="ro-label">{{ b.name }}</span>
         <code class="ro-pattern">{{ b.example }}</code>
       </div>

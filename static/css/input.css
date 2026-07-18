@@ -148,9 +148,9 @@ body {
   font-weight: 700;
   padding: 7px 15px;
   border-radius: 999px;
-  background: var(--surface2);
+  background: var(--cream);
   border: none;
-  color: var(--muted);
+  color: var(--amber-ink);
 }
 
 /* ── 검열 버튼 ── */
