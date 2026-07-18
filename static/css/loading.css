@@ -9,7 +9,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(245,246,250,0.94);
+  background: rgba(251,250,249,0.94);
   backdrop-filter: blur(6px);
   z-index: 9999;
   align-items: center;
@@ -103,7 +103,8 @@
   transition: opacity .3s, border-color .3s, color .3s, background .3s;
 }
 .step.active { opacity: 1; border-color: var(--accent); color: var(--accent-h); background: var(--accent-bg); }
-.step.done   { opacity: 1; border-color: transparent; color: var(--secret); background: var(--secret-bg); }
+/* 완료된 단계도 회색이 아닌 브랜드 레드를 유지한다 (진행 흐름을 레드로 통일) */
+.step.done   { opacity: 1; border-color: transparent; color: var(--accent); background: var(--accent-bg); }
 .step-dot {
   width: 16px; height: 16px; border-radius: 50%;
   border: 2px solid currentColor;
