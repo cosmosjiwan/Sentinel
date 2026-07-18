@@ -31,25 +31,25 @@
   --shadow16: 0 16px 40px rgba(16,24,40,.14), 0 4px 10px rgba(16,24,40,.05);
 
   /* ── Corner radii ── */
-  --r-control: 12px;
-  --r-card:    20px;
+  --r-control: 13px;
+  --r-card:    22px;
 
   /* ── Type scale (전 화면 공통 글자 크기) ── */
-  --fs-xs:   11px;  /* 마이크로 라벨·캡션 */
-  --fs-sm:   13px;  /* 보조 텍스트·컨트롤·칩 */
-  --fs-base: 15px;  /* 본문 기본 */
-  --fs-lg:   18px;  /* 카드·섹션 제목 */
-  --fs-xl:   30px;  /* 강조 수치(점수 등) */
+  --fs-xs:   12px;  /* 마이크로 라벨·캡션 */
+  --fs-sm:   14px;  /* 보조 텍스트·컨트롤·칩 */
+  --fs-base: 16px;  /* 본문 기본 */
+  --fs-lg:   20px;  /* 카드·섹션 제목 */
+  --fs-xl:   34px;  /* 강조 수치(점수 등) */
 
   /* ── Focus indicator ── */
   --focus: 0 0 0 2px #ffffff, 0 0 0 4px var(--accent);
 
-  /* ── Semantic (위험성 등급) ── */
-  --person:   #e11d48; --person-bg: #fef1f4;  /* 특급 */
-  --org:      #2563eb; --org-bg:    #eff4ff;  /* 2급  */
-  --ip:       #ea580c; --ip-bg:     #fff4ec;  /* 1급  */
-  --auth:     #7c3aed; --auth-bg:   #f5f0ff;
-  --secret:   #16a34a; --secret-bg: #edfbf1;  /* 3급  */
+  /* ── Semantic (위험성 등급 — 테마 4색 팔레트) ── */
+  --person:   #EB001B; --person-bg: #fdeaec;  /* 특급 (레드) */
+  --ip:       #FF5F00; --ip-bg:     #fff0e6;  /* 1급 (오렌지) */
+  --org:      #F79E1B; --org-bg:    #fef4e2;  /* 2급 (앰버) */
+  --secret:   #B8B8B8; --secret-bg: #f0f0f2;  /* 3급 (그레이) */
+  --auth:     #FF5F00; --auth-bg:   #fff0e6;  /* 인증정보 */
 }
 
 /* Keyboard focus indicator */
@@ -71,15 +71,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 60px;
+  padding: 0 28px;
+  height: 66px;
   background: var(--surface);
   box-shadow: 0 1px 0 var(--border);
   flex-shrink: 0;
   z-index: 100;
 }
 .brand {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -91,7 +91,7 @@ body {
 }
 .brand::before {
   content: "";
-  width: 9px; height: 9px;
+  width: 10px; height: 10px;
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-bg);
@@ -109,14 +109,14 @@ body {
 .topnav { display: flex; align-items: center; gap: 4px; margin-left: 18px; flex: 1; }
 .topnav-link {
   font-size: var(--fs-sm); font-weight: 700; color: var(--muted);
-  text-decoration: none; padding: 7px 13px; border-radius: var(--r-control);
+  text-decoration: none; padding: 8px 15px; border-radius: var(--r-control);
   transition: background .12s, color .12s; white-space: nowrap;
 }
 .topnav-link:hover { background: var(--surface2); color: var(--text); }
 .topnav-link.active { background: var(--accent-bg); color: var(--accent); }
 .chip {
-  font-size: 11px;
-  padding: 4px 10px;
+  font-size: 12px;
+  padding: 5px 12px;
   border-radius: 999px;
   font-weight: 600;
   background: var(--surface2);
@@ -125,8 +125,8 @@ body {
 }
 .chip-plain { background: var(--surface3); }
 .icon-btn {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--r-control);
   border: none;
   background: transparent;
@@ -148,19 +148,19 @@ body {
   cursor: default;
 }
 .topbar-avatar {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #fff;
 }
 .topbar-username {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text);
 }
 
@@ -168,8 +168,8 @@ body {
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   font-family: 'Pretendard', sans-serif;
-  font-size: 13px; font-weight: 700;
-  padding: 9px 18px;
+  font-size: 14px; font-weight: 700;
+  padding: 11px 20px;
   border-radius: var(--r-control);
   cursor: pointer;
   text-decoration: none;
@@ -183,7 +183,7 @@ body {
 .btn-secondary { background: var(--surface2); color: var(--text); border-color: transparent; }
 .btn-secondary:hover { background: var(--border); }
 .btn-secondary:active { background: var(--border); }
-.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-sm { padding: 8px 15px; font-size: 13px; }
 
 /* ── 앱 쉘 (공통) ── */
 .app-shell {
@@ -195,8 +195,8 @@ body {
 
 /* ── 위험성 등급 칩 (ISO 27005 기반) ── */
 .grade-chip {
-  font-size: 11px;
-  padding: 3px 10px;
+  font-size: 12px;
+  padding: 4px 12px;
   border-radius: 999px;
   font-weight: 700;
   white-space: nowrap;

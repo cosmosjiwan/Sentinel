@@ -30,7 +30,7 @@ def get_deploy_time():
 
 from patterns import scan_regex, force_mask_residual, MASK_TOKEN, BUILTIN_PATTERNS
 from risk import compute_score, grade_for_score, action_for_grade, GRADE_LABEL
-from policy import load_policy, save_policy, VALID_TYPES
+from policy import load_policy, save_policy, VALID_TYPES, REGULATION_SECTORS
 from export import build_exports
 
 RESULTS_DIR = "results"
@@ -243,6 +243,17 @@ def build_policy_hint():
         terms = ", ".join(f"{d['term']}({d['type']})" for d in pol["dictionary"])
         parts.append(
             f"- 다음 키워드는 문맥과 무관하게 반드시 민감정보로 탐지·태그한다: {terms}"
+        )
+    regs = pol.get("regulations", {})
+    enabled_lines = []
+    for sec in REGULATION_SECTORS:
+        names = [law["name"] for law in sec["laws"] if regs.get(law["id"])]
+        if names:
+            enabled_lines.append(f"  · {sec['name']}: {', '.join(names)}")
+    if enabled_lines:
+        parts.append(
+            "- 다음 분야별 법령의 보호 대상 정보(군사·전략물자·신용·의료·공공기록 등)를 "
+            "반드시 준수하여 탐지·등급 판단에 반영한다:\n" + "\n".join(enabled_lines)
         )
     return "\n".join(parts) + "\n"
 
@@ -699,7 +710,7 @@ def policy_page():
     ]
     return _no_store(app.make_response(
         render_template("policy.html", policy=load_policy(), types=VALID_TYPES,
-                        builtin=builtin, nav="policy")
+                        builtin=builtin, sectors=REGULATION_SECTORS, nav="policy")
     ))
 
 

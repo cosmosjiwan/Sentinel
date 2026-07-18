@@ -49,6 +49,31 @@
     </div>
   </section>
 
+  <!-- 분야별 적용 법령 토글 -->
+  <section class="policy-card">
+    <h2 class="policy-h">분야별 적용 법령</h2>
+    <p class="policy-desc">검열 시 준수할 분야별 법령을 선택합니다. 켠 법령이 보호하는 정보(군사·전략물자·신용·의료·공공기록 등)가 탐지·등급 판단 기준에 반영됩니다. 저장 시 이후 검열부터 적용됩니다.</p>
+    <div class="reg-sectors">
+      {% for sec in sectors %}
+      <div class="reg-sector" data-sector="{{ sec.id }}">
+        <div class="reg-sector-head">
+          <h3 class="reg-sector-name">{{ sec.name }}</h3>
+          <button type="button" class="reg-all" onclick="toggleSector('{{ sec.id }}')">전체 선택</button>
+        </div>
+        <div class="reg-laws">
+          {% for law in sec.laws %}
+          <label class="reg-law">
+            <span class="reg-law-name">{{ law.name }}</span>
+            <input type="checkbox" class="reg-toggle" data-law="{{ law.id }}" {{ 'checked' if policy.regulations.get(law.id) }}>
+            <span class="reg-switch" aria-hidden="true"></span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
   <!-- 기본 내장 탐지 규칙 (읽기 전용) -->
   {% set tlabels = {'person':'개인정보','org':'기업/기관','ip':'지적재산','auth':'인증정보','secret':'금융/기타'} %}
   <section class="policy-card">
@@ -146,11 +171,14 @@ function savePolicy() {
     type: r.querySelector('.r-type').value,
     term: r.querySelector('.r-term').value.trim(),
   })).filter(d => d.term);
+  const regulations = {};
+  document.querySelectorAll('.reg-toggle').forEach(cb => { regulations[cb.dataset.law] = cb.checked; });
   const payload = {
     weights: { confidentiality: num('wC'), integrity: num('wI'), availability: num('wA') },
     thresholds: { '특급': intval('tA'), '1급': intval('t1'), '2급': intval('t2') },
     custom_patterns: patterns,
     dictionary: dictionary,
+    regulations: regulations,
   };
   const status = document.getElementById('saveStatus');
   status.textContent = '저장 중...';
@@ -169,9 +197,29 @@ function savePolicy() {
     .catch(() => { status.textContent = '서버 오류'; status.classList.add('err'); });
 }
 
+// 분야 전체 선택/해제 토글 — 해당 분야 법령이 하나라도 꺼져 있으면 모두 켜고, 모두 켜져 있으면 모두 끈다.
+function toggleSector(sectorId) {
+  const sec = document.querySelector(`.reg-sector[data-sector="${sectorId}"]`);
+  if (!sec) return;
+  const boxes = [...sec.querySelectorAll('.reg-toggle')];
+  const allOn = boxes.every(b => b.checked);
+  boxes.forEach(b => { b.checked = !allOn; });
+  syncSectorLabels();
+}
+function syncSectorLabels() {
+  document.querySelectorAll('.reg-sector').forEach(sec => {
+    const boxes = [...sec.querySelectorAll('.reg-toggle')];
+    const allOn = boxes.length && boxes.every(b => b.checked);
+    const btn = sec.querySelector('.reg-all');
+    if (btn) btn.textContent = allOn ? '전체 해제' : '전체 선택';
+  });
+}
+
 (function init(){
   (POLICY.custom_patterns || []).forEach(addPatternRow);
   (POLICY.dictionary || []).forEach(addDictRow);
+  document.querySelectorAll('.reg-toggle').forEach(cb => cb.addEventListener('change', syncSectorLabels));
+  syncSectorLabels();
   refreshEmpty();
 })();
 </script>
