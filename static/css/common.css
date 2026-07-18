@@ -50,11 +50,11 @@
   /* ── Focus indicator ── */
   --focus: 0 0 0 2px #ffffff, 0 0 0 4px var(--accent);
 
-  /* ── Semantic (위험성 등급 — 테마 4색 팔레트) ── */
-  --person:   #EB001B; --person-bg: #fdeaec;  /* 특급 (레드) */
-  --ip:       #FF5F00; --ip-bg:     #fff0e6;  /* 1급 (오렌지) */
-  --org:      #F79E1B; --org-bg:    #fef4e2;  /* 2급 (앰버) */
-  --secret:   #B8B8B8; --secret-bg: #f0f0f2;  /* 3급 (그레이) */
+  /* ── Semantic (위험성 등급) — 특급:검정 / 1급:빨강 / 2급:주황 / 3급:노랑 ── */
+  --person:   #141413; --person-bg: #E7E1DB;  /* 특급 (검정) */
+  --ip:       #EB001B; --ip-bg:     #fdeaec;  /* 1급 (레드) */
+  --org:      #FF5F00; --org-bg:    #fff0e6;  /* 2급 (오렌지) */
+  --secret:   #F79E1B; --secret-bg: #fef4e2;  /* 3급 (노랑) */
   --auth:     #FF5F00; --auth-bg:   #fff0e6;  /* 인증정보 */
 }
 
