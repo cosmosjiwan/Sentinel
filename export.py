@@ -107,17 +107,23 @@ def _iter_all_paragraphs(container):
 
 
 def _iter_doc_paragraphs(doc):
-    """본문 + 각 섹션의 머리글/바닥글까지 포함해 모든 단락을 순회한다."""
+    """본문 + 각 섹션의 머리글/바닥글까지 포함해 모든 단락을 순회한다.
+
+    머리글/바닥글은 해당 섹션에 '고유 정의'가 있을 때만 순회한다. python-docx 는
+    비어 있는(이전 섹션 연결) 머리글/바닥글의 .paragraphs 에 접근하는 것만으로도
+    빈 header/footer 파트를 새로 생성해 원본에 없던 요소를 추가하므로,
+    is_linked_to_previous 로 걸러 원본 구조를 그대로 보존한다."""
     yield from _iter_all_paragraphs(doc)
     for section in doc.sections:
         for attr in ("header", "footer", "first_page_header", "first_page_footer",
                      "even_page_header", "even_page_footer"):
             try:
                 hf = getattr(section, attr)
+                if hf is None or hf.is_linked_to_previous:
+                    continue
             except Exception:
                 continue
-            if hf is not None:
-                yield from _iter_all_paragraphs(hf)
+            yield from _iter_all_paragraphs(hf)
 
 
 def _replace_in_paragraph(paragraph, pairs):
