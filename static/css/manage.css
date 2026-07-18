@@ -154,7 +154,13 @@
   padding: 9px 0; border-bottom: 1px solid var(--divider);
 }
 .rule-row-ro:last-child { border-bottom: none; }
-.ro-type { justify-self: start; background: var(--surface2); color: var(--muted); }
+/* 기본 탐지 규칙의 유형 칩을 회색 대신 유형별 색으로 구분 */
+.ro-type { justify-self: start; }
+.ro-type-person { background: var(--person-bg); color: var(--person); }
+.ro-type-org    { background: var(--org-bg);    color: var(--org); }
+.ro-type-ip     { background: var(--ip-bg);     color: var(--ip); }
+.ro-type-auth   { background: var(--auth-bg);   color: var(--auth); }
+.ro-type-secret { background: var(--secret-bg); color: var(--secret); }
 .ro-label { font-size: var(--fs-sm); font-weight: 700; color: var(--muted); }
 .ro-pattern {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;

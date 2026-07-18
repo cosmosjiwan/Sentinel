@@ -29,6 +29,7 @@
   --peach:     #FFDFCC;
   --pink:      #FFC7CE;
   --cream:     #FCEBD1;
+  --amber-ink: #A85B00;  /* 크림 위에서 읽히는 딥 앰버 텍스트 */
 
   /* ── Elevation (warm shadow) ── */
   --shadow2:  0 1px 2px rgba(40,30,22,.06), 0 1px 1px rgba(40,30,22,.04);
@@ -123,12 +124,12 @@ body {
   font-size: 12px;
   padding: 5px 12px;
   border-radius: 999px;
-  font-weight: 600;
-  background: var(--surface2);
+  font-weight: 700;
+  background: var(--cream);
   border: none;
-  color: var(--muted);
+  color: var(--amber-ink);
 }
-.chip-plain { background: var(--surface3); }
+.chip-plain { background: var(--surface3); color: var(--muted); }
 .icon-btn {
   width: 38px;
   height: 38px;

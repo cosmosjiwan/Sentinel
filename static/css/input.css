@@ -22,13 +22,6 @@ body {
   gap: 28px;
 }
 
-.upload-hero-eyebrow {
-  font-size: var(--fs-sm);
-  font-weight: 800;
-  letter-spacing: .12em;
-  color: var(--accent);
-  text-align: center;
-}
 .upload-hero-title {
   font-size: 36px;
   font-weight: 800;
@@ -148,9 +141,9 @@ body {
   font-weight: 700;
   padding: 7px 15px;
   border-radius: 999px;
-  background: var(--surface2);
+  background: var(--cream);
   border: none;
-  color: var(--muted);
+  color: var(--amber-ink);
 }
 
 /* ── 검열 버튼 ── */
