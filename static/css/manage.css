@@ -110,11 +110,13 @@
 }
 .reg-all:hover { background: var(--accent-bg-h); }
 .reg-laws { display: flex; flex-direction: column; gap: 4px; }
+/* 법령명이 1줄이든 2줄이든 행 높이를 동일하게 고정해, 옆 분야(예: 방위산업 ↔ 군)와
+   행 위치가 어긋나지 않도록 한다 (예: '국방정보화…법'이 2줄이어도 정렬 유지). */
 .reg-law {
   display: flex; align-items: center; gap: 12px;
-  padding: 8px 4px; cursor: pointer; user-select: none;
+  padding: 6px 4px; min-height: 56px; cursor: pointer; user-select: none;
 }
-.reg-law-name { flex: 1; font-size: var(--fs-sm); font-weight: 600; color: var(--text); line-height: 1.4; }
+.reg-law-name { flex: 1; font-size: var(--fs-sm); font-weight: 600; color: var(--text); line-height: 1.35; }
 .reg-law input { display: none; }
 .reg-switch {
   flex-shrink: 0; position: relative;
