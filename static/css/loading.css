@@ -73,13 +73,14 @@
 
 .loading-text { text-align: center; }
 .loading-text h3 {
-  font-size: 16px;
+  font-size: var(--fs-lg);
   font-weight: 800;
   color: var(--text);
   margin-bottom: 4px;
 }
+/* 설명문 — 다른 화면의 설명문과 동일하게 --fs-base 로 통일 */
 .loading-text p {
-  font-size: 13px;
+  font-size: var(--fs-base);
   color: var(--muted);
 }
 .loading-steps {
@@ -92,7 +93,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 600;
   color: var(--muted);
   padding: 11px 14px;

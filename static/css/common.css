@@ -41,11 +41,11 @@
   --r-card:    22px;
 
   /* ── Type scale (전 화면 공통 글자 크기) ── */
-  --fs-xs:   12px;  /* 마이크로 라벨·캡션 */
-  --fs-sm:   14px;  /* 보조 텍스트·컨트롤·칩 */
-  --fs-base: 16px;  /* 본문 기본 */
-  --fs-lg:   20px;  /* 카드·섹션 제목 */
-  --fs-xl:   34px;  /* 강조 수치(점수 등) */
+  --fs-xs:   13px;  /* 마이크로 라벨·캡션 */
+  --fs-sm:   15px;  /* 보조 텍스트·컨트롤·칩 */
+  --fs-base: 17px;  /* 본문 기본 · 설명문(공통) */
+  --fs-lg:   22px;  /* 카드·섹션 제목 */
+  --fs-xl:   37px;  /* 강조 수치(점수 등) */
 
   /* ── Focus indicator ── */
   --focus: 0 0 0 2px #ffffff, 0 0 0 4px var(--accent);
@@ -85,7 +85,7 @@ body {
   z-index: 100;
 }
 .brand {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--accent);
@@ -121,7 +121,7 @@ body {
 .topnav-link:hover { background: var(--surface2); color: var(--text); }
 .topnav-link.active { background: var(--accent-bg); color: var(--accent); }
 .chip {
-  font-size: 12px;
+  font-size: 13px;
   padding: 5px 12px;
   border-radius: 999px;
   font-weight: 700;
@@ -161,12 +161,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #fff;
 }
 .topbar-username {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 
@@ -174,7 +174,7 @@ body {
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   font-family: 'Pretendard', sans-serif;
-  font-size: 14px; font-weight: 700;
+  font-size: 15px; font-weight: 700;
   padding: 11px 20px;
   border-radius: var(--r-control);
   cursor: pointer;
@@ -189,7 +189,7 @@ body {
 .btn-secondary { background: var(--surface2); color: var(--text); border-color: transparent; }
 .btn-secondary:hover { background: var(--border); }
 .btn-secondary:active { background: var(--border); }
-.btn-sm { padding: 8px 15px; font-size: 13px; }
+.btn-sm { padding: 8px 15px; font-size: 14px; }
 
 /* ── 앱 쉘 (공통) ── */
 .app-shell {
@@ -201,7 +201,7 @@ body {
 
 /* ── 위험성 등급 칩 (ISO 27005 기반) ── */
 .grade-chip {
-  font-size: 12px;
+  font-size: 13px;
   padding: 4px 12px;
   border-radius: 999px;
   font-weight: 700;
@@ -219,16 +219,16 @@ body {
   justify-content: center;
   height: 200px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   gap: 8px;
 }
 
 /* ── 모바일 대응 (공통) ── */
 @media (max-width: 768px) {
-  body { height: auto; min-height: 100vh; overflow: visible; font-size: 13px; }
+  body { height: auto; min-height: 100vh; overflow: visible; font-size: 14px; }
 
   .topbar { height: auto; padding: 12px 16px; gap: 8px; }
-  .brand { font-size: 19px; }
+  .brand { font-size: 21px; }
   .topbar-right { flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
   .topbar-username { display: none; }
 

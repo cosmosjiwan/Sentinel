@@ -519,6 +519,6 @@ body.reveal .ent-tip,
   }
   .sidebar-head { padding-top: 14px; gap: 14px; }
   .score-gauge { width: 68px; height: 68px; }
-  .score-num { font-size: 23px; }
+  .score-num { font-size: 26px; }
   .score-label { font-size: var(--fs-base); }
 }

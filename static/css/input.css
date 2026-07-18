@@ -23,7 +23,7 @@ body {
 }
 
 .upload-hero-title {
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.3;
@@ -31,9 +31,10 @@ body {
   text-align: center;
 }
 .hero-accent { color: var(--accent); font-weight: 800; }
+/* 설명문 — 다른 화면의 설명문(.page-sub/.policy-desc)과 동일하게 --fs-base 로 통일 */
 .upload-hero-sub {
-  font-size: 17px;
-  line-height: 26px;
+  font-size: var(--fs-base);
+  line-height: 1.55;
   color: var(--muted);
   text-align: center;
   margin-top: -14px;
@@ -94,7 +95,7 @@ body {
 .upload-box.has-file .upload-icon svg { color: var(--accent); }
 
 .upload-title {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 18px;
@@ -108,7 +109,7 @@ body {
   background: var(--text);
   border: 1px solid var(--text);
   color: #fff;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   font-family: 'Pretendard', sans-serif;
   cursor: pointer;
@@ -137,7 +138,7 @@ body {
   margin-top: 16px;
 }
 .fmt-chip {
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 700;
   padding: 7px 15px;
   border-radius: 999px;
@@ -154,7 +155,7 @@ body {
   background: var(--accent);
   border: none;
   color: #fff;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   font-family: 'Pretendard', sans-serif;
   cursor: pointer;
@@ -187,8 +188,8 @@ body {
   .content-area { overflow-y: auto; padding: 40px 32px; }
 
   .upload-hero { max-width: 760px; gap: 24px; }
-  .upload-hero-title { font-size: 34px; }
-  .upload-hero-sub { font-size: 16px; margin-top: -10px; }
+  .upload-hero-title { font-size: 38px; }
+  .upload-hero-sub { font-size: var(--fs-base); margin-top: -10px; }
   .upload-box { padding: 48px 56px; gap: 40px; min-height: 280px; }
 
   .upload-extra { display: flex; flex-direction: column; gap: 18px; width: 100%; margin-top: 6px; }
@@ -200,7 +201,7 @@ body {
     border-radius: var(--r-card); padding: 20px 28px; box-shadow: var(--shadow2);
   }
   .how-step { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .how-step strong { font-size: 16px; font-weight: 700; color: var(--text); }
+  .how-step strong { font-size: var(--fs-base); font-weight: 700; color: var(--text); }
   .how-num {
     width: 26px; height: 26px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
@@ -221,8 +222,8 @@ body {
     overflow: hidden;
   }
   .upload-hero { gap: 12px; }
-  .upload-hero-title { font-size: 19px; line-height: 25px; }
-  .upload-hero-sub { font-size: 13px; margin-top: -6px; }
+  .upload-hero-title { font-size: 22px; line-height: 30px; }
+  .upload-hero-sub { font-size: var(--fs-base); margin-top: -6px; }
 
   /* 폼이 남은 세로 공간을 차지하되, 업로드 박스는 그중 약 3/4만 채우고
      박스 안 요소는 고르게 분산 배치한다. 남는 공간만큼 검열 버튼이 아래로 내려간다 */
@@ -235,11 +236,11 @@ body {
   .upload-content { align-items: center; }
   .upload-icon { width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 14px; }
   .upload-icon svg { width: 24px; height: 24px; }
-  .upload-title { font-size: 15px; margin-bottom: 14px; }
-  .select-btn { padding: 10px 20px; font-size: 14px; }
+  .upload-title { font-size: 17px; margin-bottom: 14px; }
+  .select-btn { padding: 10px 20px; font-size: 15px; }
   .format-chips { margin-top: 12px; gap: 6px; justify-content: center; }
-  .fmt-chip { font-size: 11px; padding: 5px 11px; }
-  #file-name { margin-top: 12px; font-size: 12px; justify-content: center; }
+  .fmt-chip { font-size: 13px; padding: 5px 11px; }
+  #file-name { margin-top: 12px; font-size: 13px; justify-content: center; }
 
-  .submit-btn { flex-shrink: 0; padding: 15px; font-size: 16px; margin-top: 16px !important; }
+  .submit-btn { flex-shrink: 0; padding: 15px; font-size: 18px; margin-top: 16px !important; }
 }
