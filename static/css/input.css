@@ -22,13 +22,6 @@ body {
   gap: 28px;
 }
 
-.upload-hero-eyebrow {
-  font-size: var(--fs-sm);
-  font-weight: 800;
-  letter-spacing: .12em;
-  color: var(--accent);
-  text-align: center;
-}
 .upload-hero-title {
   font-size: 36px;
   font-weight: 800;
