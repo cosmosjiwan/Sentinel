@@ -13,12 +13,17 @@
   --subtle:    #8d91a3;
   --disabled:  #c7cad6;
 
-  /* ── Brand ramp (purple) ── */
-  --accent:    #7c3aed;
-  --accent-h:  #6d28d9;
-  --accent-p:  #5b21b6;
-  --accent-bg: #f3f0ff;
-  --accent-bg-h:#e4deff;
+  /* ── Brand ramp (red — 메인 테마색) ── */
+  --accent:    #EB001B;
+  --accent-h:  #C40017;
+  --accent-p:  #9E0012;
+  --accent-bg: #fdeaec;
+  --accent-bg-h:#fbd3d7;
+
+  /* ── Theme palette (보조 테마색) ── */
+  --accent-2:  #FF5F00;  /* 오렌지 */
+  --accent-3:  #F79E1B;  /* 앰버   */
+  --accent-4:  #B8B8B8;  /* 그레이 */
 
   /* ── Elevation ── */
   --shadow2:  0 1px 2px rgba(16,24,40,.06), 0 1px 1px rgba(16,24,40,.04);
@@ -172,7 +177,7 @@ body {
   transition: background .12s, border-color .12s, color .12s, transform .08s;
 }
 .btn:active { transform: scale(.97); }
-.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(124,58,237,.28); }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 2px 8px rgba(235,0,27,.28); }
 .btn-primary:hover { background: var(--accent-h); }
 .btn-primary:active { background: var(--accent-p); }
 .btn-secondary { background: var(--surface2); color: var(--text); border-color: transparent; }

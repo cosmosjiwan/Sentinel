@@ -161,7 +161,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  box-shadow: 0 4px 14px rgba(124,58,237,.32);
+  box-shadow: 0 4px 14px rgba(235,0,27,.32);
   transition: background .12s, transform .08s;
 }
 .submit-btn:hover { background: var(--accent-h); }
