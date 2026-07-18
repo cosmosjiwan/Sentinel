@@ -477,9 +477,11 @@ def disambiguate_duplicate_labels(body, items):
     return body
 
 
-def write_outputs(record):
+def write_outputs(record, upload_path=None):
     """record 의 clean_text 를 기반으로 txt/pdf/docx 검열본을 생성하고, record 에
-    내보내기 가능한 포맷 목록(formats)을 기록한다. (차단 문서는 txt 만 생성)"""
+    내보내기 가능한 포맷 목록(formats)을 기록한다. (차단 문서는 txt 만 생성)
+
+    원본이 .docx 이면 upload_path 를 넘겨 원본 서식을 보존한 검열본을 생성한다."""
     doc_id = record["doc_id"]
     title = record["filename"]
     clean_text = record["clean_text"]
@@ -488,7 +490,11 @@ def write_outputs(record):
     with open(txt_path, "w", encoding="utf-8") as f:
         f.write(clean_text)
     if not record["blocked"]:
-        exports = build_exports(RESULTS_DIR, doc_id, title, clean_text, record["risk"])
+        exports = build_exports(
+            RESULTS_DIR, doc_id, title, clean_text, record["risk"],
+            original_path=upload_path, items=record["items"],
+            grade=record["risk"]["grade"],
+        )
         if exports.get("pdf"):
             formats.append("pdf")
         if exports.get("docx"):
@@ -539,7 +545,7 @@ def process_file(upload_path, filename):
         "risk": risk,
         "blocked": blocked,
     }
-    write_outputs(record)
+    write_outputs(record, upload_path)
     save_record(record)
     return record
 
